@@ -1,0 +1,13 @@
+language: rust
+cache: cargo
+rust:
+  # This crate uses edition 2018.
+  # Uncomment `stable` when Rust 2018 is released.
+  #- stable
+  - beta
+  - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
+notifications:
+  email: false
