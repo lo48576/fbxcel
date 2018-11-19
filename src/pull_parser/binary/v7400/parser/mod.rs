@@ -94,6 +94,14 @@ impl<R: ParserSource> Parser<R> {
             .as_str()
     }
 
+    /// Returns the number of attributes of the current node.
+    pub(crate) fn current_attributes_count(&self) -> u64 {
+        self.state
+            .current_node()
+            .expect("Implicit top-level node has no name")
+            .attributes_count
+    }
+
     /// Returns current node depth.
     ///
     /// Implicit root node is considered to be depth 0.

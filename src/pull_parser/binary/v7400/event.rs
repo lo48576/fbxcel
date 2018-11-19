@@ -1,6 +1,6 @@
 //! Parser event.
 
-use super::{Parser, ParserSource};
+use super::{Attributes, Parser, ParserSource};
 
 /// Parser event.
 #[derive(Debug)]
@@ -29,5 +29,10 @@ impl<'a, R: 'a + ParserSource> StartNode<'a, R> {
     /// Returns the node name.
     pub fn name(&self) -> &str {
         self.parser.current_node_name()
+    }
+
+    /// Returns node attributes reader.
+    pub fn attributes(self) -> Attributes<'a, R> {
+        Attributes::from_parser(self.parser)
     }
 }
