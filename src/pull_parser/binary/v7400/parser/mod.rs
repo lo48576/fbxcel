@@ -3,8 +3,12 @@
 use std::io;
 
 use super::super::reader::{PlainSource, SeekableSource};
-use super::error::OperationError;
-use super::{Event, FbxVersion, ParserSource, ParserVersion, Result, StartNode};
+use super::error::{DataError, OperationError};
+use super::{Event, FbxVersion, ParserSource, ParserSourceExt, ParserVersion, Result, StartNode};
+
+use self::node::NodeHeader;
+
+mod node;
 
 /// FBX file header size.
 const FILE_HEADER_SIZE: usize = 23 + 4;
@@ -65,6 +69,11 @@ impl<R: ParserSource> Parser<R> {
             state: State::new(fbx_version),
             reader,
         })
+    }
+
+    /// Returns a mutable reference to the inner reader.
+    pub(crate) fn reader(&mut self) -> &mut R {
+        &mut self.reader
     }
 
     /// Returns FBX version.
@@ -162,7 +171,73 @@ impl<R: ParserSource> Parser<R> {
     fn next_event_impl(&mut self) -> Result<EventKind> {
         assert_eq!(self.state.health(), Health::Running);
 
-        unimplemented!()
+        // Skip unread attribute of previous node, if exists.
+        self.skip_unread_attributes()?;
+
+        let event_start_offset = self.reader().position();
+
+        // Check if the current node ends here (without any marker).
+        if self.state.current_node().map(|v| v.node_end_offset) == Some(event_start_offset) {
+            // The current node implicitly ends here.
+            self.state.started_nodes.pop();
+            return Ok(EventKind::EndNode);
+        }
+
+        // Read node header.
+        let node_header = NodeHeader::read_from_parser(self)?;
+
+        let header_end_offset = self.reader().position();
+
+        // Check if a node or a document ends here (with explicit marker).
+        if node_header.is_node_end() {
+            // The current node explicitly ends here.
+            return match self.state.started_nodes.pop() {
+                Some(closing) => {
+                    if closing.node_end_offset != header_end_offset {
+                        return Err(DataError::NodeLengthMismatch(
+                            closing.node_end_offset,
+                            header_end_offset,
+                        )
+                        .into());
+                    }
+                    Ok(EventKind::EndNode)
+                }
+                None => Ok(EventKind::EndFbx),
+            };
+        }
+
+        // Read the node name.
+        let name = {
+            let mut vec = vec![0; node_header.bytelen_name as usize];
+            self.reader.read_exact(&mut vec[..])?;
+            String::from_utf8(vec).map_err(DataError::InvalidNodeNameEncoding)?
+        };
+        let current_offset = self.reader().position();
+        let starting = StartedNode {
+            node_start_offset: event_start_offset,
+            node_end_offset: node_header.end_offset,
+            attributes_count: node_header.num_attributes,
+            attributes_end_offset: current_offset + node_header.bytelen_attributes,
+            name,
+        };
+
+        // Update parser status.
+        self.state.started_nodes.push(starting);
+        Ok(EventKind::StartNode)
+    }
+
+    /// Skip unread attribute of the current node, if remains.
+    fn skip_unread_attributes(&mut self) -> Result<()> {
+        let attributes_end_offset = match self.state.current_node() {
+            Some(v) => v.attributes_end_offset,
+            None => return Ok(()),
+        };
+        if attributes_end_offset > self.reader().position() {
+            // Skip if attributes remains (partially or entirely) unread.
+            self.reader().skip_to(attributes_end_offset)?;
+        }
+
+        Ok(())
     }
 }
 
