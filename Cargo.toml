@@ -11,6 +11,7 @@ keywords = ["FBX", "3D model"]
 
 [dependencies]
 byteorder = "1"
+libflate = "0.1"
 log = "0.4"
 
 [badges]

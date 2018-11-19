@@ -6,7 +6,7 @@ use super::super::error::DataError;
 use super::super::Result;
 
 /// A trait for attribute visitor types.
-// TODO: Implement array, binary and string attribute visitor.
+// TODO: Implement binary and string attribute visitor.
 pub trait VisitAttribute: Sized + fmt::Debug {
     /// Result type on successful read.
     type Output;
@@ -43,6 +43,31 @@ pub trait VisitAttribute: Sized + fmt::Debug {
     fn visit_f64(self, _: f64) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "f64".into()).into())
     }
+
+    /// Visit boolean array.
+    fn visit_seq_bool(self, _: impl Iterator<Item = Result<bool>>) -> Result<Self::Output> {
+        Err(DataError::UnexpectedAttribute(self.expecting(), "boolean array".into()).into())
+    }
+
+    /// Visit `i32` array.
+    fn visit_seq_i32(self, _: impl Iterator<Item = Result<i32>>) -> Result<Self::Output> {
+        Err(DataError::UnexpectedAttribute(self.expecting(), "i32 array".into()).into())
+    }
+
+    /// Visit `i64` array.
+    fn visit_seq_i64(self, _: impl Iterator<Item = Result<i64>>) -> Result<Self::Output> {
+        Err(DataError::UnexpectedAttribute(self.expecting(), "i64 array".into()).into())
+    }
+
+    /// Visit `f32` array.
+    fn visit_seq_f32(self, _: impl Iterator<Item = Result<f32>>) -> Result<Self::Output> {
+        Err(DataError::UnexpectedAttribute(self.expecting(), "f32 array".into()).into())
+    }
+
+    /// Visit `f64` array.
+    fn visit_seq_f64(self, _: impl Iterator<Item = Result<f64>>) -> Result<Self::Output> {
+        Err(DataError::UnexpectedAttribute(self.expecting(), "f64 array".into()).into())
+    }
 }
 
 /// Visitor for primitive types.
@@ -74,3 +99,32 @@ impl_visit_attribute_for_primitives!(i32, visit_i32, "single i32");
 impl_visit_attribute_for_primitives!(i64, visit_i64, "single i64");
 impl_visit_attribute_for_primitives!(f32, visit_f32, "single f32");
 impl_visit_attribute_for_primitives!(f64, visit_f64, "single f64");
+
+/// Visitor for array types.
+///
+/// Supported types are: `Vec<{bool, i32, i64, f32, f64}>`.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ArrayVisitor<T>(std::marker::PhantomData<T>);
+
+/// Generates `VisitAttribute` implementations for `PrimitiveVisitor<T>`.
+macro_rules! impl_visit_attribute_for_arrays {
+    ($ty:ty, $method_name:ident, $expecting_type:expr) => {
+        impl VisitAttribute for ArrayVisitor<Vec<$ty>> {
+            type Output = Vec<$ty>;
+
+            fn expecting(&self) -> String {
+                $expecting_type.into()
+            }
+
+            fn $method_name(self, iter: impl Iterator<Item = Result<$ty>>) -> Result<Self::Output> {
+                iter.collect::<Result<_>>()
+            }
+        }
+    };
+}
+
+impl_visit_attribute_for_arrays!(bool, visit_seq_bool, "boolean array");
+impl_visit_attribute_for_arrays!(i32, visit_seq_i32, "i32 array");
+impl_visit_attribute_for_arrays!(i64, visit_seq_i64, "i64 array");
+impl_visit_attribute_for_arrays!(f32, visit_seq_f32, "f32 array");
+impl_visit_attribute_for_arrays!(f64, visit_seq_f64, "f64 array");

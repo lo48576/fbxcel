@@ -5,8 +5,10 @@ use std::num::NonZeroU64;
 use super::error::DataError;
 use super::{Parser, ParserSource, ParserSourceExt, Result};
 
+use self::array::{ArrayAttributeValues, ArrayEncoding, ArrayHeader, BooleanArrayAttributeValues};
 pub use self::visitor::VisitAttribute;
 
+mod array;
 pub mod visitor;
 
 /// Node attributes reader.
@@ -124,11 +126,47 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 self.update_attr_end_offset(0);
                 visitor.visit_f64(value)
             }
-            AttributeType::ArrBool => unimplemented!(),
-            AttributeType::ArrI32 => unimplemented!(),
-            AttributeType::ArrI64 => unimplemented!(),
-            AttributeType::ArrF32 => unimplemented!(),
-            AttributeType::ArrF64 => unimplemented!(),
+            AttributeType::ArrBool => {
+                let header = ArrayHeader::from_reader(self.parser.reader())?;
+                self.update_attr_end_offset(u64::from(header.bytelen()));
+                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let mut iter = BooleanArrayAttributeValues::new(reader, header.elements_count());
+                let res = visitor.visit_seq_bool(&mut iter)?;
+                /*
+                if iter.has_incorrect_boolean_value() {
+                    // FIXME: Warn the incorrect boolean attribute value.
+                }
+                */
+                Ok(res)
+            }
+            AttributeType::ArrI32 => {
+                let header = ArrayHeader::from_reader(self.parser.reader())?;
+                self.update_attr_end_offset(u64::from(header.bytelen()));
+                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let iter = ArrayAttributeValues::<_, i32>::new(reader, header.elements_count());
+                visitor.visit_seq_i32(iter)
+            }
+            AttributeType::ArrI64 => {
+                let header = ArrayHeader::from_reader(self.parser.reader())?;
+                self.update_attr_end_offset(u64::from(header.bytelen()));
+                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let iter = ArrayAttributeValues::<_, i64>::new(reader, header.elements_count());
+                visitor.visit_seq_i64(iter)
+            }
+            AttributeType::ArrF32 => {
+                let header = ArrayHeader::from_reader(self.parser.reader())?;
+                self.update_attr_end_offset(u64::from(header.bytelen()));
+                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let iter = ArrayAttributeValues::<_, f32>::new(reader, header.elements_count());
+                visitor.visit_seq_f32(iter)
+            }
+            AttributeType::ArrF64 => {
+                let header = ArrayHeader::from_reader(self.parser.reader())?;
+                self.update_attr_end_offset(u64::from(header.bytelen()));
+                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let iter = ArrayAttributeValues::<_, f64>::new(reader, header.elements_count());
+                visitor.visit_seq_f64(iter)
+            }
             AttributeType::Binary => unimplemented!(),
             AttributeType::String => unimplemented!(),
         }

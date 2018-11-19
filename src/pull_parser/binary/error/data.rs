@@ -9,6 +9,10 @@ use std::string::FromUtf8Error;
 /// Data error.
 #[derive(Debug)]
 pub enum DataError {
+    /// Data with broken compression.
+    BrokenCompression(Compression, Box<dyn std::error::Error + Send + Sync>),
+    /// Got an unknown array attribute encoding.
+    InvalidArrayAttributeEncoding(u32),
     /// Invalid node attribute type code.
     ///
     /// The `u8` is the code the parser got.
@@ -34,6 +38,7 @@ pub enum DataError {
 impl error::Error for DataError {
     fn cause(&self) -> Option<&error::Error> {
         match self {
+            DataError::BrokenCompression(_, e) => Some(e.as_ref()),
             DataError::InvalidNodeNameEncoding(e) => Some(e),
             _ => None,
         }
@@ -43,6 +48,14 @@ impl error::Error for DataError {
 impl fmt::Display for DataError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            DataError::BrokenCompression(codec, e) => write!(
+                f,
+                "Data with broken compression (codec={:?}): {:?}",
+                codec, e
+            ),
+            DataError::InvalidArrayAttributeEncoding(encoding) => {
+                write!(f, "Unknown array attribute encoding: got {:?}", encoding)
+            }
             DataError::InvalidAttributeTypeCode(code) => {
                 write!(f, "Invalid node attribute type code: {:?}", code)
             }
@@ -61,4 +74,11 @@ impl fmt::Display for DataError {
             ),
         }
     }
+}
+
+/// Compression format or algorithm.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Compression {
+    /// ZLIB compression.
+    Zlib,
 }

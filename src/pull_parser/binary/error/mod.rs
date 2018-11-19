@@ -4,7 +4,7 @@ use std::error;
 use std::fmt;
 use std::io;
 
-pub use self::data::DataError;
+pub use self::data::{Compression, DataError};
 pub use self::operation::OperationError;
 
 mod data;

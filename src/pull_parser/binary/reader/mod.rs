@@ -43,6 +43,20 @@ pub trait ParserSource: Sized + io::Read {
     }
 }
 
+impl<R: ParserSource> ParserSource for &mut R {
+    fn position(&self) -> u64 {
+        (**self).position()
+    }
+
+    fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
+        (**self).skip_distance(distance)
+    }
+
+    fn skip_to(&mut self, pos: u64) -> io::Result<()> {
+        (**self).skip_to(pos)
+    }
+}
+
 /// Extension trait for parser source type.
 pub(crate) trait ParserSourceExt: ParserSource {
     /// Reads a `u8` value.
