@@ -2,7 +2,12 @@
 
 use std::num::NonZeroU64;
 
-use super::{Parser, ParserSource};
+use super::error::DataError;
+use super::{Parser, ParserSource, ParserSourceExt, Result};
+
+pub use self::visitor::VisitAttribute;
+
+pub mod visitor;
 
 /// Node attributes reader.
 #[derive(Debug)]
@@ -40,5 +45,144 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     /// Returns the rest number of attributes.
     pub fn rest_count(&self) -> u64 {
         self.rest_count
+    }
+
+    /// Updates the attribute end offset according to the given size (in bytes).
+    fn update_attr_end_offset(&mut self, size: u64) {
+        self.prev_attr_end_offset = NonZeroU64::new(
+            self.parser
+                .reader()
+                .position()
+                .checked_add(size)
+                .expect("FBX data too large"),
+        );
+    }
+
+    /// Let visitor visit the next node attribute.
+    pub fn visit_next<V>(&mut self, visitor: V) -> Result<Option<V::Output>>
+    where
+        V: VisitAttribute,
+    {
+        if self.rest_count() == 0 {
+            return Ok(None);
+        }
+        // This never overflows because `rest_count > 0` holds here.
+        self.rest_count -= 1;
+
+        // Skip the previous attribute value if it remains.
+        if let Some(prev_attr_end_offset) = self.prev_attr_end_offset {
+            if self.parser.reader().position() < prev_attr_end_offset.get() {
+                self.parser.reader().skip_to(prev_attr_end_offset.get())?;
+            }
+        }
+
+        let type_code = self.parser.reader().read_u8()?;
+        let attr_type = AttributeType::from_type_code(type_code)
+            .ok_or_else(|| DataError::InvalidAttributeTypeCode(type_code))?;
+        self.visit_next_impl(attr_type, visitor).map(Some)
+    }
+
+    /// Internal implementation of `visit_next`.
+    fn visit_next_impl<V>(&mut self, attr_type: AttributeType, visitor: V) -> Result<V::Output>
+    where
+        V: VisitAttribute,
+    {
+        match attr_type {
+            AttributeType::Bool => {
+                let raw = self.parser.reader().read_u8()?;
+                let value = (raw & 1) != 0;
+                self.update_attr_end_offset(0);
+                /*
+                if raw != b'T' && raw != b'Y' {
+                    // FIXME: Warn the incorrect boolean attribute value.
+                }
+                */
+                visitor.visit_bool(value)
+            }
+            AttributeType::I16 => {
+                let value = self.parser.reader().read_u16()? as i16;
+                self.update_attr_end_offset(0);
+                visitor.visit_i16(value)
+            }
+            AttributeType::I32 => {
+                let value = self.parser.reader().read_u32()? as i32;
+                self.update_attr_end_offset(0);
+                visitor.visit_i32(value)
+            }
+            AttributeType::I64 => {
+                let value = self.parser.reader().read_u64()? as i64;
+                self.update_attr_end_offset(0);
+                visitor.visit_i64(value)
+            }
+            AttributeType::F32 => {
+                let value = f32::from_bits(self.parser.reader().read_u32()?);
+                self.update_attr_end_offset(0);
+                visitor.visit_f32(value)
+            }
+            AttributeType::F64 => {
+                let value = f64::from_bits(self.parser.reader().read_u64()?);
+                self.update_attr_end_offset(0);
+                visitor.visit_f64(value)
+            }
+            AttributeType::ArrBool => unimplemented!(),
+            AttributeType::ArrI32 => unimplemented!(),
+            AttributeType::ArrI64 => unimplemented!(),
+            AttributeType::ArrF32 => unimplemented!(),
+            AttributeType::ArrF64 => unimplemented!(),
+            AttributeType::Binary => unimplemented!(),
+            AttributeType::String => unimplemented!(),
+        }
+    }
+}
+
+/// Attribute type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AttributeType {
+    /// Single `bool`.
+    Bool,
+    /// Single `i16`.
+    I16,
+    /// Single `i32`.
+    I32,
+    /// Single `i64`.
+    I64,
+    /// Single `f32`.
+    F32,
+    /// Single `f64`.
+    F64,
+    /// Array of `bool`.
+    ArrBool,
+    /// Array of `i32`.
+    ArrI32,
+    /// Array of `i64`.
+    ArrI64,
+    /// Array of `f32`.
+    ArrF32,
+    /// Array of `f64`.
+    ArrF64,
+    /// Binary.
+    Binary,
+    /// UTF-8 string.
+    String,
+}
+
+impl AttributeType {
+    fn from_type_code(code: u8) -> Option<Self> {
+        match code {
+            b'C' => Some(AttributeType::Bool),
+            b'Y' => Some(AttributeType::I16),
+            b'I' => Some(AttributeType::I32),
+            b'L' => Some(AttributeType::I64),
+            b'F' => Some(AttributeType::F32),
+            b'D' => Some(AttributeType::F64),
+            b'b' => Some(AttributeType::ArrBool),
+            b'i' => Some(AttributeType::ArrI32),
+            b'l' => Some(AttributeType::ArrI64),
+            b'f' => Some(AttributeType::ArrF32),
+            b'd' => Some(AttributeType::ArrF64),
+            b'R' => Some(AttributeType::Binary),
+            b'S' => Some(AttributeType::String),
+            _ => None,
+        }
     }
 }
