@@ -1,6 +1,7 @@
 //! FBX binary parser.
 
 pub use self::error::{Error, Result};
+pub use self::header::FbxHeader;
 pub use self::reader::ParserSource;
 use self::reader::ParserSourceExt;
 pub use self::version::{FbxVersion, ParserVersion};

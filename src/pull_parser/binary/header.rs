@@ -75,6 +75,16 @@ impl FbxHeader {
     pub fn parser_version(self) -> Option<ParserVersion> {
         self.version.parser_version()
     }
+
+    /// Returns header length in bytes.
+    pub(crate) fn len(self) -> usize {
+        // Magic binary length.
+        const MAGIC_LEN: usize = 23;
+        // FBX version length.
+        const VERSION_LEN: usize = 4;
+
+        MAGIC_LEN + VERSION_LEN
+    }
 }
 
 #[cfg(test)]

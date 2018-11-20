@@ -3,6 +3,7 @@
 use std::io;
 
 use super::super::reader::{PlainSource, SeekableSource};
+use super::super::FbxHeader;
 use super::error::{DataError, OperationError};
 use super::{Event, FbxVersion, ParserSource, ParserSourceExt, ParserVersion, Result, StartNode};
 
@@ -10,35 +11,29 @@ use self::node::NodeHeader;
 
 mod node;
 
-/// FBX file header size.
-const FILE_HEADER_SIZE: usize = 23 + 4;
-
 /// Creates a new `Parser` from the given buffered reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
-pub fn from_reader<R>(fbx_version: FbxVersion, reader: R) -> Result<Parser<PlainSource<R>>>
+pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<PlainSource<R>>>
 where
     R: io::Read,
 {
     Parser::create(
-        fbx_version,
-        PlainSource::with_offset(reader, FILE_HEADER_SIZE),
+        header.version(),
+        PlainSource::with_offset(reader, header.len()),
     )
 }
 
 /// Creates a new `Parser` from the given seekable reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
-pub fn from_seekable_reader<R>(
-    fbx_version: FbxVersion,
-    reader: R,
-) -> Result<Parser<SeekableSource<R>>>
+pub fn from_seekable_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<SeekableSource<R>>>
 where
     R: io::Read + io::Seek,
 {
     Parser::create(
-        fbx_version,
-        SeekableSource::with_offset(reader, FILE_HEADER_SIZE),
+        header.version(),
+        SeekableSource::with_offset(reader, header.len()),
     )
 }
 
