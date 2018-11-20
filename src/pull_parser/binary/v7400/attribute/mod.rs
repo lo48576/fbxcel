@@ -7,9 +7,11 @@ use super::error::DataError;
 use super::{Parser, ParserSource, ParserSourceExt, Result};
 
 use self::array::{ArrayAttributeValues, ArrayEncoding, ArrayHeader, BooleanArrayAttributeValues};
+pub use self::direct::DirectAttributeValue;
 pub use self::visitor::VisitAttribute;
 
 mod array;
+mod direct;
 pub mod visitor;
 
 /// Node attributes reader.
