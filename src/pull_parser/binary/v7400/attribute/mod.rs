@@ -85,6 +85,34 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         self.visit_next_impl(attr_type, visitor).map(Some)
     }
 
+    /// Let visitor visit the next node attribute.
+    ///
+    /// This method prefers `V::visit_{binary,string}_buffered` to
+    /// `V::visit_{binary,string}`.
+    pub fn visit_next_buffered<V>(&mut self, visitor: V) -> Result<Option<V::Output>>
+    where
+        R: io::BufRead,
+        V: VisitAttribute,
+    {
+        if self.rest_count() == 0 {
+            return Ok(None);
+        }
+        // This never overflows because `rest_count > 0` holds here.
+        self.rest_count -= 1;
+
+        // Skip the previous attribute value if it remains.
+        if let Some(prev_attr_end_offset) = self.prev_attr_end_offset {
+            if self.parser.reader().position() < prev_attr_end_offset.get() {
+                self.parser.reader().skip_to(prev_attr_end_offset.get())?;
+            }
+        }
+
+        let type_code = self.parser.reader().read_u8()?;
+        let attr_type = AttributeType::from_type_code(type_code)
+            .ok_or_else(|| DataError::InvalidAttributeTypeCode(type_code))?;
+        self.visit_next_buffered_impl(attr_type, visitor).map(Some)
+    }
+
     /// Internal implementation of `visit_next`.
     fn visit_next_impl<V>(&mut self, attr_type: AttributeType, visitor: V) -> Result<V::Output>
     where
@@ -186,6 +214,39 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
                 visitor.visit_string(reader)
             }
+        }
+    }
+
+    /// Internal implementation of `visit_next_buffered`.
+    fn visit_next_buffered_impl<V>(
+        &mut self,
+        attr_type: AttributeType,
+        visitor: V,
+    ) -> Result<V::Output>
+    where
+        R: io::BufRead,
+        V: VisitAttribute,
+    {
+        match attr_type {
+            AttributeType::Binary => {
+                // Additional header of binary attribute is single `u32`.
+                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                self.update_attr_end_offset(bytelen);
+                // `self.parser.reader().by_ref().take(bytelen)` is rejected by
+                // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
+                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                visitor.visit_binary_buffered(reader)
+            }
+            AttributeType::String => {
+                // Additional header of string attribute is single `u32`.
+                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                self.update_attr_end_offset(bytelen);
+                // `self.parser.reader().by_ref().take(bytelen)` is rejected by
+                // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
+                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                visitor.visit_string_buffered(reader)
+            }
+            _ => self.visit_next_impl(attr_type, visitor),
         }
     }
 }

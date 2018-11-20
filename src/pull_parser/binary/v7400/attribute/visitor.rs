@@ -70,16 +70,23 @@ pub trait VisitAttribute: Sized + fmt::Debug {
     }
 
     /// Visit binary value.
-    // FIXME: This cannot be `impl io::BufRead`, but
-    // [`image::load()`](https://docs.rs/image/0.20.1/image/fn.load.html)
-    // requires `R: BufRead + Seek`.
     fn visit_binary(self, _: impl io::Read) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "binary data".into()).into())
+    }
+
+    /// Visit binary value on buffered reader.
+    fn visit_binary_buffered(self, reader: impl io::BufRead) -> Result<Self::Output> {
+        self.visit_binary(reader)
     }
 
     /// Visit string value.
     fn visit_string(self, _: impl io::Read) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "string data".into()).into())
+    }
+
+    /// Visit string value on buffered reader.
+    fn visit_string_buffered(self, reader: impl io::BufRead) -> Result<Self::Output> {
+        self.visit_string(reader)
     }
 }
 
