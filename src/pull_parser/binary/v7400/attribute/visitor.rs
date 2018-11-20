@@ -45,48 +45,68 @@ pub trait VisitAttribute: Sized + fmt::Debug {
     }
 
     /// Visit boolean array.
-    fn visit_seq_bool(self, _: impl Iterator<Item = Result<bool>>) -> Result<Self::Output> {
+    fn visit_seq_bool(
+        self,
+        _: impl Iterator<Item = Result<bool>>,
+        _len: usize,
+    ) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "boolean array".into()).into())
     }
 
     /// Visit `i32` array.
-    fn visit_seq_i32(self, _: impl Iterator<Item = Result<i32>>) -> Result<Self::Output> {
+    fn visit_seq_i32(
+        self,
+        _: impl Iterator<Item = Result<i32>>,
+        _len: usize,
+    ) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "i32 array".into()).into())
     }
 
     /// Visit `i64` array.
-    fn visit_seq_i64(self, _: impl Iterator<Item = Result<i64>>) -> Result<Self::Output> {
+    fn visit_seq_i64(
+        self,
+        _: impl Iterator<Item = Result<i64>>,
+        _len: usize,
+    ) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "i64 array".into()).into())
     }
 
     /// Visit `f32` array.
-    fn visit_seq_f32(self, _: impl Iterator<Item = Result<f32>>) -> Result<Self::Output> {
+    fn visit_seq_f32(
+        self,
+        _: impl Iterator<Item = Result<f32>>,
+        _len: usize,
+    ) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "f32 array".into()).into())
     }
 
     /// Visit `f64` array.
-    fn visit_seq_f64(self, _: impl Iterator<Item = Result<f64>>) -> Result<Self::Output> {
+    fn visit_seq_f64(
+        self,
+        _: impl Iterator<Item = Result<f64>>,
+        _len: usize,
+    ) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "f64 array".into()).into())
     }
 
     /// Visit binary value.
-    fn visit_binary(self, _: impl io::Read) -> Result<Self::Output> {
+    fn visit_binary(self, _: impl io::Read, _len: u64) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "binary data".into()).into())
     }
 
     /// Visit binary value on buffered reader.
-    fn visit_binary_buffered(self, reader: impl io::BufRead) -> Result<Self::Output> {
-        self.visit_binary(reader)
+    fn visit_binary_buffered(self, reader: impl io::BufRead, len: u64) -> Result<Self::Output> {
+        self.visit_binary(reader, len)
     }
 
     /// Visit string value.
-    fn visit_string(self, _: impl io::Read) -> Result<Self::Output> {
+    fn visit_string(self, _: impl io::Read, _len: u64) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "string data".into()).into())
     }
 
     /// Visit string value on buffered reader.
-    fn visit_string_buffered(self, reader: impl io::BufRead) -> Result<Self::Output> {
-        self.visit_string(reader)
+    fn visit_string_buffered(self, reader: impl io::BufRead, len: u64) -> Result<Self::Output> {
+        self.visit_string(reader, len)
     }
 }
 
@@ -136,7 +156,11 @@ macro_rules! impl_visit_attribute_for_arrays {
                 $expecting_type.into()
             }
 
-            fn $method_name(self, iter: impl Iterator<Item = Result<$ty>>) -> Result<Self::Output> {
+            fn $method_name(
+                self,
+                iter: impl Iterator<Item = Result<$ty>>,
+                _: usize,
+            ) -> Result<Self::Output> {
                 iter.collect::<Result<_>>()
             }
         }
@@ -160,8 +184,8 @@ impl VisitAttribute for BinaryVisitor {
         "binary".into()
     }
 
-    fn visit_binary(self, mut reader: impl io::Read) -> Result<Self::Output> {
-        let mut buf = Vec::new();
+    fn visit_binary(self, mut reader: impl io::Read, len: u64) -> Result<Self::Output> {
+        let mut buf = Vec::with_capacity(len as usize);
         reader.read_to_end(&mut buf)?;
         Ok(buf)
     }
@@ -178,8 +202,8 @@ impl VisitAttribute for StringVisitor {
         "string".into()
     }
 
-    fn visit_string(self, mut reader: impl io::Read) -> Result<Self::Output> {
-        let mut buf = String::new();
+    fn visit_string(self, mut reader: impl io::Read, len: u64) -> Result<Self::Output> {
+        let mut buf = String::with_capacity(len as usize);
         reader.read_to_string(&mut buf)?;
         Ok(buf)
     }
