@@ -1,12 +1,12 @@
 //! Node attribute visitors.
 
 use std::fmt;
+use std::io;
 
 use super::super::error::DataError;
 use super::super::Result;
 
 /// A trait for attribute visitor types.
-// TODO: Implement binary and string attribute visitor.
 pub trait VisitAttribute: Sized + fmt::Debug {
     /// Result type on successful read.
     type Output;
@@ -68,6 +68,19 @@ pub trait VisitAttribute: Sized + fmt::Debug {
     fn visit_seq_f64(self, _: impl Iterator<Item = Result<f64>>) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "f64 array".into()).into())
     }
+
+    /// Visit binary value.
+    // FIXME: This cannot be `impl io::BufRead`, but
+    // [`image::load()`](https://docs.rs/image/0.20.1/image/fn.load.html)
+    // requires `R: BufRead + Seek`.
+    fn visit_binary(self, _: impl io::Read) -> Result<Self::Output> {
+        Err(DataError::UnexpectedAttribute(self.expecting(), "binary data".into()).into())
+    }
+
+    /// Visit string value.
+    fn visit_string(self, _: impl io::Read) -> Result<Self::Output> {
+        Err(DataError::UnexpectedAttribute(self.expecting(), "string data".into()).into())
+    }
 }
 
 /// Visitor for primitive types.
@@ -128,3 +141,39 @@ impl_visit_attribute_for_arrays!(i32, visit_seq_i32, "i32 array");
 impl_visit_attribute_for_arrays!(i64, visit_seq_i64, "i64 array");
 impl_visit_attribute_for_arrays!(f32, visit_seq_f32, "f32 array");
 impl_visit_attribute_for_arrays!(f64, visit_seq_f64, "f64 array");
+
+/// Visitor for a binary.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct BinaryVisitor;
+
+impl VisitAttribute for BinaryVisitor {
+    type Output = Vec<u8>;
+
+    fn expecting(&self) -> String {
+        "binary".into()
+    }
+
+    fn visit_binary(self, mut reader: impl io::Read) -> Result<Self::Output> {
+        let mut buf = Vec::new();
+        reader.read_to_end(&mut buf)?;
+        Ok(buf)
+    }
+}
+
+/// Visitor for a string.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct StringVisitor;
+
+impl VisitAttribute for StringVisitor {
+    type Output = String;
+
+    fn expecting(&self) -> String {
+        "string".into()
+    }
+
+    fn visit_string(self, mut reader: impl io::Read) -> Result<Self::Output> {
+        let mut buf = String::new();
+        reader.read_to_string(&mut buf)?;
+        Ok(buf)
+    }
+}

@@ -1,5 +1,6 @@
 //! Node attributes.
 
+use std::io;
 use std::num::NonZeroU64;
 
 use super::error::DataError;
@@ -167,8 +168,24 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let iter = ArrayAttributeValues::<_, f64>::new(reader, header.elements_count());
                 visitor.visit_seq_f64(iter)
             }
-            AttributeType::Binary => unimplemented!(),
-            AttributeType::String => unimplemented!(),
+            AttributeType::Binary => {
+                // Additional header of binary attribute is single `u32`.
+                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                self.update_attr_end_offset(bytelen);
+                // `self.parser.reader().by_ref().take(bytelen)` is rejected by
+                // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
+                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                visitor.visit_binary(reader)
+            }
+            AttributeType::String => {
+                // Additional header of string attribute is single `u32`.
+                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                self.update_attr_end_offset(bytelen);
+                // `self.parser.reader().by_ref().take(bytelen)` is rejected by
+                // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
+                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                visitor.visit_string(reader)
+            }
         }
     }
 }
