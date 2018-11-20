@@ -2,6 +2,8 @@
 
 use std::io;
 
+use log::debug;
+
 use super::super::reader::{PlainSource, SeekableSource};
 use super::super::FbxHeader;
 use super::error::{DataError, OperationError};
@@ -132,6 +134,9 @@ impl<R: ParserSource> Parser<R> {
             self.state.health = Health::Finished;
         }
 
+        // Update the last event kind.
+        self.state.last_event_kind = Some(event_kind);
+
         // Postcondition: Depth should be updated correctly.
         let current_depth = self.current_depth();
         match event_kind {
@@ -161,6 +166,13 @@ impl<R: ParserSource> Parser<R> {
             }
         }
 
+        // Postcondition: The last event kind should be memorized correctly.
+        assert_eq!(
+            self.state.last_event_kind(),
+            Some(event_kind),
+            "The last event kind should be memorized correctly"
+        );
+
         // Create the real result.
         Ok(match event_kind {
             EventKind::StartNode => Event::StartNode(StartNode::new(self)),
@@ -170,9 +182,10 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Reads the next node header and changes the parser state (except for
-    /// parser health).
+    /// parser health and the last event kind).
     fn next_event_impl(&mut self) -> Result<EventKind> {
         assert_eq!(self.state.health(), Health::Running);
+        assert_ne!(self.state.last_event_kind(), Some(EventKind::EndFbx));
 
         // Skip unread attribute of previous node, if exists.
         self.skip_unread_attributes()?;
@@ -180,10 +193,40 @@ impl<R: ParserSource> Parser<R> {
         let event_start_offset = self.reader().position();
 
         // Check if the current node ends here (without any marker).
-        if self.state.current_node().map(|v| v.node_end_offset) == Some(event_start_offset) {
-            // The current node implicitly ends here.
-            self.state.started_nodes.pop();
-            return Ok(EventKind::EndNode);
+        // A node end marker (all-zero node header, which indicates end of the
+        // current node) is omitted if and only if:
+        //
+        // * the node has no children nodes, and
+        // * the node has one or more attributes.
+        //
+        // Note that the check can be skipped for the implicit root node,
+        // It has always a node end marker at the ending (because it has no
+        // attributes).
+        if let Some(current_node) = self.state.current_node() {
+            if current_node.node_end_offset == event_start_offset {
+                // `last_event_kind() == Some(EventKind::EndNode)` means that
+                // some node ends right before the event currently reading.
+                let has_children = self.state.last_event_kind() == Some(EventKind::EndNode);
+                let has_attributes = current_node.attributes_count != 0;
+
+                if !has_children && has_attributes {
+                    // Ok, the current node implicitly ends here without node
+                    // end marker.
+                    self.state.started_nodes.pop();
+                    return Ok(EventKind::EndNode);
+                } else {
+                    // It's odd, the current node should have a node end marker
+                    // at the ending, but `node_end_offset` data tells that the
+                    // node ends without node end marker.
+                    debug!(
+                        "DataError::NodeLengthMismatch, node_end_offset={}, event_start_offset={}",
+                        current_node.node_end_offset, event_start_offset
+                    );
+                    return Err(
+                        DataError::NodeLengthMismatch(current_node.node_end_offset, None).into(),
+                    );
+                }
+            }
         }
 
         // Read node header.
@@ -199,7 +242,7 @@ impl<R: ParserSource> Parser<R> {
                     if closing.node_end_offset != header_end_offset {
                         return Err(DataError::NodeLengthMismatch(
                             closing.node_end_offset,
-                            header_end_offset,
+                            Some(header_end_offset),
                         )
                         .into());
                     }
@@ -230,6 +273,8 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Skip unread attribute of the current node, if remains.
+    ///
+    /// If there are no unread attributes, this method simply do nothing.
     fn skip_unread_attributes(&mut self) -> Result<()> {
         let attributes_end_offset = match self.state.current_node() {
             Some(v) => v.attributes_end_offset,
@@ -269,6 +314,8 @@ struct State {
     ///
     /// This stack should not have an entry for implicit root node.
     started_nodes: Vec<StartedNode>,
+    /// Last event kind.
+    last_event_kind: Option<EventKind>,
 }
 
 impl State {
@@ -278,6 +325,7 @@ impl State {
             fbx_version,
             health: Health::Running,
             started_nodes: Vec::new(),
+            last_event_kind: None,
         }
     }
 
@@ -289,6 +337,11 @@ impl State {
     /// Returns info about current node (except for implicit root node).
     fn current_node(&self) -> Option<&StartedNode> {
         self.started_nodes.last()
+    }
+
+    /// Returns the last event kind.
+    fn last_event_kind(&self) -> Option<EventKind> {
+        self.last_event_kind
     }
 }
 

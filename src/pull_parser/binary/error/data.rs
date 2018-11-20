@@ -26,9 +26,11 @@ pub enum DataError {
     /// This error indicates that a node ends at the position which differs from
     /// the offset declared at the header.
     ///
-    /// The former `u64` is expected position, the latter `u64` is the actual
-    /// position.
-    NodeLengthMismatch(u64, u64),
+    /// The former `u64` is expected position, the latter `Option<u64>` is the
+    /// actual position the node ends.
+    /// If the error is detected before the node actually ends, the actual
+    /// position will be `None`.
+    NodeLengthMismatch(u64, Option<u64>),
     /// Unexpected attribute value or type.
     ///
     /// The former is the expected, the latter is a description of the actual value.
@@ -64,7 +66,7 @@ impl fmt::Display for DataError {
             }
             DataError::NodeLengthMismatch(expected, got) => write!(
                 f,
-                "Node ends with unexpected position: expected {}, got {}",
+                "Node ends with unexpected position: expected {}, got {:?}",
                 expected, got
             ),
             DataError::UnexpectedAttribute(expected, got) => write!(
