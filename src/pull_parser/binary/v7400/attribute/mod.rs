@@ -63,11 +63,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         );
     }
 
-    /// Let visitor visit the next node attribute.
-    pub fn visit_next<V>(&mut self, visitor: V) -> Result<Option<V::Output>>
-    where
-        V: VisitAttribute,
-    {
+    /// Returns the next attribute type.
+    fn read_next_attr_type(&mut self) -> Result<Option<AttributeType>> {
         if self.rest_count() == 0 {
             return Ok(None);
         }
@@ -84,6 +81,18 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         let type_code = self.parser.reader().read_u8()?;
         let attr_type = AttributeType::from_type_code(type_code)
             .ok_or_else(|| DataError::InvalidAttributeTypeCode(type_code))?;
+        Ok(Some(attr_type))
+    }
+
+    /// Let visitor visit the next node attribute.
+    pub fn visit_next<V>(&mut self, visitor: V) -> Result<Option<V::Output>>
+    where
+        V: VisitAttribute,
+    {
+        let attr_type = match self.read_next_attr_type()? {
+            Some(v) => v,
+            None => return Ok(None),
+        };
         self.visit_next_impl(attr_type, visitor).map(Some)
     }
 
@@ -96,22 +105,10 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         R: io::BufRead,
         V: VisitAttribute,
     {
-        if self.rest_count() == 0 {
-            return Ok(None);
-        }
-        // This never overflows because `rest_count > 0` holds here.
-        self.rest_count -= 1;
-
-        // Skip the previous attribute value if it remains.
-        if let Some(prev_attr_end_offset) = self.prev_attr_end_offset {
-            if self.parser.reader().position() < prev_attr_end_offset.get() {
-                self.parser.reader().skip_to(prev_attr_end_offset.get())?;
-            }
-        }
-
-        let type_code = self.parser.reader().read_u8()?;
-        let attr_type = AttributeType::from_type_code(type_code)
-            .ok_or_else(|| DataError::InvalidAttributeTypeCode(type_code))?;
+        let attr_type = match self.read_next_attr_type()? {
+            Some(v) => v,
+            None => return Ok(None),
+        };
         self.visit_next_buffered_impl(attr_type, visitor).map(Some)
     }
 
