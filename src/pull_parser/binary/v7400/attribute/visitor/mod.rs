@@ -8,9 +8,11 @@ use super::super::Result;
 
 pub use self::direct::DirectVisitor;
 pub use self::single::{ArrayVisitor, BinaryVisitor, PrimitiveVisitor, StringVisitor};
+pub use self::type_::TypeVisitor;
 
 mod direct;
 mod single;
+mod type_;
 
 /// A trait for attribute visitor types.
 pub trait VisitAttribute: Sized + fmt::Debug {
