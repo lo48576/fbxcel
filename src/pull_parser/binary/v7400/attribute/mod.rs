@@ -206,7 +206,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
-                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                let reader = io::Read::take(self.parser.reader(), bytelen);
                 visitor.visit_binary(reader, bytelen)
             }
             AttributeType::String => {
@@ -215,7 +215,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
-                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                let reader = io::Read::take(self.parser.reader(), bytelen);
                 visitor.visit_string(reader, bytelen)
             }
         }
@@ -238,7 +238,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
-                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                let reader = io::Read::take(self.parser.reader(), bytelen);
                 visitor.visit_binary_buffered(reader, bytelen)
             }
             AttributeType::String => {
@@ -247,7 +247,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
-                let reader = <&mut R as io::Read>::take(self.parser.reader(), bytelen);
+                let reader = io::Read::take(self.parser.reader(), bytelen);
                 visitor.visit_string_buffered(reader, bytelen)
             }
             _ => self.visit_next_impl(attr_type, visitor),

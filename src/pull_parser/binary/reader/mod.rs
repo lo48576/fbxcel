@@ -23,7 +23,7 @@ pub trait ParserSource: Sized + io::Read {
     // `io::Seek::seek` if possible.
     fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
         // NOTE: `let mut limited = self.by_ref().take(distance);` is E0507.
-        let mut limited = <&mut Self as io::Read>::take(self.by_ref(), distance);
+        let mut limited = io::Read::take(self.by_ref(), distance);
         io::copy(&mut limited, &mut io::sink())?;
         Ok(())
     }
