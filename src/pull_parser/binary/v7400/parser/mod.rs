@@ -258,6 +258,8 @@ impl<R: ParserSource> Parser<R> {
             };
         }
 
+        // TODO: Warn if the node name is empty string.
+
         // Read the node name.
         let name = {
             let mut vec = vec![0; node_header.bytelen_name as usize];
