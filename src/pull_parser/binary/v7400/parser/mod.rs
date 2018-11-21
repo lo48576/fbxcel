@@ -203,6 +203,12 @@ impl<R: ParserSource> Parser<R> {
         // It has always a node end marker at the ending (because it has no
         // attributes).
         if let Some(current_node) = self.state.current_node() {
+            if current_node.node_end_offset < event_start_offset {
+                // The current node has already been ended.
+                return Err(
+                    DataError::NodeLengthMismatch(current_node.node_end_offset, None).into(),
+                );
+            }
             if current_node.node_end_offset == event_start_offset {
                 // `last_event_kind() == Some(EventKind::EndNode)` means that
                 // some node ends right before the event currently reading.
