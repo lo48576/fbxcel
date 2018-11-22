@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use fbxcel::pull_parser::binary as binary_parser;
+use fbxcel::pull_parser;
 
 fn main() {
     env_logger::init();
@@ -17,7 +17,7 @@ fn main() {
     let file = File::open(path).expect("Failed to open file");
     let mut reader = BufReader::new(file);
 
-    let header = binary_parser::header::FbxHeader::read_fbx_header(&mut reader)
+    let header = pull_parser::header::FbxHeader::read_fbx_header(&mut reader)
         .expect("Failed to load FBX header");
 
     println!(
@@ -28,8 +28,8 @@ fn main() {
 
     let parser_version = header.parser_version().expect("Unsupported FBX version");
     match parser_version {
-        binary_parser::ParserVersion::V7400 => {
-            let parser = binary_parser::v7400::from_seekable_reader(header, reader)
+        pull_parser::ParserVersion::V7400 => {
+            let parser = pull_parser::v7400::from_seekable_reader(header, reader)
                 .expect("Should never fail: Unsupported FBX verison");
             dump_fbx_7400(parser).expect("Failed to parse FBX file");
         }
@@ -40,13 +40,13 @@ fn indent(depth: usize) {
     print!("{:depth$}", "", depth = depth * 4);
 }
 
-fn dump_fbx_7400<R: binary_parser::ParserSource>(
-    mut parser: binary_parser::v7400::Parser<R>,
-) -> binary_parser::Result<()> {
+fn dump_fbx_7400<R: pull_parser::ParserSource>(
+    mut parser: pull_parser::v7400::Parser<R>,
+) -> pull_parser::Result<()> {
     let mut depth = 0;
 
     loop {
-        use self::binary_parser::v7400::*;
+        use self::pull_parser::v7400::*;
 
         match parser.next_event()? {
             Event::StartNode(start) => {
@@ -77,12 +77,12 @@ fn dump_fbx_7400<R: binary_parser::ParserSource>(
 
 fn dump_v7400_attributes_length<R>(
     depth: usize,
-    mut attrs: binary_parser::v7400::Attributes<R>,
-) -> binary_parser::Result<()>
+    mut attrs: pull_parser::v7400::Attributes<R>,
+) -> pull_parser::Result<()>
 where
-    R: binary_parser::ParserSource,
+    R: pull_parser::ParserSource,
 {
-    use self::binary_parser::v7400::attribute::{visitor::DirectVisitor, DirectAttributeValue};
+    use self::pull_parser::v7400::attribute::{visitor::DirectVisitor, DirectAttributeValue};
 
     while let Some(attr) = attrs.visit_next(DirectVisitor)? {
         let type_ = attr.type_();
@@ -123,12 +123,12 @@ where
 
 fn dump_v7400_attributes_type<R>(
     depth: usize,
-    mut attrs: binary_parser::v7400::Attributes<R>,
-) -> binary_parser::Result<()>
+    mut attrs: pull_parser::v7400::Attributes<R>,
+) -> pull_parser::Result<()>
 where
-    R: binary_parser::ParserSource,
+    R: pull_parser::ParserSource,
 {
-    use self::binary_parser::v7400::attribute::visitor::TypeVisitor;
+    use self::pull_parser::v7400::attribute::visitor::TypeVisitor;
 
     while let Some(type_) = attrs.visit_next(TypeVisitor).unwrap() {
         indent(depth);
