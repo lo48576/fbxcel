@@ -9,55 +9,7 @@ use libflate::zlib::Decoder as ZlibDecoder;
 use crate::low::v7400::ArrayAttributeEncoding;
 
 use super::super::error::DataError;
-use super::super::{ParserSource, ParserSourceExt, Result};
-
-/// A header type for array-type attributes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct ArrayHeader {
-    /// Number of elements.
-    elements_count: u32,
-    /// Encoding.
-    encoding: ArrayAttributeEncoding,
-    /// Elements length in bytes.
-    bytelen: u32,
-}
-
-impl ArrayHeader {
-    /// Reads and returns the array-type attribute header.
-    pub(crate) fn from_reader<R>(mut reader: R) -> Result<Self>
-    where
-        R: ParserSource,
-    {
-        let elements_count = reader.read_u32()?;
-        let raw_encoding = reader.read_u32()?;
-        let encoding = ArrayAttributeEncoding::from_u32(raw_encoding)
-            .ok_or_else(|| DataError::InvalidArrayAttributeEncoding(raw_encoding))?;
-        let bytelen = reader.read_u32()?;
-
-        Ok(Self {
-            elements_count,
-            encoding,
-            bytelen,
-        })
-    }
-
-    /// Returns number of elements.
-    pub fn elements_count(&self) -> u32 {
-        self.elements_count
-    }
-
-    /// Returns array encoding.
-    pub fn encoding(&self) -> ArrayAttributeEncoding {
-        self.encoding
-    }
-
-    /// Returns content array length in bytes.
-    ///
-    /// This length does not include the header size.
-    pub fn bytelen(&self) -> u32 {
-        self.bytelen
-    }
-}
+use super::super::Result;
 
 /// Attribute stream decoder.
 // `io::BufRead` is not implemented for `ZlibDecoder`.
