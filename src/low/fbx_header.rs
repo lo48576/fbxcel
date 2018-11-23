@@ -7,9 +7,9 @@ use std::io;
 use byteorder::{LittleEndian, ReadBytesExt};
 use log::info;
 
-use crate::low::FbxVersion;
+use crate::pull_parser::ParserVersion;
 
-use super::ParserVersion;
+use super::FbxVersion;
 
 /// Header read error.
 #[derive(Debug)]

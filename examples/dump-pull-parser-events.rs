@@ -17,8 +17,8 @@ fn main() {
     let file = File::open(path).expect("Failed to open file");
     let mut reader = BufReader::new(file);
 
-    let header = pull_parser::header::FbxHeader::read_fbx_header(&mut reader)
-        .expect("Failed to load FBX header");
+    let header =
+        fbxcel::low::FbxHeader::read_fbx_header(&mut reader).expect("Failed to load FBX header");
 
     println!(
         "FBX version: {}.{}",

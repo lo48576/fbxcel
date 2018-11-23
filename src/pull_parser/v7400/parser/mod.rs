@@ -4,8 +4,9 @@ use std::io;
 
 use log::debug;
 
+use crate::low::FbxHeader;
+
 use super::super::reader::{PlainSource, SeekableSource};
-use super::super::FbxHeader;
 use super::error::{DataError, OperationError};
 use super::{Event, FbxVersion, ParserSource, ParserSourceExt, ParserVersion, Result, StartNode};
 
