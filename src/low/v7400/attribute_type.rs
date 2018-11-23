@@ -1,5 +1,11 @@
 //! Attribute type.
 
+use std::io;
+
+use crate::pull_parser::error::DataError;
+use crate::pull_parser::v7400::FromReader;
+use crate::pull_parser::Error as ParserError;
+
 /// Attribute type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AttributeType {
@@ -50,5 +56,14 @@ impl AttributeType {
             b'S' => Some(AttributeType::String),
             _ => None,
         }
+    }
+}
+
+impl FromReader for AttributeType {
+    fn from_reader(reader: &mut impl io::Read) -> Result<Self, ParserError> {
+        let type_code = u8::from_reader(reader)?;
+        let attr_type = Self::from_type_code(type_code)
+            .ok_or_else(|| DataError::InvalidAttributeTypeCode(type_code))?;
+        Ok(attr_type)
     }
 }

@@ -1,8 +1,10 @@
 //! Low-level data types related to array type node attributes.
 
+use std::io;
+
 use crate::pull_parser::error::{Compression, DataError};
+use crate::pull_parser::v7400::FromReader;
 use crate::pull_parser::Error as ParserError;
-use crate::pull_parser::{ParserSource, ParserSourceExt};
 
 /// Array attribute encoding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -38,6 +40,15 @@ impl From<ArrayAttributeEncoding> for Compression {
     }
 }
 
+impl FromReader for ArrayAttributeEncoding {
+    fn from_reader(reader: &mut impl io::Read) -> Result<Self, ParserError> {
+        let raw_encoding = u32::from_reader(reader)?;
+        let encoding = ArrayAttributeEncoding::from_u32(raw_encoding)
+            .ok_or_else(|| DataError::InvalidArrayAttributeEncoding(raw_encoding))?;
+        Ok(encoding)
+    }
+}
+
 /// A header type for array-type attributes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ArrayAttributeHeader {
@@ -50,24 +61,6 @@ pub struct ArrayAttributeHeader {
 }
 
 impl ArrayAttributeHeader {
-    /// Reads and returns the array-type attribute header.
-    pub(crate) fn from_reader<R>(mut reader: R) -> Result<Self, ParserError>
-    where
-        R: ParserSource,
-    {
-        let elements_count = reader.read_u32()?;
-        let raw_encoding = reader.read_u32()?;
-        let encoding = ArrayAttributeEncoding::from_u32(raw_encoding)
-            .ok_or_else(|| DataError::InvalidArrayAttributeEncoding(raw_encoding))?;
-        let bytelen = reader.read_u32()?;
-
-        Ok(Self {
-            elements_count,
-            encoding,
-            bytelen,
-        })
-    }
-
     /// Returns number of elements.
     pub fn elements_count(&self) -> u32 {
         self.elements_count
@@ -83,5 +76,19 @@ impl ArrayAttributeHeader {
     /// This length does not include the header size.
     pub fn bytelen(&self) -> u32 {
         self.bytelen
+    }
+}
+
+impl FromReader for ArrayAttributeHeader {
+    fn from_reader(reader: &mut impl io::Read) -> Result<Self, ParserError> {
+        let elements_count = u32::from_reader(reader)?;
+        let encoding = ArrayAttributeEncoding::from_reader(reader)?;
+        let bytelen = u32::from_reader(reader)?;
+
+        Ok(Self {
+            elements_count,
+            encoding,
+            bytelen,
+        })
     }
 }
