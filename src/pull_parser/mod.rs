@@ -2,7 +2,6 @@
 
 pub use self::error::{Error, Result};
 pub use self::reader::ParserSource;
-pub(crate) use self::reader::ParserSourceExt;
 pub use self::version::ParserVersion;
 
 pub mod error;

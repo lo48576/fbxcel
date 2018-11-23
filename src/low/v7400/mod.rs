@@ -3,7 +3,9 @@
 pub use self::array_attribute::{ArrayAttributeEncoding, ArrayAttributeHeader};
 pub use self::attribute_type::AttributeType;
 pub use self::node_header::NodeHeader;
+pub use self::special_attribute::SpecialAttributeHeader;
 
 mod array_attribute;
 mod attribute_type;
 mod node_header;
+mod special_attribute;

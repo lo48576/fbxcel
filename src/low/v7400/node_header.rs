@@ -1,7 +1,8 @@
 //! Node header.
 
-use crate::pull_parser::v7400::Parser;
-use crate::pull_parser::{ParserSource, ParserSourceExt, Result};
+use crate::pull_parser::v7400::{FromParser, Parser};
+use crate::pull_parser::Error as ParserError;
+use crate::pull_parser::ParserSource;
 
 /// Node header.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -24,25 +25,26 @@ impl NodeHeader {
             && self.bytelen_attributes == 0
             && self.bytelen_name == 0
     }
+}
 
-    /// Reads the node header from the given parser.
-    pub fn read_from_parser<R>(parser: &mut Parser<R>) -> Result<Self>
+impl FromParser for NodeHeader {
+    fn read_from_parser<R>(parser: &mut Parser<R>) -> Result<Self, ParserError>
     where
         R: ParserSource,
     {
         let (end_offset, num_attributes, bytelen_attributes) = if parser.fbx_version().raw() < 7500
         {
-            let eo = u64::from(parser.reader().read_u32()?);
-            let na = u64::from(parser.reader().read_u32()?);
-            let ba = u64::from(parser.reader().read_u32()?);
+            let eo = u64::from(parser.parse::<u32>()?);
+            let na = u64::from(parser.parse::<u32>()?);
+            let ba = u64::from(parser.parse::<u32>()?);
             (eo, na, ba)
         } else {
-            let eo = parser.reader().read_u64()?;
-            let na = parser.reader().read_u64()?;
-            let ba = parser.reader().read_u64()?;
+            let eo = parser.parse::<u64>()?;
+            let na = parser.parse::<u64>()?;
+            let ba = parser.parse::<u64>()?;
             (eo, na, ba)
         };
-        let bytelen_name = parser.reader().read_u8()?;
+        let bytelen_name = parser.parse::<u8>()?;
 
         Ok(Self {
             end_offset,

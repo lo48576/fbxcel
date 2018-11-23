@@ -9,7 +9,7 @@ use crate::low::FbxHeader;
 
 use super::super::reader::{PlainSource, SeekableSource};
 use super::error::{DataError, OperationError};
-use super::{Event, FbxVersion, ParserSource, ParserVersion, Result, StartNode};
+use super::{Event, FbxVersion, FromParser, ParserSource, ParserVersion, Result, StartNode};
 
 /// Creates a new `Parser` from the given buffered reader.
 ///
@@ -102,6 +102,11 @@ impl<R: ParserSource> Parser<R> {
     /// Implicit root node is considered to be depth 0.
     pub fn current_depth(&self) -> usize {
         self.state.started_nodes.len()
+    }
+
+    /// Reads the given type from the underlying reader.
+    pub(crate) fn parse<T: FromParser>(&mut self) -> Result<T> {
+        T::read_from_parser(self)
     }
 
     /// Returns next event if successfully read.

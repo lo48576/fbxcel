@@ -3,10 +3,9 @@
 use std::io;
 use std::num::NonZeroU64;
 
-use crate::low::v7400::{ArrayAttributeHeader, AttributeType};
+use crate::low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader};
 
-use super::error::DataError;
-use super::{Parser, ParserSource, ParserSourceExt, Result};
+use super::{FromReader, Parser, ParserSource, Result};
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
 pub use self::direct::DirectAttributeValue;
@@ -80,9 +79,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
         }
 
-        let type_code = self.parser.reader().read_u8()?;
-        let attr_type = AttributeType::from_type_code(type_code)
-            .ok_or_else(|| DataError::InvalidAttributeTypeCode(type_code))?;
+        let attr_type = self.parser.parse::<AttributeType>()?;
         Ok(Some(attr_type))
     }
 
@@ -121,7 +118,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     {
         match attr_type {
             AttributeType::Bool => {
-                let raw = self.parser.reader().read_u8()?;
+                let raw = self.parser.parse::<u8>()?;
                 let value = (raw & 1) != 0;
                 self.update_attr_end_offset(0);
                 /*
@@ -132,27 +129,27 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 visitor.visit_bool(value)
             }
             AttributeType::I16 => {
-                let value = self.parser.reader().read_u16()? as i16;
+                let value = self.parser.parse::<i16>()?;
                 self.update_attr_end_offset(0);
                 visitor.visit_i16(value)
             }
             AttributeType::I32 => {
-                let value = self.parser.reader().read_u32()? as i32;
+                let value = self.parser.parse::<i32>()?;
                 self.update_attr_end_offset(0);
                 visitor.visit_i32(value)
             }
             AttributeType::I64 => {
-                let value = self.parser.reader().read_u64()? as i64;
+                let value = self.parser.parse::<i64>()?;
                 self.update_attr_end_offset(0);
                 visitor.visit_i64(value)
             }
             AttributeType::F32 => {
-                let value = f32::from_bits(self.parser.reader().read_u32()?);
+                let value = self.parser.parse::<f32>()?;
                 self.update_attr_end_offset(0);
                 visitor.visit_f32(value)
             }
             AttributeType::F64 => {
-                let value = f64::from_bits(self.parser.reader().read_u64()?);
+                let value = self.parser.parse::<f64>()?;
                 self.update_attr_end_offset(0);
                 visitor.visit_f64(value)
             }
@@ -208,8 +205,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 visitor.visit_seq_f64(iter, count as usize)
             }
             AttributeType::Binary => {
-                // Additional header of binary attribute is single `u32`.
-                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                let header = self.parser.parse::<SpecialAttributeHeader>()?;
+                let bytelen = u64::from(header.bytelen());
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
@@ -217,8 +214,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 visitor.visit_binary(reader, bytelen)
             }
             AttributeType::String => {
-                // Additional header of string attribute is single `u32`.
-                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                let header = self.parser.parse::<SpecialAttributeHeader>()?;
+                let bytelen = u64::from(header.bytelen());
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
@@ -240,8 +237,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     {
         match attr_type {
             AttributeType::Binary => {
-                // Additional header of binary attribute is single `u32`.
-                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                let header = self.parser.parse::<SpecialAttributeHeader>()?;
+                let bytelen = u64::from(header.bytelen());
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
@@ -249,8 +246,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 visitor.visit_binary_buffered(reader, bytelen)
             }
             AttributeType::String => {
-                // Additional header of string attribute is single `u32`.
-                let bytelen = u64::from(self.parser.reader().read_u32()?);
+                let header = self.parser.parse::<SpecialAttributeHeader>()?;
+                let bytelen = u64::from(header.bytelen());
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).

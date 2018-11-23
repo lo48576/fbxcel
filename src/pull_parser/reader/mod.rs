@@ -2,8 +2,6 @@
 
 use std::io;
 
-use byteorder::{LittleEndian, ReadBytesExt};
-
 pub use self::position_cache::PositionCacheReader;
 pub use self::source::{PlainSource, SeekableSource};
 
@@ -56,28 +54,3 @@ impl<R: ParserSource> ParserSource for &mut R {
         (**self).skip_to(pos)
     }
 }
-
-/// Extension trait for parser source type.
-pub(crate) trait ParserSourceExt: ParserSource {
-    /// Reads a `u8` value.
-    fn read_u8(&mut self) -> io::Result<u8> {
-        ReadBytesExt::read_u8(self)
-    }
-
-    /// Reads a `u16` value.
-    fn read_u16(&mut self) -> io::Result<u16> {
-        ReadBytesExt::read_u16::<LittleEndian>(self)
-    }
-
-    /// Reads a `u32` value.
-    fn read_u32(&mut self) -> io::Result<u32> {
-        ReadBytesExt::read_u32::<LittleEndian>(self)
-    }
-
-    /// Reads a `u64` value.
-    fn read_u64(&mut self) -> io::Result<u64> {
-        ReadBytesExt::read_u64::<LittleEndian>(self)
-    }
-}
-
-impl<R: ParserSource> ParserSourceExt for R {}
