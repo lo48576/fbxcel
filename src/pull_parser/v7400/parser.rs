@@ -4,14 +4,12 @@ use std::io;
 
 use log::debug;
 
+use crate::low::v7400::NodeHeader;
+use crate::low::FbxHeader;
+
 use super::super::reader::{PlainSource, SeekableSource};
-use super::super::FbxHeader;
 use super::error::{DataError, OperationError};
-use super::{Event, FbxVersion, ParserSource, ParserSourceExt, ParserVersion, Result, StartNode};
-
-use self::node::NodeHeader;
-
-mod node;
+use super::{Event, FbxVersion, ParserSource, ParserVersion, Result, StartNode};
 
 /// Creates a new `Parser` from the given buffered reader.
 ///
@@ -56,7 +54,7 @@ impl<R: ParserSource> Parser<R> {
     ///
     /// Returns an error if the given FBX version in unsupported.
     pub(crate) fn create(fbx_version: FbxVersion, reader: R) -> Result<Self> {
-        if fbx_version.parser_version() != Some(Self::PARSER_VERSION) {
+        if ParserVersion::from_fbx_version(fbx_version) != Some(Self::PARSER_VERSION) {
             return Err(
                 OperationError::UnsupportedFbxVersion(Self::PARSER_VERSION, fbx_version).into(),
             );

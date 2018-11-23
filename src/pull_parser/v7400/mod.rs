@@ -1,7 +1,9 @@
 //! Parser-related stuff for BX 7.4 or later.
 
+use crate::low::FbxVersion;
+
 use super::error;
-use super::{FbxVersion, ParserSource, ParserSourceExt, ParserVersion, Result};
+use super::{ParserSource, ParserSourceExt, ParserVersion, Result};
 
 pub use self::attribute::{Attributes, VisitAttribute};
 pub use self::event::{Event, StartNode};

@@ -7,7 +7,9 @@ use std::io;
 use byteorder::{LittleEndian, ReadBytesExt};
 use log::info;
 
-use super::{FbxVersion, ParserVersion};
+use crate::pull_parser::ParserVersion;
+
+use super::FbxVersion;
 
 /// Header read error.
 #[derive(Debug)]
@@ -73,7 +75,7 @@ impl FbxHeader {
 
     /// Returns FBX version.
     pub fn parser_version(self) -> Option<ParserVersion> {
-        self.version.parser_version()
+        ParserVersion::from_fbx_version(self.version())
     }
 
     /// Returns header length in bytes.

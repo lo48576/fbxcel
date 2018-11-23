@@ -2,7 +2,8 @@
 
 use std::io;
 
-use super::super::AttributeType;
+use crate::low::v7400::AttributeType;
+
 use super::{Result, VisitAttribute};
 
 /// Visitor for direct attribute value.

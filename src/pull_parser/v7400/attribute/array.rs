@@ -6,104 +6,10 @@ use std::marker::PhantomData;
 use byteorder::LittleEndian;
 use libflate::zlib::Decoder as ZlibDecoder;
 
-use super::super::error::{Compression, DataError};
-use super::super::{ParserSource, ParserSourceExt, Result};
+use crate::low::v7400::ArrayAttributeEncoding;
 
-/// A header type for array-type attributes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct ArrayHeader {
-    /// Number of elements.
-    elements_count: u32,
-    /// Encoding.
-    encoding: ArrayEncoding,
-    /// Elements length in bytes.
-    bytelen: u32,
-}
-
-impl ArrayHeader {
-    /// Reads and returns the array-type attribute header.
-    pub(crate) fn from_reader<R>(mut reader: R) -> Result<Self>
-    where
-        R: ParserSource,
-    {
-        let elements_count = reader.read_u32()?;
-        let raw_encoding = reader.read_u32()?;
-        let encoding = ArrayEncoding::from_u32(raw_encoding)
-            .ok_or_else(|| DataError::InvalidArrayAttributeEncoding(raw_encoding))?;
-        let bytelen = reader.read_u32()?;
-
-        Ok(Self {
-            elements_count,
-            encoding,
-            bytelen,
-        })
-    }
-
-    /// Returns number of elements.
-    pub fn elements_count(&self) -> u32 {
-        self.elements_count
-    }
-
-    /// Returns array encoding.
-    pub fn encoding(&self) -> ArrayEncoding {
-        self.encoding
-    }
-
-    /// Returns content array length in bytes.
-    ///
-    /// This length does not include the header size.
-    pub fn bytelen(&self) -> u32 {
-        self.bytelen
-    }
-}
-
-/// Array attribute encoding.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ArrayEncoding {
-    /// Direct values.
-    Direct,
-    /// Zlib compression.
-    ///
-    /// Zlib compression with header.
-    Zlib,
-}
-
-impl ArrayEncoding {
-    /// Creates a new `ArrayEncoding` from the given raw value.
-    fn from_u32(v: u32) -> Option<Self> {
-        match v {
-            0 => Some(ArrayEncoding::Direct),
-            1 => Some(ArrayEncoding::Zlib),
-            _ => None,
-        }
-    }
-
-    /// Creates a new decoded reader.
-    pub(crate) fn create_reader<R>(self, reader: R) -> Result<AttributeStreamDecoder<R>>
-    where
-        R: io::Read,
-    {
-        match self {
-            ArrayEncoding::Direct => Ok(AttributeStreamDecoder::Direct(reader)),
-            ArrayEncoding::Zlib => Ok(AttributeStreamDecoder::Zlib(
-                ZlibDecoder::new(reader)
-                    .map_err(|e| DataError::BrokenCompression(self.into(), e.into()))?,
-            )),
-        }
-    }
-}
-
-impl From<ArrayEncoding> for Compression {
-    // Panics if the encoding is `Direct` (i.e. not compressed).
-    fn from(v: ArrayEncoding) -> Self {
-        match v {
-            ArrayEncoding::Direct => unreachable!(
-                "Data with `ArrayEncoding::Direct` should not cause (de)compression error"
-            ),
-            ArrayEncoding::Zlib => Compression::Zlib,
-        }
-    }
-}
+use super::super::error::DataError;
+use super::super::Result;
 
 /// Attribute stream decoder.
 // `io::BufRead` is not implemented for `ZlibDecoder`.
@@ -113,6 +19,19 @@ pub enum AttributeStreamDecoder<R> {
     Direct(R),
     /// Zlib-decoded stream.
     Zlib(ZlibDecoder<R>),
+}
+
+impl<R: io::Read> AttributeStreamDecoder<R> {
+    /// Creates a new decoded reader.
+    pub fn create(encoding: ArrayAttributeEncoding, reader: R) -> Result<Self> {
+        match encoding {
+            ArrayAttributeEncoding::Direct => Ok(AttributeStreamDecoder::Direct(reader)),
+            ArrayAttributeEncoding::Zlib => Ok(AttributeStreamDecoder::Zlib(
+                ZlibDecoder::new(reader)
+                    .map_err(|e| DataError::BrokenCompression(encoding.into(), e.into()))?,
+            )),
+        }
+    }
 }
 
 impl<R: io::Read> io::Read for AttributeStreamDecoder<R> {

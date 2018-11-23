@@ -1,6 +1,6 @@
 //! Direct attribute value type.
 
-use super::AttributeType;
+use crate::low::v7400::AttributeType;
 
 /// Direct attribute value type.
 #[derive(Debug, Clone, PartialEq)]
