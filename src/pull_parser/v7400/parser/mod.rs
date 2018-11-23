@@ -56,7 +56,7 @@ impl<R: ParserSource> Parser<R> {
     ///
     /// Returns an error if the given FBX version in unsupported.
     pub(crate) fn create(fbx_version: FbxVersion, reader: R) -> Result<Self> {
-        if fbx_version.parser_version() != Some(Self::PARSER_VERSION) {
+        if ParserVersion::from_fbx_version(fbx_version) != Some(Self::PARSER_VERSION) {
             return Err(
                 OperationError::UnsupportedFbxVersion(Self::PARSER_VERSION, fbx_version).into(),
             );

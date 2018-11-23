@@ -3,7 +3,9 @@
 use std::error;
 use std::fmt;
 
-use super::super::{FbxVersion, ParserVersion};
+use crate::low::FbxVersion;
+
+use super::super::ParserVersion;
 
 /// Invalid operation.
 #[derive(Debug)]
