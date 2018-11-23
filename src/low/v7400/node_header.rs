@@ -1,6 +1,7 @@
-//! Node-related stuff.
+//! Node header.
 
-use super::{Parser, ParserSource, ParserSourceExt, Result};
+use crate::pull_parser::v7400::Parser;
+use crate::pull_parser::{ParserSource, ParserSourceExt, Result};
 
 /// Node header.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

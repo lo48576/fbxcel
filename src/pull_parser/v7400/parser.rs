@@ -4,15 +4,12 @@ use std::io;
 
 use log::debug;
 
+use crate::low::v7400::NodeHeader;
 use crate::low::FbxHeader;
 
 use super::super::reader::{PlainSource, SeekableSource};
 use super::error::{DataError, OperationError};
-use super::{Event, FbxVersion, ParserSource, ParserSourceExt, ParserVersion, Result, StartNode};
-
-use self::node::NodeHeader;
-
-mod node;
+use super::{Event, FbxVersion, ParserSource, ParserVersion, Result, StartNode};
 
 /// Creates a new `Parser` from the given buffered reader.
 ///
