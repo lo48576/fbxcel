@@ -8,7 +8,9 @@ use crate::low::v7400::AttributeType;
 use super::error::DataError;
 use super::{Parser, ParserSource, ParserSourceExt, Result};
 
-use self::array::{ArrayAttributeValues, ArrayEncoding, ArrayHeader, BooleanArrayAttributeValues};
+use self::array::{
+    ArrayAttributeValues, ArrayHeader, AttributeStreamDecoder, BooleanArrayAttributeValues,
+};
 pub use self::direct::DirectAttributeValue;
 pub use self::visitor::VisitAttribute;
 
@@ -159,7 +161,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             AttributeType::ArrBool => {
                 let header = ArrayHeader::from_reader(self.parser.reader())?;
                 self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let reader =
+                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
                 let mut iter = BooleanArrayAttributeValues::new(reader, count);
                 let res = visitor.visit_seq_bool(&mut iter, count as usize)?;
@@ -173,7 +176,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             AttributeType::ArrI32 => {
                 let header = ArrayHeader::from_reader(self.parser.reader())?;
                 self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let reader =
+                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
                 let iter = ArrayAttributeValues::<_, i32>::new(reader, count);
                 visitor.visit_seq_i32(iter, count as usize)
@@ -181,7 +185,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             AttributeType::ArrI64 => {
                 let header = ArrayHeader::from_reader(self.parser.reader())?;
                 self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let reader =
+                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
                 let iter = ArrayAttributeValues::<_, i64>::new(reader, count);
                 visitor.visit_seq_i64(iter, count as usize)
@@ -189,7 +194,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             AttributeType::ArrF32 => {
                 let header = ArrayHeader::from_reader(self.parser.reader())?;
                 self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let reader =
+                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
                 let iter = ArrayAttributeValues::<_, f32>::new(reader, count);
                 visitor.visit_seq_f32(iter, count as usize)
@@ -197,7 +203,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             AttributeType::ArrF64 => {
                 let header = ArrayHeader::from_reader(self.parser.reader())?;
                 self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader = ArrayEncoding::create_reader(header.encoding(), self.parser.reader())?;
+                let reader =
+                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
                 let iter = ArrayAttributeValues::<_, f64>::new(reader, count);
                 visitor.visit_seq_f64(iter, count as usize)

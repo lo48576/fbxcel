@@ -6,7 +6,9 @@ use std::marker::PhantomData;
 use byteorder::LittleEndian;
 use libflate::zlib::Decoder as ZlibDecoder;
 
-use super::super::error::{Compression, DataError};
+use crate::low::v7400::ArrayAttributeEncoding;
+
+use super::super::error::DataError;
 use super::super::{ParserSource, ParserSourceExt, Result};
 
 /// A header type for array-type attributes.
@@ -15,7 +17,7 @@ pub(crate) struct ArrayHeader {
     /// Number of elements.
     elements_count: u32,
     /// Encoding.
-    encoding: ArrayEncoding,
+    encoding: ArrayAttributeEncoding,
     /// Elements length in bytes.
     bytelen: u32,
 }
@@ -28,7 +30,7 @@ impl ArrayHeader {
     {
         let elements_count = reader.read_u32()?;
         let raw_encoding = reader.read_u32()?;
-        let encoding = ArrayEncoding::from_u32(raw_encoding)
+        let encoding = ArrayAttributeEncoding::from_u32(raw_encoding)
             .ok_or_else(|| DataError::InvalidArrayAttributeEncoding(raw_encoding))?;
         let bytelen = reader.read_u32()?;
 
@@ -45,7 +47,7 @@ impl ArrayHeader {
     }
 
     /// Returns array encoding.
-    pub fn encoding(&self) -> ArrayEncoding {
+    pub fn encoding(&self) -> ArrayAttributeEncoding {
         self.encoding
     }
 
@@ -57,54 +59,6 @@ impl ArrayHeader {
     }
 }
 
-/// Array attribute encoding.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ArrayEncoding {
-    /// Direct values.
-    Direct,
-    /// Zlib compression.
-    ///
-    /// Zlib compression with header.
-    Zlib,
-}
-
-impl ArrayEncoding {
-    /// Creates a new `ArrayEncoding` from the given raw value.
-    fn from_u32(v: u32) -> Option<Self> {
-        match v {
-            0 => Some(ArrayEncoding::Direct),
-            1 => Some(ArrayEncoding::Zlib),
-            _ => None,
-        }
-    }
-
-    /// Creates a new decoded reader.
-    pub(crate) fn create_reader<R>(self, reader: R) -> Result<AttributeStreamDecoder<R>>
-    where
-        R: io::Read,
-    {
-        match self {
-            ArrayEncoding::Direct => Ok(AttributeStreamDecoder::Direct(reader)),
-            ArrayEncoding::Zlib => Ok(AttributeStreamDecoder::Zlib(
-                ZlibDecoder::new(reader)
-                    .map_err(|e| DataError::BrokenCompression(self.into(), e.into()))?,
-            )),
-        }
-    }
-}
-
-impl From<ArrayEncoding> for Compression {
-    // Panics if the encoding is `Direct` (i.e. not compressed).
-    fn from(v: ArrayEncoding) -> Self {
-        match v {
-            ArrayEncoding::Direct => unreachable!(
-                "Data with `ArrayEncoding::Direct` should not cause (de)compression error"
-            ),
-            ArrayEncoding::Zlib => Compression::Zlib,
-        }
-    }
-}
-
 /// Attribute stream decoder.
 // `io::BufRead` is not implemented for `ZlibDecoder`.
 #[derive(Debug)]
@@ -113,6 +67,19 @@ pub enum AttributeStreamDecoder<R> {
     Direct(R),
     /// Zlib-decoded stream.
     Zlib(ZlibDecoder<R>),
+}
+
+impl<R: io::Read> AttributeStreamDecoder<R> {
+    /// Creates a new decoded reader.
+    pub fn create(encoding: ArrayAttributeEncoding, reader: R) -> Result<Self> {
+        match encoding {
+            ArrayAttributeEncoding::Direct => Ok(AttributeStreamDecoder::Direct(reader)),
+            ArrayAttributeEncoding::Zlib => Ok(AttributeStreamDecoder::Zlib(
+                ZlibDecoder::new(reader)
+                    .map_err(|e| DataError::BrokenCompression(encoding.into(), e.into()))?,
+            )),
+        }
+    }
 }
 
 impl<R: io::Read> io::Read for AttributeStreamDecoder<R> {
