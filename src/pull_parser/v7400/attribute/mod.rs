@@ -5,6 +5,7 @@ use std::num::NonZeroU64;
 
 use crate::low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader};
 
+use super::super::error::DataError;
 use super::{FromReader, Parser, ParserSource, Result, Warning};
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
@@ -64,6 +65,21 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         );
     }
 
+    /// Runs the given function with the health check and update.
+    pub(crate) fn do_with_health_check<T, F>(&mut self, f: F) -> Result<T>
+    where
+        F: FnOnce(&mut Self) -> Result<T>,
+    {
+        self.parser.ensure_continuable()?;
+
+        let res = f(self);
+        if res.is_err() {
+            self.parser.set_aborted();
+        }
+
+        res
+    }
+
     /// Returns the next attribute type.
     fn read_next_attr_type(&mut self) -> Result<Option<AttributeType>> {
         if self.rest_count() == 0 {
@@ -88,11 +104,13 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     where
         V: VisitAttribute,
     {
-        let attr_type = match self.read_next_attr_type()? {
-            Some(v) => v,
-            None => return Ok(None),
-        };
-        self.visit_next_impl(attr_type, visitor).map(Some)
+        self.do_with_health_check(|this| {
+            let attr_type = match this.read_next_attr_type()? {
+                Some(v) => v,
+                None => return Ok(None),
+            };
+            this.visit_next_impl(attr_type, visitor).map(Some)
+        })
     }
 
     /// Let visitor visit the next node attribute.
@@ -104,11 +122,13 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         R: io::BufRead,
         V: VisitAttribute,
     {
-        let attr_type = match self.read_next_attr_type()? {
-            Some(v) => v,
-            None => return Ok(None),
-        };
-        self.visit_next_buffered_impl(attr_type, visitor).map(Some)
+        self.do_with_health_check(|this| {
+            let attr_type = match this.read_next_attr_type()? {
+                Some(v) => v,
+                None => return Ok(None),
+            };
+            this.visit_next_buffered_impl(attr_type, visitor).map(Some)
+        })
     }
 
     /// Internal implementation of `visit_next`.
@@ -159,8 +179,14 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let count = header.elements_count();
                 let mut iter = BooleanArrayAttributeValues::new(reader, count);
                 let res = visitor.visit_seq_bool(&mut iter, count as usize)?;
+                // Save `has_error` to make `iter` discardable before
+                // `self.parser.warn()` call.
+                let has_error = iter.has_error();
                 if iter.has_incorrect_boolean_value() {
                     self.parser.warn(Warning::IncorrectBooleanRepresentation)?;
+                }
+                if has_error {
+                    return Err(DataError::NodeAttributeError.into());
                 }
                 Ok(res)
             }
@@ -170,8 +196,12 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader =
                     AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
-                let iter = ArrayAttributeValues::<_, i32>::new(reader, count);
-                visitor.visit_seq_i32(iter, count as usize)
+                let mut iter = ArrayAttributeValues::<_, i32>::new(reader, count);
+                let res = visitor.visit_seq_i32(&mut iter, count as usize)?;
+                if iter.has_error() {
+                    return Err(DataError::NodeAttributeError.into());
+                }
+                Ok(res)
             }
             AttributeType::ArrI64 => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
@@ -179,8 +209,12 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader =
                     AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
-                let iter = ArrayAttributeValues::<_, i64>::new(reader, count);
-                visitor.visit_seq_i64(iter, count as usize)
+                let mut iter = ArrayAttributeValues::<_, i64>::new(reader, count);
+                let res = visitor.visit_seq_i64(&mut iter, count as usize)?;
+                if iter.has_error() {
+                    return Err(DataError::NodeAttributeError.into());
+                }
+                Ok(res)
             }
             AttributeType::ArrF32 => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
@@ -188,8 +222,12 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader =
                     AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
-                let iter = ArrayAttributeValues::<_, f32>::new(reader, count);
-                visitor.visit_seq_f32(iter, count as usize)
+                let mut iter = ArrayAttributeValues::<_, f32>::new(reader, count);
+                let res = visitor.visit_seq_f32(&mut iter, count as usize)?;
+                if iter.has_error() {
+                    return Err(DataError::NodeAttributeError.into());
+                }
+                Ok(res)
             }
             AttributeType::ArrF64 => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
@@ -197,8 +235,12 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader =
                     AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
                 let count = header.elements_count();
-                let iter = ArrayAttributeValues::<_, f64>::new(reader, count);
-                visitor.visit_seq_f64(iter, count as usize)
+                let mut iter = ArrayAttributeValues::<_, f64>::new(reader, count);
+                let res = visitor.visit_seq_f64(&mut iter, count as usize)?;
+                if iter.has_error() {
+                    return Err(DataError::NodeAttributeError.into());
+                }
+                Ok(res)
             }
             AttributeType::Binary => {
                 let header = self.parser.parse::<SpecialAttributeHeader>()?;

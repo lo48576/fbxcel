@@ -26,6 +26,11 @@ pub enum DataError {
     ///
     /// This error indicates that the node name is non-valid UTF-8.
     InvalidNodeNameEncoding(FromUtf8Error),
+    /// Node attribute error.
+    ///
+    /// This error indicates that some error happened while reading node
+    /// attributes.
+    NodeAttributeError,
     /// Node length mismatch.
     ///
     /// This error indicates that a node ends at the position which differs from
@@ -69,6 +74,9 @@ impl fmt::Display for DataError {
             }
             DataError::InvalidNodeNameEncoding(e) => {
                 write!(f, "Invalid node name encoding: {:?}", e)
+            }
+            DataError::NodeAttributeError => {
+                write!(f, "Some error occured while reading node attributes")
             }
             DataError::NodeLengthMismatch(expected, got) => write!(
                 f,

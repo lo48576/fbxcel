@@ -98,21 +98,29 @@ pub trait VisitAttribute: Sized + fmt::Debug {
     }
 
     /// Visit binary value.
+    ///
+    /// This method should return error when the given reader returned error.
     fn visit_binary(self, _: impl io::Read, _len: u64) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "binary data".into()).into())
     }
 
     /// Visit binary value on buffered reader.
+    ///
+    /// This method should return error when the given reader returned error.
     fn visit_binary_buffered(self, reader: impl io::BufRead, len: u64) -> Result<Self::Output> {
         self.visit_binary(reader, len)
     }
 
     /// Visit string value.
+    ///
+    /// This method should return error when the given reader returned error.
     fn visit_string(self, _: impl io::Read, _len: u64) -> Result<Self::Output> {
         Err(DataError::UnexpectedAttribute(self.expecting(), "string data".into()).into())
     }
 
     /// Visit string value on buffered reader.
+    ///
+    /// This method should return error when the given reader returned error.
     fn visit_string_buffered(self, reader: impl io::BufRead, len: u64) -> Result<Self::Output> {
         self.visit_string(reader, len)
     }

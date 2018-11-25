@@ -52,6 +52,8 @@ pub struct ArrayAttributeValues<R, E> {
     total_elements: u32,
     /// Number of rest elements.
     rest_elements: u32,
+    /// Whether an error is happened.
+    has_error: bool,
     /// Element type.
     _element_type: PhantomData<E>,
 }
@@ -66,8 +68,14 @@ where
             reader,
             total_elements,
             rest_elements: total_elements,
+            has_error: false,
             _element_type: PhantomData,
         }
+    }
+
+    /// Returns whether an error happened or not.
+    pub(crate) fn has_error(&self) -> bool {
+        self.has_error
     }
 }
 
@@ -90,7 +98,10 @@ macro_rules! impl_array_attr_values {
                             .expect("This should be executed only when there are rest elements");
                         Some(Ok(v))
                     }
-                    Err(e) => Some(Err(e.into())),
+                    Err(e) => {
+                        self.has_error = true;
+                        Some(Err(e.into()))
+                    }
                 }
             }
 
@@ -115,6 +126,8 @@ pub struct BooleanArrayAttributeValues<R> {
     total_elements: u32,
     /// Number of rest elements.
     rest_elements: u32,
+    /// Whether an error is happened.
+    has_error: bool,
     /// Whether the attribute has incorrect boolean value representation.
     has_incorrect_boolean_value: bool,
 }
@@ -126,6 +139,7 @@ impl<R: io::Read> BooleanArrayAttributeValues<R> {
             reader,
             total_elements,
             rest_elements: total_elements,
+            has_error: false,
             has_incorrect_boolean_value: false,
         }
     }
@@ -134,6 +148,11 @@ impl<R: io::Read> BooleanArrayAttributeValues<R> {
     /// representation.
     pub(crate) fn has_incorrect_boolean_value(&self) -> bool {
         self.has_incorrect_boolean_value
+    }
+
+    /// Returns whether an error happened or not.
+    pub(crate) fn has_error(&self) -> bool {
+        self.has_error
     }
 }
 
@@ -158,7 +177,10 @@ impl<R: io::Read> Iterator for BooleanArrayAttributeValues<R> {
                 let v = (raw & 1) != 0;
                 Some(Ok(v))
             }
-            Err(e) => Some(Err(e.into())),
+            Err(e) => {
+                self.has_error = true;
+                Some(Err(e.into()))
+            }
         }
     }
 
