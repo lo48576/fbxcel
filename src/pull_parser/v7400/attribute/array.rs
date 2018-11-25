@@ -132,9 +132,6 @@ impl<R: io::Read> BooleanArrayAttributeValues<R> {
 
     /// Returns whether the attribute has incorrect boolean value
     /// representation.
-    // Allow `dead_code` because this will be used when the warning feature is
-    // implemented.
-    #[allow(dead_code)]
     pub(crate) fn has_incorrect_boolean_value(&self) -> bool {
         self.has_incorrect_boolean_value
     }
