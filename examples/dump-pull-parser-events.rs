@@ -45,15 +45,21 @@ fn dump_fbx_7400<R: pull_parser::ParserSource>(
 ) -> pull_parser::Result<()> {
     let mut depth = 0;
 
+    /// Dump format of node attributes.
     enum AttrsDumpFormat {
         /// Type only.
         Type,
         /// Value for primitive types, length for array, binary, and string.
         Length,
+        /// Values for all types.
+        ///
+        /// Not recommended because the output might be quite large.
+        Full,
     }
 
     let attrs_dump_format = match std::env::var("DUMP_ATTRIBUTES").as_ref().map(AsRef::as_ref) {
         Ok("length") => AttrsDumpFormat::Length,
+        Ok("full") => AttrsDumpFormat::Full,
         _ => AttrsDumpFormat::Type,
     };
 
@@ -70,6 +76,7 @@ fn dump_fbx_7400<R: pull_parser::ParserSource>(
                 match attrs_dump_format {
                     AttrsDumpFormat::Type => dump_v7400_attributes_type(depth, attrs)?,
                     AttrsDumpFormat::Length => dump_v7400_attributes_length(depth, attrs)?,
+                    AttrsDumpFormat::Full => dump_v7400_attributes_full(depth, attrs)?,
                 }
             }
             Event::EndNode => {
@@ -149,6 +156,73 @@ where
     while let Some(type_) = attrs.visit_next(TypeVisitor).unwrap() {
         indent(depth);
         println!("Attribute: {:?}", type_);
+    }
+
+    Ok(())
+}
+
+fn dump_v7400_attributes_full<R>(
+    depth: usize,
+    mut attrs: pull_parser::v7400::Attributes<R>,
+) -> pull_parser::Result<()>
+where
+    R: pull_parser::ParserSource,
+{
+    use self::pull_parser::v7400::attribute::{visitor::DirectVisitor, DirectAttributeValue};
+
+    while let Some(attr) = attrs.visit_next(DirectVisitor)? {
+        let type_ = attr.type_();
+        indent(depth);
+        match attr {
+            DirectAttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
+            DirectAttributeValue::I16(_) => println!("Attribute: {:?}", attr),
+            DirectAttributeValue::I32(_) => println!("Attribute: {:?}", attr),
+            DirectAttributeValue::I64(_) => println!("Attribute: {:?}", attr),
+            DirectAttributeValue::F32(_) => println!("Attribute: {:?}", attr),
+            DirectAttributeValue::F64(_) => println!("Attribute: {:?}", attr),
+            DirectAttributeValue::ArrBool(v) => println!(
+                "Attribute: type={:?}, len={}, value={:?}",
+                type_,
+                v.len(),
+                v
+            ),
+            DirectAttributeValue::ArrI32(v) => println!(
+                "Attribute: type={:?}, len={}, value={:?}",
+                type_,
+                v.len(),
+                v
+            ),
+            DirectAttributeValue::ArrI64(v) => println!(
+                "Attribute: type={:?}, len={}, value={:?}",
+                type_,
+                v.len(),
+                v
+            ),
+            DirectAttributeValue::ArrF32(v) => println!(
+                "Attribute: type={:?}, len={}, value={:?}",
+                type_,
+                v.len(),
+                v
+            ),
+            DirectAttributeValue::ArrF64(v) => println!(
+                "Attribute: type={:?}, len={}, value={:?}",
+                type_,
+                v.len(),
+                v
+            ),
+            DirectAttributeValue::Binary(v) => println!(
+                "Attribute: type={:?}, len={}, value={:?}",
+                type_,
+                v.len(),
+                v
+            ),
+            DirectAttributeValue::String(v) => println!(
+                "Attribute: type={:?}, len={}, value={:?}",
+                type_,
+                v.len(),
+                v
+            ),
+        }
     }
 
     Ok(())
