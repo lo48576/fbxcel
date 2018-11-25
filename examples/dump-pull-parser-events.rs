@@ -65,8 +65,12 @@ fn dump_fbx_7400<R: pull_parser::ParserSource>(
                 indent(depth);
                 println!("Node end");
             }
-            Event::EndFbx => {
+            Event::EndFbx(footer_res) => {
                 println!("FBX end");
+                match footer_res {
+                    Ok(footer) => println!("footer: {:#?}", footer),
+                    Err(e) => println!("footer has an error: {:?}", e),
+                }
                 break;
             }
         }

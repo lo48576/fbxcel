@@ -1,6 +1,8 @@
 //! Parser event.
 
-use super::{Attributes, Parser, ParserSource};
+use crate::low::v7400::FbxFooter;
+
+use super::{Attributes, Parser, ParserSource, Result};
 
 /// Parser event.
 #[derive(Debug)]
@@ -10,7 +12,7 @@ pub enum Event<'a, R: 'a> {
     /// End of a node.
     EndNode,
     /// End of an FBX document.
-    EndFbx,
+    EndFbx(Result<Box<FbxFooter>>),
 }
 
 /// Node start event.

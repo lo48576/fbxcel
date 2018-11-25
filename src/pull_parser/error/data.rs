@@ -11,6 +11,11 @@ use std::string::FromUtf8Error;
 pub enum DataError {
     /// Data with broken compression.
     BrokenCompression(Compression, Box<dyn std::error::Error + Send + Sync>),
+    /// FBX footer is broken.
+    ///
+    /// Detail is not available because the footer may contain variable length
+    /// field, and it is hard to identify what is actually broken.
+    BrokenFbxFooter,
     /// Got an unknown array attribute encoding.
     InvalidArrayAttributeEncoding(u32),
     /// Invalid node attribute type code.
@@ -50,6 +55,7 @@ impl error::Error for DataError {
 impl fmt::Display for DataError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            DataError::BrokenFbxFooter => write!(f, "FBX footer is broken"),
             DataError::BrokenCompression(codec, e) => write!(
                 f,
                 "Data with broken compression (codec={:?}): {:?}",

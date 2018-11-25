@@ -4,7 +4,7 @@ use std::io;
 
 use log::debug;
 
-use crate::low::v7400::NodeHeader;
+use crate::low::v7400::{FbxFooter, NodeHeader};
 use crate::low::FbxHeader;
 
 use super::super::reader::{PlainSource, SeekableSource};
@@ -180,7 +180,10 @@ impl<R: ParserSource> Parser<R> {
         Ok(match event_kind {
             EventKind::StartNode => Event::StartNode(StartNode::new(self)),
             EventKind::EndNode => Event::EndNode,
-            EventKind::EndFbx => Event::EndFbx,
+            EventKind::EndFbx => {
+                let footer_res = FbxFooter::read_from_parser(self).map(Box::new);
+                Event::EndFbx(footer_res)
+            }
         })
     }
 
