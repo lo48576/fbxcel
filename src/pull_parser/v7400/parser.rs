@@ -285,7 +285,9 @@ impl<R: ParserSource> Parser<R> {
             };
         }
 
-        // TODO: Warn if the node name is empty string.
+        if node_header.bytelen_name == 0 {
+            self.warn(Warning::EmptyNodeName)?;
+        }
 
         // Read the node name.
         let name = {
