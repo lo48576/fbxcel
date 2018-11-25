@@ -117,6 +117,15 @@ impl<R: ParserSource> Parser<R> {
         self.state.started_nodes.len()
     }
 
+    /// Returns `true` if the parser can continue parsing, `false` otherwise.
+    pub(crate) fn ensure_continuable(&self) -> Result<()> {
+        match self.state.health() {
+            Health::Running => Ok(()),
+            Health::Finished => Err(OperationError::AlreadyFinished.into()),
+            Health::Aborted => Err(OperationError::AlreadyAborted.into()),
+        }
+    }
+
     /// Reads the given type from the underlying reader.
     pub(crate) fn parse<T: FromParser>(&mut self) -> Result<T> {
         T::read_from_parser(self)
@@ -140,11 +149,7 @@ impl<R: ParserSource> Parser<R> {
         let previous_depth = self.current_depth();
 
         // Precondition: Health should be `Health::Running`.
-        match self.state.health() {
-            Health::Running => {}
-            Health::Finished => return Err(OperationError::AlreadyFinished.into()),
-            Health::Aborted => return Err(OperationError::AlreadyAborted.into()),
-        }
+        self.ensure_continuable()?;
 
         // Update health.
         let event_kind = match self.next_event_impl() {
