@@ -150,7 +150,7 @@ impl<R: ParserSource> Parser<R> {
         let event_kind = match self.next_event_impl() {
             Ok(v) => v,
             Err(e) => {
-                self.state.health = Health::Aborted;
+                self.set_aborted();
                 return Err(e);
             }
         };
@@ -323,6 +323,11 @@ impl<R: ParserSource> Parser<R> {
         }
 
         Ok(())
+    }
+
+    /// Sets the parser to aborted state.
+    pub(crate) fn set_aborted(&mut self) {
+        self.state.health = Health::Aborted;
     }
 }
 
