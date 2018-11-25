@@ -3,7 +3,7 @@
 use crate::low::FbxVersion;
 
 use super::error;
-use super::{ParserSource, ParserVersion, Result};
+use super::{ParserSource, ParserVersion, Result, Warning};
 
 pub use self::attribute::{Attributes, VisitAttribute};
 pub use self::event::{Event, StartNode};

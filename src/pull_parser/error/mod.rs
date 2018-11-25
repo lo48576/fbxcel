@@ -6,9 +6,11 @@ use std::io;
 
 pub use self::data::{Compression, DataError};
 pub use self::operation::OperationError;
+pub use self::warning::Warning;
 
 mod data;
 mod operation;
+mod warning;
 
 /// Parsing result.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -63,6 +65,10 @@ pub enum ErrorKind {
     ///
     /// With this error kind, the inner error must be [`OperationError`].
     Operation,
+    /// Critical warning.
+    ///
+    /// With this error kind, the inner error must be [`Warning`].
+    Warning,
 }
 
 /// Parsing error container.
@@ -74,6 +80,8 @@ pub enum ErrorContainer {
     Io(io::Error),
     /// Invalid operation.
     Operation(OperationError),
+    /// Critical warning.
+    Warning(Warning),
 }
 
 impl ErrorContainer {
@@ -83,6 +91,7 @@ impl ErrorContainer {
             ErrorContainer::Data(_) => ErrorKind::Data,
             ErrorContainer::Io(_) => ErrorKind::Io,
             ErrorContainer::Operation(_) => ErrorKind::Operation,
+            ErrorContainer::Warning(_) => ErrorKind::Warning,
         }
     }
 
@@ -92,6 +101,7 @@ impl ErrorContainer {
             ErrorContainer::Data(e) => e,
             ErrorContainer::Io(e) => e,
             ErrorContainer::Operation(e) => e,
+            ErrorContainer::Warning(e) => e,
         }
     }
 }
@@ -108,6 +118,7 @@ impl fmt::Display for ErrorContainer {
             ErrorContainer::Data(e) => write!(f, "Data error: {}", e),
             ErrorContainer::Io(e) => write!(f, "I/O error: {}", e),
             ErrorContainer::Operation(e) => write!(f, "Invalid operation: {}", e),
+            ErrorContainer::Warning(e) => write!(f, "Warning considered critical: {}", e),
         }
     }
 }
@@ -127,5 +138,11 @@ impl From<DataError> for ErrorContainer {
 impl From<OperationError> for ErrorContainer {
     fn from(e: OperationError) -> Self {
         ErrorContainer::Operation(e)
+    }
+}
+
+impl From<Warning> for ErrorContainer {
+    fn from(e: Warning) -> Self {
+        ErrorContainer::Warning(e)
     }
 }

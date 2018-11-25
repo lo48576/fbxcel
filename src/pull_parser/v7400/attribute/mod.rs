@@ -5,7 +5,7 @@ use std::num::NonZeroU64;
 
 use crate::low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader};
 
-use super::{FromReader, Parser, ParserSource, Result};
+use super::{FromReader, Parser, ParserSource, Result, Warning};
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
 pub use self::direct::DirectAttributeValue;
@@ -121,11 +121,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let raw = self.parser.parse::<u8>()?;
                 let value = (raw & 1) != 0;
                 self.update_attr_end_offset(0);
-                /*
                 if raw != b'T' && raw != b'Y' {
-                    // FIXME: Warn the incorrect boolean attribute value.
+                    self.parser.warn(Warning::IncorrectBooleanRepresentation)?;
                 }
-                */
                 visitor.visit_bool(value)
             }
             AttributeType::I16 => {
@@ -161,11 +159,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let count = header.elements_count();
                 let mut iter = BooleanArrayAttributeValues::new(reader, count);
                 let res = visitor.visit_seq_bool(&mut iter, count as usize)?;
-                /*
                 if iter.has_incorrect_boolean_value() {
-                    // FIXME: Warn the incorrect boolean attribute value.
+                    self.parser.warn(Warning::IncorrectBooleanRepresentation)?;
                 }
-                */
                 Ok(res)
             }
             AttributeType::ArrI32 => {
