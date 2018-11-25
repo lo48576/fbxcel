@@ -1,5 +1,6 @@
 //! Parser for FBX 7.4 or later.
 
+use std::fmt;
 use std::io;
 
 use log::debug;
@@ -9,7 +10,9 @@ use crate::low::FbxHeader;
 
 use super::super::reader::{PlainSource, SeekableSource};
 use super::error::{DataError, OperationError};
-use super::{Event, FbxVersion, FromParser, ParserSource, ParserVersion, Result, StartNode};
+use super::{
+    Event, FbxVersion, FromParser, ParserSource, ParserVersion, Result, StartNode, Warning,
+};
 
 /// Creates a new `Parser` from the given buffered reader.
 ///
@@ -38,12 +41,13 @@ where
 }
 
 /// Pull parser for FBX 7.4 binary or compatible later versions.
-#[derive(Debug, Clone)]
 pub struct Parser<R> {
     /// Parser state.
     state: State,
     /// Reader.
     reader: R,
+    /// Warning handler.
+    warning_handler: Option<Box<dyn FnMut(Warning) -> Result<()>>>,
 }
 
 impl<R: ParserSource> Parser<R> {
@@ -63,7 +67,16 @@ impl<R: ParserSource> Parser<R> {
         Ok(Self {
             state: State::new(fbx_version),
             reader,
+            warning_handler: None,
         })
+    }
+
+    /// Sets the warning handler.
+    pub fn set_warning_handler<F>(&mut self, warning_handler: F)
+    where
+        F: 'static + FnMut(Warning) -> Result<()>,
+    {
+        self.warning_handler = Some(Box::new(warning_handler));
     }
 
     /// Returns a mutable reference to the inner reader.
@@ -107,6 +120,14 @@ impl<R: ParserSource> Parser<R> {
     /// Reads the given type from the underlying reader.
     pub(crate) fn parse<T: FromParser>(&mut self) -> Result<T> {
         T::read_from_parser(self)
+    }
+
+    /// Passes the given warning to the warning handler.
+    pub(crate) fn warn(&mut self, warning: Warning) -> Result<()> {
+        match self.warning_handler {
+            Some(ref mut handler) => handler(warning),
+            None => Ok(()),
+        }
     }
 
     /// Returns next event if successfully read.
@@ -300,6 +321,19 @@ impl<R: ParserSource> Parser<R> {
         }
 
         Ok(())
+    }
+}
+
+impl<R: fmt::Debug> fmt::Debug for Parser<R> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Parser")
+            .field("state", &self.state)
+            .field("reader", &self.reader)
+            .field(
+                "warning_handler",
+                &self.warning_handler.as_ref().map(|v| v as *const _),
+            )
+            .finish()
     }
 }
 
