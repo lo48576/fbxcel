@@ -1,4 +1,4 @@
-//! Parser for BX 7.4 or later.
+//! Parser for FBX 7.4 or later.
 
 use std::io;
 
