@@ -1,6 +1,6 @@
 //! Pull parser for FBX binary.
 
-pub use self::error::{Error, Result};
+pub use self::error::{Error, Result, Warning};
 pub use self::reader::ParserSource;
 pub use self::version::ParserVersion;
 
