@@ -45,6 +45,18 @@ fn dump_fbx_7400<R: pull_parser::ParserSource>(
 ) -> pull_parser::Result<()> {
     let mut depth = 0;
 
+    enum AttrsDumpFormat {
+        /// Type only.
+        Type,
+        /// Value for primitive types, length for array, binary, and string.
+        Length,
+    }
+
+    let attrs_dump_format = match std::env::var("DUMP_ATTRIBUTES").as_ref().map(AsRef::as_ref) {
+        Ok("length") => AttrsDumpFormat::Length,
+        _ => AttrsDumpFormat::Type,
+    };
+
     loop {
         use self::pull_parser::v7400::*;
 
@@ -55,9 +67,9 @@ fn dump_fbx_7400<R: pull_parser::ParserSource>(
                 depth += 1;
 
                 let attrs = start.attributes();
-                match std::env::var("DUMP_ATTRIBUTES").as_ref().map(AsRef::as_ref) {
-                    Ok("length") => dump_v7400_attributes_length(depth, attrs)?,
-                    _ => dump_v7400_attributes_type(depth, attrs)?,
+                match attrs_dump_format {
+                    AttrsDumpFormat::Type => dump_v7400_attributes_type(depth, attrs)?,
+                    AttrsDumpFormat::Length => dump_v7400_attributes_length(depth, attrs)?,
                 }
             }
             Event::EndNode => {
