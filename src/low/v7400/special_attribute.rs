@@ -9,16 +9,7 @@ use crate::pull_parser::Error as ParserError;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SpecialAttributeHeader {
     /// Elements length in bytes.
-    bytelen: u32,
-}
-
-impl SpecialAttributeHeader {
-    /// Returns content array length in bytes.
-    ///
-    /// This length does not include the header size.
-    pub fn bytelen(self) -> u32 {
-        self.bytelen
-    }
+    pub bytelen: u32,
 }
 
 impl FromReader for SpecialAttributeHeader {

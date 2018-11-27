@@ -173,10 +173,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::ArrBool => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
-                self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader =
-                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
-                let count = header.elements_count();
+                self.update_attr_end_offset(u64::from(header.bytelen));
+                let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
+                let count = header.elements_count;
                 let mut iter = BooleanArrayAttributeValues::new(reader, count);
                 let res = visitor.visit_seq_bool(&mut iter, count as usize)?;
                 // Save `has_error` to make `iter` discardable before
@@ -192,10 +191,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::ArrI32 => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
-                self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader =
-                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
-                let count = header.elements_count();
+                self.update_attr_end_offset(u64::from(header.bytelen));
+                let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
+                let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, i32>::new(reader, count);
                 let res = visitor.visit_seq_i32(&mut iter, count as usize)?;
                 if iter.has_error() {
@@ -205,10 +203,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::ArrI64 => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
-                self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader =
-                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
-                let count = header.elements_count();
+                self.update_attr_end_offset(u64::from(header.bytelen));
+                let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
+                let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, i64>::new(reader, count);
                 let res = visitor.visit_seq_i64(&mut iter, count as usize)?;
                 if iter.has_error() {
@@ -218,10 +215,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::ArrF32 => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
-                self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader =
-                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
-                let count = header.elements_count();
+                self.update_attr_end_offset(u64::from(header.bytelen));
+                let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
+                let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, f32>::new(reader, count);
                 let res = visitor.visit_seq_f32(&mut iter, count as usize)?;
                 if iter.has_error() {
@@ -231,10 +227,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::ArrF64 => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
-                self.update_attr_end_offset(u64::from(header.bytelen()));
-                let reader =
-                    AttributeStreamDecoder::create(header.encoding(), self.parser.reader())?;
-                let count = header.elements_count();
+                self.update_attr_end_offset(u64::from(header.bytelen));
+                let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
+                let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, f64>::new(reader, count);
                 let res = visitor.visit_seq_f64(&mut iter, count as usize)?;
                 if iter.has_error() {
@@ -244,7 +239,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::Binary => {
                 let header = self.parser.parse::<SpecialAttributeHeader>()?;
-                let bytelen = u64::from(header.bytelen());
+                let bytelen = u64::from(header.bytelen);
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
@@ -253,7 +248,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::String => {
                 let header = self.parser.parse::<SpecialAttributeHeader>()?;
-                let bytelen = u64::from(header.bytelen());
+                let bytelen = u64::from(header.bytelen);
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
@@ -276,7 +271,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         match attr_type {
             AttributeType::Binary => {
                 let header = self.parser.parse::<SpecialAttributeHeader>()?;
-                let bytelen = u64::from(header.bytelen());
+                let bytelen = u64::from(header.bytelen);
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
@@ -285,7 +280,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             }
             AttributeType::String => {
                 let header = self.parser.parse::<SpecialAttributeHeader>()?;
-                let bytelen = u64::from(header.bytelen());
+                let bytelen = u64::from(header.bytelen);
                 self.update_attr_end_offset(bytelen);
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).

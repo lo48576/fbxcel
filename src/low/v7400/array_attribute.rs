@@ -53,30 +53,11 @@ impl FromReader for ArrayAttributeEncoding {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ArrayAttributeHeader {
     /// Number of elements.
-    elements_count: u32,
+    pub elements_count: u32,
     /// Encoding.
-    encoding: ArrayAttributeEncoding,
+    pub encoding: ArrayAttributeEncoding,
     /// Elements length in bytes.
-    bytelen: u32,
-}
-
-impl ArrayAttributeHeader {
-    /// Returns number of elements.
-    pub fn elements_count(&self) -> u32 {
-        self.elements_count
-    }
-
-    /// Returns array encoding.
-    pub fn encoding(&self) -> ArrayAttributeEncoding {
-        self.encoding
-    }
-
-    /// Returns content array length in bytes.
-    ///
-    /// This length does not include the header size.
-    pub fn bytelen(&self) -> u32 {
-        self.bytelen
-    }
+    pub bytelen: u32,
 }
 
 impl FromReader for ArrayAttributeHeader {
