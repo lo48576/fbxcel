@@ -4,7 +4,7 @@ use byteorder::{ByteOrder, LittleEndian};
 use log::debug;
 
 use crate::low::FbxVersion;
-use crate::pull_parser::error::DataError;
+use crate::pull_parser::error::{DataError, Warning};
 use crate::pull_parser::v7400::{FromParser, Parser};
 use crate::pull_parser::Error as ParserError;
 use crate::pull_parser::ParserSource;
@@ -49,16 +49,19 @@ impl FromParser for FbxFooter {
     {
         // Read unknown field 1.
         let unknown1 = {
-            //const EXPECTED: [0u8; 16] = [0xf0, 0xb0, 0xa0, 0x00, 0xd0, 0xc0, 0xd0, 0x60, 0xb0, 0x70, 0xf0, 0x80, 0x10, 0xf0, 0x20, 0x70];
+            const EXPECTED: [u8; 16] = [
+                0xf0, 0xb0, 0xa0, 0x00, 0xd0, 0xc0, 0xd0, 0x60, 0xb0, 0x70, 0xf0, 0x80, 0x10, 0xf0,
+                0x20, 0x70,
+            ];
             let mut buf = [0u8; 16];
             parser.reader().read_exact(&mut buf)?;
 
-            //for (byte, expected) in buf.into_iter().zip(EXPECTED) {
-            //    if (byte & 0xf0) != expected {
-            //        // TODO: Warn that the unknown field may be incorrect.
-            //        break;
-            //    }
-            //}
+            for (byte, expected) in buf.into_iter().zip(&EXPECTED) {
+                if (byte & 0xf0) != *expected {
+                    parser.warn(Warning::UnexpectedFooterFieldValue)?;
+                    break;
+                }
+            }
 
             buf
         };
@@ -135,6 +138,17 @@ impl FromParser for FbxFooter {
                 .read_exact(&mut unknown3[unknown3_part.len()..])?;
             if unknown3 != UNKNOWN3_EXPECTED {
                 return Err(DataError::BrokenFbxFooter.into());
+            }
+
+            // If the execution comes here, footer may have no error.
+            // Emit warning if necessary.
+
+            // Check if the padding has correct length.
+            if padding_len != expected_padding_len {
+                parser.warn(Warning::InvalidFooterPaddingLength(
+                    expected_padding_len,
+                    padding_len,
+                ))?;
             }
 
             (padding_len, unknown2, version, unknown3)
