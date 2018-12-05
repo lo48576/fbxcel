@@ -48,7 +48,7 @@ pub enum DataError {
 }
 
 impl error::Error for DataError {
-    fn cause(&self) -> Option<&error::Error> {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             DataError::BrokenCompression(_, e) => Some(e.as_ref()),
             DataError::InvalidNodeNameEncoding(e) => Some(e),

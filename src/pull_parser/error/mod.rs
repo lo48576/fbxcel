@@ -46,8 +46,8 @@ impl fmt::Display for Error {
 }
 
 impl error::Error for Error {
-    fn cause(&self) -> Option<&dyn error::Error> {
-        self.inner.cause()
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        self.inner.source()
     }
 }
 
@@ -119,7 +119,7 @@ impl ErrorContainer {
 }
 
 impl error::Error for ErrorContainer {
-    fn cause(&self) -> Option<&dyn error::Error> {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         Some(self.as_error())
     }
 }
