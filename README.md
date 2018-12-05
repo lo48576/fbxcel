@@ -1,8 +1,28 @@
 # fbxcel
 
 [![Build Status](https://travis-ci.org/lo48576/fbxcel.svg?branch=develop)](https://travis-ci.org/lo48576/fbxcel)
+[![Latest version](https://img.shields.io/crates/v/fbxcel.svg)](https://crates.io/crates/fbxcel)
+[![Documentation](https://docs.rs/fbxcel/badge.svg)](https://docs.rs/fbxcel)
 
 `fbxcel` is an FBX library for Rust programming language.
+
+## Features
+
+* Pull parser for FBX binary (`pull_parser` module)
+    + FBX 7.4 and 7.5 is explicitly supported.
+
+### FBX versions
+
+* FBX 6 or below is not supported.
+* FBX 7.0 to 7.3 is not explicitly supported, but you can try FBX 7.4 feature to load them.
+* FBX 7.4 and 7.5 is supported.
+
+### FBX format
+
+Only FBX binary format is supported.
+
+Currently there is no plan to support FBX ASCII format.
+
 
 ## License
 
