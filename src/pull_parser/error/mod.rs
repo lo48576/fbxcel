@@ -39,6 +39,18 @@ impl Error {
     }
 }
 
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl error::Error for Error {
+    fn cause(&self) -> Option<&dyn error::Error> {
+        self.inner.cause()
+    }
+}
+
 impl<T> From<T> for Error
 where
     T: Into<ErrorContainer>,
