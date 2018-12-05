@@ -140,6 +140,17 @@ impl FromParser for FbxFooter {
                 return Err(DataError::BrokenFbxFooter.into());
             }
 
+            // If the execution comes here, footer may have no error.
+            // Emit warning if necessary.
+
+            // Check if the padding has correct length.
+            if padding_len != expected_padding_len {
+                parser.warn(Warning::InvalidFooterPaddingLength(
+                    expected_padding_len,
+                    padding_len,
+                ))?;
+            }
+
             (padding_len, unknown2, version, unknown3)
         };
 
