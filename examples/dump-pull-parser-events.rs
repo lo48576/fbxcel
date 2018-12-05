@@ -29,8 +29,12 @@ fn main() {
     let parser_version = header.parser_version().expect("Unsupported FBX version");
     match parser_version {
         pull_parser::ParserVersion::V7400 => {
-            let parser = pull_parser::v7400::from_seekable_reader(header, reader)
+            let mut parser = pull_parser::v7400::from_seekable_reader(header, reader)
                 .expect("Should never fail: Unsupported FBX verison");
+            parser.set_warning_handler(|w| {
+                eprintln!("WARNING: {}", w);
+                Ok(())
+            });
             dump_fbx_7400(parser).expect("Failed to parse FBX file");
         }
     }
