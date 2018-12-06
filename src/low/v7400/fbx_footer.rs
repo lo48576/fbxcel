@@ -56,7 +56,7 @@ impl FromParser for FbxFooter {
             let mut buf = [0u8; 16];
             parser.reader().read_exact(&mut buf)?;
 
-            for (byte, expected) in buf.into_iter().zip(&EXPECTED) {
+            for (byte, expected) in buf.iter().zip(&EXPECTED) {
                 if (byte & 0xf0) != *expected {
                     parser.warn(Warning::UnexpectedFooterFieldValue)?;
                     break;
@@ -88,7 +88,7 @@ impl FromParser for FbxFooter {
             let unknown3_pos = {
                 const SEARCH_OFFSET: usize = BUF_LEN - 16;
                 let pos = (&buf[SEARCH_OFFSET..])
-                    .into_iter()
+                    .iter()
                     .position(|&v| v != 0)
                     .ok_or(DataError::BrokenFbxFooter)?;
                 SEARCH_OFFSET + pos
@@ -105,7 +105,7 @@ impl FromParser for FbxFooter {
             let unknown3_part = &buf[(padding_len + 128)..];
 
             // Check that the padding has only zeroes.
-            if !padding.into_iter().all(|&v| v == 0) {
+            if !padding.iter().all(|&v| v == 0) {
                 return Err(DataError::BrokenFbxFooter.into());
             }
 
@@ -122,7 +122,7 @@ impl FromParser for FbxFooter {
             }
 
             // Check that there are 120-bytes zeroes.
-            if !zeroes_120.into_iter().all(|&v| v == 0) {
+            if !zeroes_120.iter().all(|&v| v == 0) {
                 return Err(DataError::BrokenFbxFooter.into());
             }
 
