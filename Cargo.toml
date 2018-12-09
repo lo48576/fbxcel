@@ -12,7 +12,7 @@ keywords = ["FBX", "3D model"]
 [dependencies]
 byteorder = "1"
 libflate = "0.1"
-log = "0.4"
+log = "0.4.4"
 
 [dev-dependencies]
 env_logger = "0.6"
