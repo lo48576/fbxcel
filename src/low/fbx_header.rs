@@ -48,7 +48,7 @@ pub struct FbxHeader {
 
 impl FbxHeader {
     /// Reads an FBX header from the given reader.
-    pub fn read_fbx_header<R: io::Read>(mut reader: R) -> Result<Self, HeaderError> {
+    pub fn read_fbx_header(mut reader: impl io::Read) -> Result<Self, HeaderError> {
         /// Magic binary.
         const MAGIC: &[u8; MAGIC_LEN] = b"Kaydara FBX Binary  \x00\x1a\x00";
 
