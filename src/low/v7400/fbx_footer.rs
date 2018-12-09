@@ -49,6 +49,7 @@ impl FromParser for FbxFooter {
     {
         // Read unknown field 1.
         let unknown1 = {
+            /// Expected upper 4-bits of the unknown field 1.
             const EXPECTED: [u8; 16] = [
                 0xf0, 0xb0, 0xa0, 0x00, 0xd0, 0xc0, 0xd0, 0x60, 0xb0, 0x70, 0xf0, 0x80, 0x10, 0xf0,
                 0x20, 0x70,
@@ -77,6 +78,7 @@ impl FromParser for FbxFooter {
                 expected_padding_len
             );
 
+            /// Buffer length to load footer partially.
             // Padding (min 0) + unknown2 (4) + version (4) + zeroes (120)
             // + unknown3 (16) = 144.
             const BUF_LEN: usize = 144;
@@ -86,6 +88,7 @@ impl FromParser for FbxFooter {
             // First, get the beginning position of unknown field 3,
             // because it is expected to be starting with a non-zero byte.
             let unknown3_pos = {
+                /// Start offset of search of unknown field 3.
                 const SEARCH_OFFSET: usize = BUF_LEN - 16;
                 let pos = (&buf[SEARCH_OFFSET..])
                     .iter()
@@ -127,6 +130,7 @@ impl FromParser for FbxFooter {
             }
 
             // Check that the unknown field 3 has expected pattern.
+            /// Expected value of unknown field 3.
             const UNKNOWN3_EXPECTED: [u8; 16] = [
                 0xf8, 0x5a, 0x8c, 0x6a, 0xde, 0xf5, 0xd9, 0x7e, 0xec, 0xe9, 0x0c, 0xe3, 0x75, 0x8f,
                 0x29, 0x0b,
