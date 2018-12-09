@@ -1,15 +1,21 @@
 [package]
 name = "fbxcel"
-version = "0.0.3"
+version = "0.1.0"
 authors = ["YOSHIOKA Takuma <lo48576@hard-wi.red>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Excellent FBX library"
 repository = "https://github.com/lo48576/fbxcel"
-keywords = ["FBX", "3D model"]
+keywords = ["FBX", "3D", "model"]
 
 [dependencies]
+byteorder = "1"
+libflate = "0.1"
+log = "0.4.4"
+
+[dev-dependencies]
+env_logger = "0.6"
 
 [badges]
 maintenance = { status = "experimental" }
