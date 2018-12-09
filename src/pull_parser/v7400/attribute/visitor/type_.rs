@@ -3,8 +3,8 @@
 use std::io;
 
 use crate::low::v7400::AttributeType;
-
-use super::{Result, VisitAttribute};
+use crate::pull_parser::v7400::VisitAttribute;
+use crate::pull_parser::Result;
 
 /// Visitor for direct attribute value.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

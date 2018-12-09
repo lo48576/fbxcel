@@ -3,6 +3,8 @@
 use std::io;
 use std::io::SeekFrom;
 
+use crate::pull_parser::ParserSource;
+
 /// A reader with position cache.
 ///
 /// # Panics
@@ -82,7 +84,7 @@ impl<R: io::BufRead> io::BufRead for PositionCacheReader<R> {
     }
 }
 
-impl<R: io::Read> super::ParserSource for PositionCacheReader<R> {
+impl<R: io::Read> ParserSource for PositionCacheReader<R> {
     fn position(&self) -> u64 {
         self.position() as u64
     }

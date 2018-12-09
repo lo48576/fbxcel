@@ -2,7 +2,8 @@
 
 use std::io;
 
-use super::{Result, VisitAttribute};
+use crate::pull_parser::v7400::VisitAttribute;
+use crate::pull_parser::Result;
 
 /// Visitor for primitive types.
 ///

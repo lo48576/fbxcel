@@ -7,9 +7,8 @@ use std::io;
 use byteorder::{LittleEndian, ReadBytesExt};
 use log::info;
 
+use crate::low::FbxVersion;
 use crate::pull_parser::ParserVersion;
-
-use super::FbxVersion;
 
 /// Magic binary length.
 const MAGIC_LEN: usize = 23;

@@ -2,7 +2,8 @@
 
 use std::io;
 
-use super::{ParserSource, PositionCacheReader};
+use crate::pull_parser::reader::PositionCacheReader;
+use crate::pull_parser::ParserSource;
 
 /// Source with plain reader backend.
 ///

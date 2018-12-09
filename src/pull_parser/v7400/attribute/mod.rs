@@ -3,9 +3,9 @@
 use std::io;
 
 use crate::low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader};
-
-use super::super::error::DataError;
-use super::{FromReader, Parser, ParserSource, Result, Warning};
+use crate::pull_parser::error::DataError;
+use crate::pull_parser::v7400::{FromReader, Parser};
+use crate::pull_parser::{ParserSource, Result, Warning};
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
 pub use self::direct::DirectAttributeValue;

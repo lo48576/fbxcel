@@ -7,9 +7,8 @@ use byteorder::LittleEndian;
 use libflate::zlib::Decoder as ZlibDecoder;
 
 use crate::low::v7400::ArrayAttributeEncoding;
-
-use super::super::error::DataError;
-use super::super::Result;
+use crate::pull_parser::error::DataError;
+use crate::pull_parser::Result;
 
 /// Attribute stream decoder.
 // `io::BufRead` is not implemented for `ZlibDecoder`.

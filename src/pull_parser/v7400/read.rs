@@ -4,7 +4,8 @@ use std::io;
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
-use super::{Parser, ParserSource, Result};
+use crate::pull_parser::v7400::Parser;
+use crate::pull_parser::{ParserSource, Result};
 
 /// A trait for types readable from a reader.
 pub(crate) trait FromReader: Sized {

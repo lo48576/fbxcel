@@ -3,8 +3,8 @@
 use std::fmt;
 use std::io;
 
-use super::super::error::DataError;
-use super::super::Result;
+use crate::pull_parser::error::DataError;
+use crate::pull_parser::Result;
 
 pub use self::direct::DirectVisitor;
 pub use self::single::{ArrayVisitor, BinaryVisitor, PrimitiveVisitor, StringVisitor};

@@ -4,8 +4,7 @@ use std::error;
 use std::fmt;
 
 use crate::low::FbxVersion;
-
-use super::super::ParserVersion;
+use crate::pull_parser::ParserVersion;
 
 /// Invalid operation.
 #[derive(Debug)]

@@ -6,13 +6,11 @@ use std::io;
 use log::debug;
 
 use crate::low::v7400::{FbxFooter, NodeHeader};
-use crate::low::FbxHeader;
-
-use super::super::reader::{PlainSource, SeekableSource};
-use super::error::{DataError, OperationError};
-use super::{
-    Event, FbxVersion, FromParser, ParserSource, ParserVersion, Result, StartNode, Warning,
-};
+use crate::low::{FbxHeader, FbxVersion};
+use crate::pull_parser::error::{DataError, OperationError};
+use crate::pull_parser::reader::{PlainSource, SeekableSource};
+use crate::pull_parser::v7400::{Event, FromParser, StartNode};
+use crate::pull_parser::{ParserSource, ParserVersion, Result, Warning};
 
 /// Creates a new `Parser` from the given reader.
 ///
