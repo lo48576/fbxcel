@@ -11,6 +11,9 @@ use crate::pull_parser::ParserVersion;
 
 use super::FbxVersion;
 
+/// Magic binary length.
+const MAGIC_LEN: usize = 23;
+
 /// Header read error.
 #[derive(Debug)]
 pub enum HeaderError {
@@ -47,8 +50,6 @@ pub struct FbxHeader {
 impl FbxHeader {
     /// Reads an FBX header from the given reader.
     pub fn read_fbx_header<R: io::Read>(mut reader: R) -> Result<Self, HeaderError> {
-        /// Magic binary length.
-        const MAGIC_LEN: usize = 23;
         /// Magic binary.
         const MAGIC: &[u8; MAGIC_LEN] = b"Kaydara FBX Binary  \x00\x1a\x00";
 
@@ -80,8 +81,6 @@ impl FbxHeader {
 
     /// Returns header length in bytes.
     pub(crate) fn len(self) -> usize {
-        /// Magic binary length.
-        const MAGIC_LEN: usize = 23;
         /// FBX version length.
         const VERSION_LEN: usize = 4;
 
