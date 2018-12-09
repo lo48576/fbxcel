@@ -73,7 +73,7 @@ impl FbxHeader {
         self.version
     }
 
-    /// Returns FBX version.
+    /// Returns FBX parser version.
     pub fn parser_version(self) -> Option<ParserVersion> {
         ParserVersion::from_fbx_version(self.version())
     }

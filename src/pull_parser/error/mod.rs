@@ -1,4 +1,6 @@
-//! Errors and result.
+//! Errors and result types.
+//!
+//! Types in this module will be used among multiple versions of parsers.
 
 use std::error;
 use std::fmt;

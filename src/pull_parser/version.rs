@@ -7,7 +7,7 @@ use crate::low::FbxVersion;
 /// Parser version for each version of FBX.
 ///
 /// Some parser supports multiple versions of FBX binary.
-/// Variants of this type corresponds to parser version.
+/// Each variants of this type corresponds to a parser implementation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ParserVersion {
     /// FBX 7.4 and 7.5.

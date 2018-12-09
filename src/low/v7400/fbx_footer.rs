@@ -14,7 +14,7 @@ use crate::pull_parser::ParserSource;
 pub struct FbxFooter {
     /// Unknown (semirandom) 16-bytes data.
     ///
-    /// This field is expected to have prescribed upper 4 bits, i.e. tha field
+    /// This field is expected to have prescribed upper 4 bits, i.e. the field
     /// is `fx bx ax 0x dx cx dx 6x bx 7x fx 8x 1x fx 2x 7x` if the FBX data is
     /// exported from official SDK.
     ///

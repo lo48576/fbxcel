@@ -12,6 +12,9 @@ pub enum Event<'a, R: 'a> {
     /// End of a node.
     EndNode,
     /// End of an FBX document.
+    ///
+    /// This will contain `Ok(_)` if the the FBX footer is succssfully read,
+    /// contain `Err(_)` if the parser failed to load the FBX footer.
     EndFbx(Result<Box<FbxFooter>>),
 }
 

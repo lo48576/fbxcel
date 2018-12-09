@@ -14,7 +14,7 @@ use super::{
     Event, FbxVersion, FromParser, ParserSource, ParserVersion, Result, StartNode, Warning,
 };
 
-/// Creates a new `Parser` from the given buffered reader.
+/// Creates a new `Parser` from the given reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
 pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<PlainSource<R>>>

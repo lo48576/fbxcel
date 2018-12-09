@@ -30,7 +30,7 @@ pub trait ParserSource: Sized + io::Read {
     ///
     /// # Panics
     ///
-    /// Panics if the given position is behind current position.
+    /// Panics if the given position is behind the current position.
     // Reader types can make this more efficient by implementing using
     // `io::Seek::seek` if possible.
     fn skip_to(&mut self, pos: u64) -> io::Result<()> {

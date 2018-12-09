@@ -1,4 +1,4 @@
-//! Parser-related stuff for BX 7.4 or later.
+//! Parser-related stuff for FBX 7.4 or later.
 
 use crate::low::FbxVersion;
 
