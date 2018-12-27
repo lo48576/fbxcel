@@ -10,7 +10,7 @@ fn main() {
     let path = match std::env::args_os().nth(1) {
         Some(v) => PathBuf::from(v),
         None => {
-            eprintln!("Usage: list-parser-events <FBX_FILE>");
+            eprintln!("Usage: dump-pull-parser-events <FBX_FILE>");
             std::process::exit(1);
         }
     };
