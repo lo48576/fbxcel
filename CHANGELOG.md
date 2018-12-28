@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+### Added
+* `pull_parser::v7400::Parser::skip_current_node()` is added.
 
 ## [0.1.0]
 
