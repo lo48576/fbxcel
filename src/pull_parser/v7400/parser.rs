@@ -332,6 +332,29 @@ impl<R: ParserSource> Parser<R> {
     pub(crate) fn set_aborted(&mut self) {
         self.state.health = Health::Aborted;
     }
+
+    /// Ignore events until the current node closes.
+    ///
+    /// This method seeks to the already known node end position, without
+    /// parsing events to be ignored.
+    /// Because of this, some errors can be overlooked, or some errors can be
+    /// detected at the different position from the true error position.
+    ///
+    /// To detect errors correctly, you should use [`next_event`] manually.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are no open nodes.
+    pub fn skip_current_node(&mut self) -> Result<()> {
+        let end_pos = self
+            .state
+            .current_node()
+            .expect("Attempt to skip implicit top-level node")
+            .node_end_offset;
+        self.reader.skip_to(end_pos)?;
+
+        Ok(())
+    }
 }
 
 impl<R: fmt::Debug> fmt::Debug for Parser<R> {
