@@ -7,7 +7,7 @@ use crate::low::FbxVersion;
 use crate::pull_parser::error::DataError;
 use crate::pull_parser::v7400::{FromParser, Parser};
 use crate::pull_parser::Error as ParserError;
-use crate::pull_parser::{ParserSource, Warning};
+use crate::pull_parser::{ParserSource, SyntacticPosition, Warning};
 
 /// FBX 7.4 footer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -47,6 +47,8 @@ impl FromParser for FbxFooter {
     where
         R: ParserSource,
     {
+        let start_pos = parser.reader().position();
+
         // Read unknown field 1.
         let unknown1 = {
             /// Expected upper 4-bits of the unknown field 1.
@@ -59,7 +61,13 @@ impl FromParser for FbxFooter {
 
             for (byte, expected) in buf.iter().zip(&EXPECTED) {
                 if (byte & 0xf0) != *expected {
-                    parser.warn(Warning::UnexpectedFooterFieldValue)?;
+                    let pos = SyntacticPosition {
+                        byte_pos: parser.reader().position() - 16,
+                        component_byte_pos: start_pos,
+                        node_path: Vec::new(),
+                        attribute_index: None,
+                    };
+                    parser.warn(Warning::UnexpectedFooterFieldValue, pos)?;
                     break;
                 }
             }
@@ -70,12 +78,13 @@ impl FromParser for FbxFooter {
         // Read padding, following 144-bytes zeroes, unknown field 2, FBX
         // version, and unknown field 3.
         let (padding_len, unknown2, version, unknown3) = {
+            let buf_start_pos = parser.reader().position();
+
             // Expected padding length.
-            let expected_padding_len = (parser.reader().position().wrapping_neg() & 0x0f) as usize;
+            let expected_padding_len = (buf_start_pos.wrapping_neg() & 0x0f) as usize;
             debug!(
                 "Current posiiton = {}, expected padding length = {}",
-                parser.reader().position(),
-                expected_padding_len
+                buf_start_pos, expected_padding_len
             );
 
             /// Buffer length to load footer partially.
@@ -149,10 +158,16 @@ impl FromParser for FbxFooter {
 
             // Check if the padding has correct length.
             if padding_len != expected_padding_len {
-                parser.warn(Warning::InvalidFooterPaddingLength(
-                    expected_padding_len,
-                    padding_len,
-                ))?;
+                let pos = SyntacticPosition {
+                    byte_pos: buf_start_pos,
+                    component_byte_pos: start_pos,
+                    node_path: Vec::new(),
+                    attribute_index: None,
+                };
+                parser.warn(
+                    Warning::InvalidFooterPaddingLength(expected_padding_len, padding_len),
+                    pos,
+                )?;
             }
 
             (padding_len, unknown2, version, unknown3)

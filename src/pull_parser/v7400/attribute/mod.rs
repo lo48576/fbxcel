@@ -5,7 +5,7 @@ use std::io;
 use crate::low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader};
 use crate::pull_parser::error::DataError;
 use crate::pull_parser::v7400::{FromReader, Parser};
-use crate::pull_parser::{ParserSource, Result, Warning};
+use crate::pull_parser::{ParserSource, Result, SyntacticPosition, Warning};
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
 pub use self::direct::DirectAttributeValue;
@@ -68,16 +68,21 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     /// Runs the given function with the health check and update.
     pub(crate) fn do_with_health_check<T, F>(&mut self, f: F) -> Result<T>
     where
-        F: FnOnce(&mut Self) -> Result<T>,
+        F: FnOnce(&mut Self, u64, usize) -> Result<T>,
     {
         self.parser.ensure_continuable()?;
 
-        let res = f(self);
-        if res.is_err() {
-            self.parser.set_aborted();
-        }
+        let start_pos = self.next_attr_start_offset;
+        let attr_index = (self.total_count - self.rest_count) as usize;
 
-        res
+        match f(self, start_pos, attr_index) {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                let err_pos = self.position(start_pos, attr_index);
+                self.parser.set_aborted(err_pos.clone());
+                Err(e.and_position(err_pos))
+            }
+        }
     }
 
     /// Returns the next attribute type.
@@ -106,12 +111,13 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     where
         V: VisitAttribute,
     {
-        self.do_with_health_check(|this| {
+        self.do_with_health_check(|this, start_pos, attr_index| {
             let attr_type = match this.read_next_attr_type()? {
                 Some(v) => v,
                 None => return Ok(None),
             };
-            this.visit_next_impl(attr_type, visitor).map(Some)
+            this.visit_next_impl(attr_type, visitor, start_pos, attr_index)
+                .map(Some)
         })
     }
 
@@ -124,17 +130,24 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         R: io::BufRead,
         V: VisitAttribute,
     {
-        self.do_with_health_check(|this| {
+        self.do_with_health_check(|this, start_pos, attr_index| {
             let attr_type = match this.read_next_attr_type()? {
                 Some(v) => v,
                 None => return Ok(None),
             };
-            this.visit_next_buffered_impl(attr_type, visitor).map(Some)
+            this.visit_next_buffered_impl(attr_type, visitor, start_pos, attr_index)
+                .map(Some)
         })
     }
 
     /// Internal implementation of `visit_next`.
-    fn visit_next_impl<V>(&mut self, attr_type: AttributeType, visitor: V) -> Result<V::Output>
+    fn visit_next_impl<V>(
+        &mut self,
+        attr_type: AttributeType,
+        visitor: V,
+        start_pos: u64,
+        attr_index: usize,
+    ) -> Result<V::Output>
     where
         V: VisitAttribute,
     {
@@ -144,7 +157,10 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let value = (raw & 1) != 0;
                 self.update_next_attr_start_offset(0);
                 if raw != b'T' && raw != b'Y' {
-                    self.parser.warn(Warning::IncorrectBooleanRepresentation)?;
+                    self.parser.warn(
+                        Warning::IncorrectBooleanRepresentation,
+                        self.position(start_pos, attr_index),
+                    )?;
                 }
                 visitor.visit_bool(value)
             }
@@ -184,7 +200,10 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 // `self.parser.warn()` call.
                 let has_error = iter.has_error();
                 if iter.has_incorrect_boolean_value() {
-                    self.parser.warn(Warning::IncorrectBooleanRepresentation)?;
+                    self.parser.warn(
+                        Warning::IncorrectBooleanRepresentation,
+                        self.position(start_pos, attr_index),
+                    )?;
                 }
                 if has_error {
                     return Err(DataError::NodeAttributeError.into());
@@ -265,6 +284,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         &mut self,
         attr_type: AttributeType,
         visitor: V,
+        start_pos: u64,
+        attr_index: usize,
     ) -> Result<V::Output>
     where
         R: io::BufRead,
@@ -289,7 +310,16 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader = io::Read::take(self.parser.reader(), bytelen);
                 visitor.visit_string_buffered(reader, bytelen)
             }
-            _ => self.visit_next_impl(attr_type, visitor),
+            _ => self.visit_next_impl(attr_type, visitor, start_pos, attr_index),
+        }
+    }
+
+    /// Returns the syntactic position of the attribute currently reading.
+    fn position(&self, start_pos: u64, index: usize) -> SyntacticPosition {
+        SyntacticPosition {
+            component_byte_pos: start_pos,
+            attribute_index: Some(index),
+            ..self.parser.position()
         }
     }
 }
