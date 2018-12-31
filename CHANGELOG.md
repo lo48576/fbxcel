@@ -11,6 +11,8 @@
   hander (note that `&SyntacticPosition` argument is added).
     + By this change, warning handler can use position information where the
       warning happened.
+* `low::FbxHeader::read_fbx_header` now takes `impl std::io::Read` instead of a
+  type parameter.
 
 ### Added
 * `pull_parser::SyntacticPosition` is added.
