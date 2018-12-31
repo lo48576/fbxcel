@@ -21,35 +21,35 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub struct Error {
     /// The real error.
-    inner: Box<ErrorContainer>,
+    repr: Box<Repr>,
 }
 
 impl Error {
     /// Returns the error kind.
     pub fn kind(&self) -> ErrorKind {
-        self.inner.kind()
+        self.repr.error.kind()
     }
 
     /// Returns a reference to the inner error container.
     pub fn get_ref(&self) -> &ErrorContainer {
-        &self.inner
+        &self.repr.error
     }
 
     /// Returns a reference to the inner error if the type matches.
     pub fn downcast_ref<T: 'static + error::Error>(&self) -> Option<&T> {
-        self.inner.as_error().downcast_ref::<T>()
+        self.repr.error.as_error().downcast_ref::<T>()
     }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.inner.fmt(f)
+        self.repr.error.fmt(f)
     }
 }
 
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        self.inner.source()
+        self.repr.error.source()
     }
 }
 
@@ -59,8 +59,22 @@ where
 {
     fn from(e: T) -> Self {
         Error {
-            inner: Box::new(e.into()),
+            repr: Box::new(Repr::new(e.into())),
         }
+    }
+}
+
+/// Internal representation of parsing error.
+#[derive(Debug)]
+struct Repr {
+    /// Error.
+    error: ErrorContainer,
+}
+
+impl Repr {
+    /// Creates a new `Repr`.
+    fn new(error: ErrorContainer) -> Self {
+        Self { error }
     }
 }
 
