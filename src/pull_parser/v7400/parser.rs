@@ -13,6 +13,9 @@ use crate::pull_parser::v7400::{Event, FromParser, StartNode};
 use crate::pull_parser::SyntacticPosition;
 use crate::pull_parser::{Error, ParserSource, ParserVersion, Result, Warning};
 
+/// Warning handler type.
+type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;
+
 /// Creates a new `Parser` from the given reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
@@ -46,7 +49,7 @@ pub struct Parser<R> {
     /// Reader.
     reader: R,
     /// Warning handler.
-    warning_handler: Option<Box<dyn FnMut(Warning) -> Result<()>>>,
+    warning_handler: Option<WarningHandler>,
 }
 
 impl<R: ParserSource> Parser<R> {
@@ -73,7 +76,7 @@ impl<R: ParserSource> Parser<R> {
     /// Sets the warning handler.
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
-        F: 'static + FnMut(Warning) -> Result<()>,
+        F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
     {
         self.warning_handler = Some(Box::new(warning_handler));
     }
@@ -134,9 +137,12 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Passes the given warning to the warning handler.
-    pub(crate) fn warn(&mut self, warning: Warning) -> Result<()> {
+    pub(crate) fn warn(&mut self, warning: Warning, pos: SyntacticPosition) -> Result<()> {
         match self.warning_handler {
-            Some(ref mut handler) => handler(warning),
+            Some(ref mut handler) => match handler(warning, &pos) {
+                Ok(()) => Ok(()),
+                Err(e) => Err(e.and_position(pos)),
+            },
             None => Ok(()),
         }
     }
@@ -294,7 +300,20 @@ impl<R: ParserSource> Parser<R> {
         }
 
         if node_header.bytelen_name == 0 {
-            self.warn(Warning::EmptyNodeName)?;
+            let mut pos = self.position();
+            // Need to modify position, because the currently reading node is
+            // not reflected to the parser.
+            pos.byte_pos = self.reader().position();
+            pos.component_byte_pos = event_start_offset;
+            let local_node_index = self
+                .state
+                .current_node()
+                .map_or(self.state.known_toplevel_nodes_count, |v| {
+                    v.known_children_count
+                });
+            pos.node_path.push((local_node_index, String::new()));
+
+            self.warn(Warning::EmptyNodeName, pos)?;
         }
 
         // Read the node name.
