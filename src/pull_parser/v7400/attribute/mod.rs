@@ -75,12 +75,14 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         let start_pos = self.next_attr_start_offset;
         let attr_index = self.total_count - self.rest_count;
 
-        let res = f(self);
-        if res.is_err() {
-            self.parser.set_aborted();
+        match f(self) {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                let err_pos = self.position(start_pos, attr_index as usize);
+                self.parser.set_aborted(err_pos.clone());
+                Err(e.and_position(err_pos))
+            }
         }
-
-        res.map_err(|e| e.and_position(self.position(start_pos, attr_index as usize)))
     }
 
     /// Returns the next attribute type.

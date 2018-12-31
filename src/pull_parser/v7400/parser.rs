@@ -11,7 +11,7 @@ use crate::pull_parser::error::{DataError, OperationError};
 use crate::pull_parser::reader::{PlainSource, SeekableSource};
 use crate::pull_parser::v7400::{Event, FromParser, StartNode};
 use crate::pull_parser::SyntacticPosition;
-use crate::pull_parser::{ParserSource, ParserVersion, Result, Warning};
+use crate::pull_parser::{Error, ParserSource, ParserVersion, Result, Warning};
 
 /// Creates a new `Parser` from the given reader.
 ///
@@ -121,7 +121,10 @@ impl<R: ParserSource> Parser<R> {
         match self.state.health() {
             Health::Running => Ok(()),
             Health::Finished => Err(OperationError::AlreadyFinished.into()),
-            Health::Aborted => Err(OperationError::AlreadyAborted.into()),
+            Health::Aborted(err_pos) => Err(Error::with_position(
+                OperationError::AlreadyAborted.into(),
+                err_pos.clone(),
+            )),
         }
     }
 
@@ -154,8 +157,8 @@ impl<R: ParserSource> Parser<R> {
         let event_kind = match self.next_event_impl() {
             Ok(v) => v,
             Err(e) => {
-                self.set_aborted();
                 let err_pos = self.position();
+                self.set_aborted(err_pos.clone());
                 return Err(e.and_position(err_pos));
             }
         };
@@ -216,7 +219,7 @@ impl<R: ParserSource> Parser<R> {
     /// Reads the next node header and changes the parser state (except for
     /// parser health and the last event kind).
     fn next_event_impl(&mut self) -> Result<EventKind> {
-        assert_eq!(self.state.health(), Health::Running);
+        assert_eq!(self.state.health(), &Health::Running);
         assert_ne!(self.state.last_event_kind(), Some(EventKind::EndFbx));
 
         // Skip unread attribute of previous node, if exists.
@@ -336,8 +339,8 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Sets the parser to aborted state.
-    pub(crate) fn set_aborted(&mut self) {
-        self.state.health = Health::Aborted;
+    pub(crate) fn set_aborted(&mut self, pos: SyntacticPosition) {
+        self.state.health = Health::Aborted(pos);
     }
 
     /// Ignore events until the current node closes.
@@ -420,14 +423,14 @@ impl<R: fmt::Debug> fmt::Debug for Parser<R> {
 }
 
 /// Health of a parser.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum Health {
     /// Ready or already started, but not yet finished, and no critical errors.
     Running,
     /// Successfully finished.
     Finished,
     /// Aborted due to critical error.
-    Aborted,
+    Aborted(SyntacticPosition),
 }
 
 /// Parser state.
@@ -465,8 +468,8 @@ impl State {
     }
 
     /// Returns health of the parser.
-    fn health(&self) -> Health {
-        self.health
+    fn health(&self) -> &Health {
+        &self.health
     }
 
     /// Returns info about current node (except for implicit root node).
