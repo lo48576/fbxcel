@@ -5,7 +5,7 @@ use std::io;
 use crate::low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader};
 use crate::pull_parser::error::DataError;
 use crate::pull_parser::v7400::{FromReader, Parser};
-use crate::pull_parser::{ParserSource, Result, Warning};
+use crate::pull_parser::{ParserSource, Result, SyntacticPosition, Warning};
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
 pub use self::direct::DirectAttributeValue;
@@ -72,12 +72,15 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     {
         self.parser.ensure_continuable()?;
 
+        let start_pos = self.next_attr_start_offset;
+        let attr_index = self.total_count - self.rest_count;
+
         let res = f(self);
         if res.is_err() {
             self.parser.set_aborted();
         }
 
-        res
+        res.map_err(|e| e.and_position(self.position(start_pos, attr_index as usize)))
     }
 
     /// Returns the next attribute type.
@@ -290,6 +293,15 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 visitor.visit_string_buffered(reader, bytelen)
             }
             _ => self.visit_next_impl(attr_type, visitor),
+        }
+    }
+
+    /// Returns the syntactic position of the attribute currently reading.
+    fn position(&self, start_pos: u64, index: usize) -> SyntacticPosition {
+        SyntacticPosition {
+            component_byte_pos: start_pos,
+            attribute_index: Some(index),
+            ..self.parser.position()
         }
     }
 }
