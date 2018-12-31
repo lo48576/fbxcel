@@ -155,7 +155,8 @@ impl<R: ParserSource> Parser<R> {
             Ok(v) => v,
             Err(e) => {
                 self.set_aborted();
-                return Err(e);
+                let err_pos = self.position();
+                return Err(e.and_position(err_pos));
             }
         };
         if event_kind == EventKind::EndFbx {
