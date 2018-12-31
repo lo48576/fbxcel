@@ -6,6 +6,8 @@ use std::error;
 use std::fmt;
 use std::io;
 
+use crate::pull_parser::SyntacticPosition;
+
 pub use self::data::{Compression, DataError};
 pub use self::operation::OperationError;
 pub use self::warning::Warning;
@@ -39,6 +41,24 @@ impl Error {
     pub fn downcast_ref<T: 'static + error::Error>(&self) -> Option<&T> {
         self.repr.error.as_error().downcast_ref::<T>()
     }
+
+    /// Returns the syntactic position if available.
+    pub fn position(&self) -> Option<&SyntacticPosition> {
+        self.repr.position.as_ref()
+    }
+
+    /// Creates a new `error` with the given syntactic position info.
+    pub(crate) fn with_position(error: ErrorContainer, position: SyntacticPosition) -> Self {
+        Self {
+            repr: Box::new(Repr::with_position(error, position)),
+        }
+    }
+
+    /// Sets the syntactic position and returns the new error.
+    pub(crate) fn and_position(mut self, position: SyntacticPosition) -> Self {
+        self.repr.position = Some(position);
+        self
+    }
 }
 
 impl fmt::Display for Error {
@@ -69,12 +89,25 @@ where
 struct Repr {
     /// Error.
     error: ErrorContainer,
+    /// Syntactic position.
+    position: Option<SyntacticPosition>,
 }
 
 impl Repr {
     /// Creates a new `Repr`.
-    fn new(error: ErrorContainer) -> Self {
-        Self { error }
+    pub(crate) fn new(error: ErrorContainer) -> Self {
+        Self {
+            error,
+            position: None,
+        }
+    }
+
+    /// Creates a new `Repr` with the given syntactic position info.
+    pub(crate) fn with_position(error: ErrorContainer, position: SyntacticPosition) -> Self {
+        Self {
+            error,
+            position: Some(position),
+        }
     }
 }
 
