@@ -10,6 +10,7 @@ use crate::low::{FbxHeader, FbxVersion};
 use crate::pull_parser::error::{DataError, OperationError};
 use crate::pull_parser::reader::{PlainSource, SeekableSource};
 use crate::pull_parser::v7400::{Event, FromParser, StartNode};
+use crate::pull_parser::SyntacticPosition;
 use crate::pull_parser::{ParserSource, ParserVersion, Result, Warning};
 
 /// Creates a new `Parser` from the given reader.
@@ -305,9 +306,14 @@ impl<R: ParserSource> Parser<R> {
             attributes_count: node_header.num_attributes,
             attributes_end_offset: current_offset + node_header.bytelen_attributes,
             name,
+            known_children_count: 0,
         };
 
         // Update parser status.
+        match self.state.started_nodes.last_mut() {
+            Some(parent) => parent.known_children_count += 1,
+            None => self.state.known_toplevel_nodes_count += 1,
+        }
         self.state.started_nodes.push(starting);
         Ok(EventKind::StartNode)
     }
@@ -355,6 +361,48 @@ impl<R: ParserSource> Parser<R> {
 
         Ok(())
     }
+    /// Returns the syntactic position of the current node.
+    ///
+    /// Note that this allocates memory.
+    pub fn position(&self) -> SyntacticPosition {
+        let byte_pos = self.reader.position();
+        if self.state.current_node().is_none() {
+            // Reading implicit root node.
+            return SyntacticPosition {
+                byte_pos,
+                component_byte_pos: 0,
+                node_path: Vec::new(),
+                attribute_index: None,
+            };
+        }
+
+        let toplevel_index = self
+            .state
+            .known_toplevel_nodes_count
+            .checked_sub(1)
+            .expect("Should never fail: implicit root node should have some children here");
+        // For now, use 0 for start offset of implicit root node.
+        // This behaviour may change in future.
+        let node_start_pos = self.state.current_node().map_or(0, |v| v.node_start_offset);
+        // Use not `checked_sub` but `saturating_sub` here, because
+        // `Iterator::zip` might read extra elements which can be used as
+        // result.
+        let trailing_indices = self
+            .state
+            .started_nodes
+            .iter()
+            .map(|v| v.known_children_count.saturating_sub(1));
+        let node_indices = std::iter::once(toplevel_index).chain(trailing_indices);
+        let node_names = self.state.started_nodes.iter().map(|v| v.name.clone());
+        let node_path = node_indices.zip(node_names).collect();
+
+        SyntacticPosition {
+            byte_pos,
+            component_byte_pos: node_start_pos,
+            node_path,
+            attribute_index: None,
+        }
+    }
 }
 
 impl<R: fmt::Debug> fmt::Debug for Parser<R> {
@@ -397,6 +445,10 @@ struct State {
     started_nodes: Vec<StartedNode>,
     /// Last event kind.
     last_event_kind: Option<EventKind>,
+    /// Number of known top-level nodes.
+    ///
+    /// This is here because [`StartedNode`] is not used for implicit root node.
+    known_toplevel_nodes_count: usize,
 }
 
 impl State {
@@ -407,6 +459,7 @@ impl State {
             health: Health::Running,
             started_nodes: Vec::new(),
             last_event_kind: None,
+            known_toplevel_nodes_count: 0,
         }
     }
 
@@ -454,4 +507,6 @@ struct StartedNode {
     attributes_end_offset: u64,
     /// Node name.
     name: String,
+    /// Number of known children.
+    known_children_count: usize,
 }
