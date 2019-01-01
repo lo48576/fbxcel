@@ -12,12 +12,14 @@ keywords = ["FBX", "3D", "model"]
 [features]
 default = []
 
-dom = []
+dom = ["indextree", "string-interner"]
 
 [dependencies]
 byteorder = "1"
+indextree = { version = "3", optional = true }
 libflate = "0.1"
 log = "0.4.4"
+string-interner = { version = "0.7", optional = true, default-features = false }
 
 [dev-dependencies]
 env_logger = "0.6"
