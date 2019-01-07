@@ -1,9 +1,11 @@
 # Change Log
 
 ## [Unreleased]
-* Syntactic position information is supported.
+* Syntactic position information for pull parser is supported.
   Syntactic position contains node path, node index, attribute index, etc.
   This will make errors and warnings more detailed and useful.
+* Quite basic DOM is implemented.
+  This is not yet practically usable.
 
 ### Breaking changes
 * `pull_parser::v7400::Parser::set_warning_handler()` now requires
@@ -15,6 +17,9 @@
   type parameter.
 
 ### Added
+* `dom` module is added.
+    + This can be enabled by `dom` feature, but this is not yet practically
+      usable.
 * `pull_parser::SyntacticPosition` is added.
 * `pull_parser::error::Error::position()` is added.
 * `pull_parser::v7400::Parser::skip_current_node()` is added.

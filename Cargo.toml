@@ -9,10 +9,17 @@ description = "Excellent FBX library"
 repository = "https://github.com/lo48576/fbxcel"
 keywords = ["FBX", "3D", "model"]
 
+[features]
+default = []
+
+dom = ["indextree", "string-interner"]
+
 [dependencies]
 byteorder = "1"
+indextree = { version = "3", optional = true }
 libflate = "0.1"
 log = "0.4.4"
+string-interner = { version = "0.7", optional = true, default-features = false }
 
 [dev-dependencies]
 env_logger = "0.6"
@@ -20,3 +27,10 @@ env_logger = "0.6"
 [badges]
 maintenance = { status = "experimental" }
 travis-ci = { repository = "lo48576/fbxcel" }
+
+[[example]]
+name = "dump-pull-parser-events"
+
+[[example]]
+name = "load-dom"
+required-features = ["dom"]
