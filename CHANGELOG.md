@@ -23,6 +23,8 @@
 * `pull_parser::SyntacticPosition` is added.
 * `pull_parser::error::Error::position()` is added.
 * `pull_parser::v7400::Parser::skip_current_node()` is added.
+* `pull_parser::v7400::attribute::Attributes::iter{,_buffered}` and
+  `pull_parser::v7400::attribute::iter` module are added.
 * `pull_parser::v7400::attribute::DirectAttributeValue::get_{{types}}()` are
   added.
     + `{{types}}` are: `bool`, `i16`, `i32`, `i64`, `f32`, `f64`, `arr_bool`,
