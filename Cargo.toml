@@ -27,3 +27,10 @@ env_logger = "0.6"
 [badges]
 maintenance = { status = "experimental" }
 travis-ci = { repository = "lo48576/fbxcel" }
+
+[[example]]
+name = "dump-pull-parser-events"
+
+[[example]]
+name = "load-dom"
+required-features = ["dom"]
