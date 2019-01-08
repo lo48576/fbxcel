@@ -7,8 +7,7 @@ use string_interner::StringInterner;
 use crate::dom::v7400::{Document, NodeData, NodeId, StrSym};
 use crate::dom::LoadError;
 use crate::pull_parser::v7400::attribute::visitor::DirectVisitor;
-use crate::pull_parser::v7400::attribute::DirectAttributeValue;
-use crate::pull_parser::v7400::{Attributes, Event, Parser, StartNode};
+use crate::pull_parser::v7400::{Event, Parser, StartNode};
 use crate::pull_parser::ParserSource;
 
 /// DOM document loader.
@@ -105,7 +104,10 @@ impl Loader {
         // Create a new node.
         let current = {
             let name = self.strings.get_or_intern(start.name());
-            let attributes = Self::load_attributes(&mut start.attributes())?;
+            let attributes = start
+                .attributes()
+                .into_iter(std::iter::repeat(DirectVisitor))
+                .collect::<Result<Vec<_>, _>>()?;
 
             NodeId::new(self.nodes.new_node(NodeData::new(name, attributes)))
         };
@@ -116,22 +118,6 @@ impl Loader {
         );
 
         Ok(current)
-    }
-
-    /// Loads node attributes.
-    fn load_attributes<R>(
-        attrs_parser: &mut Attributes<'_, R>,
-    ) -> Result<Vec<DirectAttributeValue>, LoadError>
-    where
-        R: ParserSource,
-    {
-        let mut attributes = Vec::with_capacity(attrs_parser.total_count() as usize);
-        // TODO: Should `visit_next_buffered` be used here?
-        while let Some(attr) = attrs_parser.visit_next(DirectVisitor)? {
-            attributes.push(attr);
-        }
-
-        Ok(attributes)
     }
 }
 
