@@ -13,6 +13,7 @@ pub use self::visitor::VisitAttribute;
 
 mod array;
 mod direct;
+pub mod iter;
 pub mod visitor;
 
 /// Node attributes reader.
@@ -321,5 +322,49 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
             attribute_index: Some(index),
             ..self.parser.position()
         }
+    }
+
+    /// Creates an iterator emitting attribute values.
+    pub fn iter<V, I>(&mut self, visitors: I) -> iter::BorrowedIter<'_, 'a, R, I::IntoIter>
+    where
+        V: VisitAttribute,
+        I: IntoIterator<Item = V>,
+    {
+        iter::BorrowedIter::new(self, visitors.into_iter())
+    }
+
+    /// Creates an iterator emitting attribute values with buffered I/O.
+    pub fn iter_buffered<V, I>(
+        &mut self,
+        visitors: I,
+    ) -> iter::BorrowedIterBuffered<'_, 'a, R, I::IntoIter>
+    where
+        R: io::BufRead,
+        V: VisitAttribute,
+        I: IntoIterator<Item = V>,
+    {
+        iter::BorrowedIterBuffered::new(self, visitors.into_iter())
+    }
+
+    /// Creates an iterator emitting attribute values.
+    pub fn into_iter<V, I>(self, visitors: I) -> iter::OwnedIter<'a, R, I::IntoIter>
+    where
+        V: VisitAttribute,
+        I: IntoIterator<Item = V>,
+    {
+        iter::OwnedIter::new(self, visitors.into_iter())
+    }
+
+    /// Creates an iterator emitting attribute values with buffered I/O.
+    pub fn into_iter_buffered<V, I>(
+        self,
+        visitors: I,
+    ) -> iter::OwnedIterBuffered<'a, R, I::IntoIter>
+    where
+        R: io::BufRead,
+        V: VisitAttribute,
+        I: IntoIterator<Item = V>,
+    {
+        iter::OwnedIterBuffered::new(self, visitors.into_iter())
     }
 }
