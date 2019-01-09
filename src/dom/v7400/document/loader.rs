@@ -1,14 +1,44 @@
 //! FBX DOM document loader.
 
+use std::collections::HashMap;
+
 use indextree::Arena;
-use log::error;
+use log::{error, warn};
 use string_interner::StringInterner;
 
+use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
 use crate::dom::v7400::{Document, NodeData, NodeId, StrSym};
-use crate::dom::LoadError;
+use crate::dom::{AccessError, LoadError};
 use crate::pull_parser::v7400::attribute::visitor::DirectVisitor;
 use crate::pull_parser::v7400::{Event, Parser, StartNode};
 use crate::pull_parser::ParserSource;
+
+macro_rules! bail_if_strict {
+    ($is_strict:expr, $err:expr, $loose:expr) => {
+        if $is_strict {
+            return Err($err.into());
+        } else {
+            $loose
+        }
+    };
+    ($is_strict:expr, $err:expr) => {
+        if $is_strict {
+            return Err($err.into());
+        }
+    };
+}
+
+macro_rules! warn_noncritical {
+    ($strict:expr, $format:expr) => {
+        warn!(concat!("Noncritical DOM load error [strict={}] ", $format), $strict)
+    };
+    ($strict:expr, $format:expr, $($args:tt)*) => {
+        warn!(
+            concat!("Noncritical DOM load error [strict={}] ", $format),
+            $strict, $($args)*
+        )
+    };
+}
 
 /// DOM document loader.
 #[derive(Debug, Clone)]
@@ -24,6 +54,8 @@ pub struct Loader {
     /// If this is `true`, non-critical errors should be `Err`.
     /// If `false`, non-critical errors are ignored.
     strict: bool,
+    /// Map from object ID to node ID.
+    object_ids: HashMap<ObjectId, ObjectNodeId>,
 }
 
 impl Loader {
@@ -45,7 +77,15 @@ impl Loader {
         // Load basic tree.
         self.load_tree(parser)?;
 
-        Ok(Document::new(self.strings, self.nodes, self.root))
+        // Load objects.
+        self.load_objects()?;
+
+        Ok(Document::new(
+            self.strings,
+            self.nodes,
+            self.root,
+            self.object_ids,
+        ))
     }
 
     /// Loads simple tree data.
@@ -119,6 +159,138 @@ impl Loader {
 
         Ok(current)
     }
+
+    /// Finds a toplevel node by the name.
+    fn find_toplevel(&self, target_name: &str) -> Option<NodeId> {
+        let target_sym = self.strings.get(target_name)?;
+        for toplevel_id in self.root.raw().children(&self.nodes) {
+            let toplevel = self
+                .nodes
+                .get(toplevel_id)
+                .expect("Should never fail: node should exist");
+            if toplevel.data.name_sym() == target_sym {
+                return Some(NodeId::new(toplevel_id));
+            }
+        }
+        None
+    }
+
+    /// Loads objects.
+    fn load_objects(&mut self) -> Result<(), LoadError> {
+        assert!(
+            self.object_ids.is_empty(),
+            "Attempt to initialize `self.object_ids` which has been already initialized"
+        );
+
+        // Cannot use `indextree::NodeId::children()`, because it borrows arena.
+
+        // `/Objects/*` nodes.
+        if let Some(objects_node_id) = self.find_toplevel("Objects") {
+            let mut next_node_id = self
+                .nodes
+                .get(objects_node_id.raw())
+                .expect("Should never fail: node should exist")
+                .first_child()
+                .map(NodeId::new);
+            while let Some(object_node_id) = next_node_id {
+                self.add_object(object_node_id)?;
+                next_node_id = self
+                    .nodes
+                    .get(object_node_id.raw())
+                    .expect("Should never fail: node should exist")
+                    .next_sibling()
+                    .map(NodeId::new);
+            }
+        } else {
+            warn_noncritical!(self.strict, "`Objects` node not found");
+            bail_if_strict!(
+                self.strict,
+                AccessError::NodeNotFound("`Objects`".to_owned()),
+                return Ok(())
+            );
+        }
+
+        // `/Documents/Document` nodes.
+        if let Some(documents_node_id) = self.find_toplevel("Documents") {
+            let document_sym = self.strings.get("Document");
+            let mut next_node_id = self
+                .nodes
+                .get(documents_node_id.raw())
+                .expect("Should never fail: node should exist")
+                .first_child()
+                .map(NodeId::new);
+            while let Some(document_node_id) = next_node_id {
+                if Some(
+                    self.nodes
+                        .get(document_node_id.raw())
+                        .expect("Should never fail: node should exist")
+                        .data
+                        .name_sym(),
+                ) == document_sym
+                {
+                    self.add_object(document_node_id)?;
+                }
+                next_node_id = self
+                    .nodes
+                    .get(document_node_id.raw())
+                    .expect("Should never fail: node should exist")
+                    .next_sibling()
+                    .map(NodeId::new);
+            }
+        } else {
+            warn_noncritical!(self.strict, "`Documents` node not found");
+            bail_if_strict!(
+                self.strict,
+                AccessError::NodeNotFound("`Documents`".to_owned()),
+                return Ok(())
+            );
+        }
+
+        Ok(())
+    }
+
+    /// Register object node.
+    fn add_object(&mut self, node_id: NodeId) -> Result<(), LoadError> {
+        use std::collections::hash_map::Entry;
+
+        let node = self
+            .nodes
+            .get(node_id.raw())
+            .expect("Should never fail: node should exist");
+        let obj_meta = match ObjectMeta::from_attributes(node.data.attributes(), &mut self.strings)
+        {
+            Ok(v) => v,
+            Err(e) => {
+                warn_noncritical!(self.strict, "Object load error: {}", e);
+                bail_if_strict!(self.strict, e, return Ok(()));
+            }
+        };
+        let obj_id = obj_meta.id();
+        let node_id = ObjectNodeId::new(node_id);
+
+        // Register to `object_ids`.
+        match self.object_ids.entry(obj_id) {
+            Entry::Occupied(entry) => {
+                warn_noncritical!(
+                    self.strict,
+                    "Duplicate object ID: nodes with ID {:?} and {:?} have same object ID {:?}",
+                    entry.get(),
+                    node_id,
+                    obj_id
+                );
+                bail_if_strict!(
+                    self.strict,
+                    LoadError::DuplicateId("object".to_owned(), format!("{:?}", obj_id)),
+                    return Ok(())
+                );
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(node_id);
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl Default for Loader {
@@ -133,6 +305,7 @@ impl Default for Loader {
             nodes,
             root,
             strict: false,
+            object_ids: HashMap::new(),
         }
     }
 }
