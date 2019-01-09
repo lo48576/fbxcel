@@ -37,7 +37,7 @@ impl IntoRawNodeId for indextree::NodeId {
 
 impl<T: Into<NodeId> + Copy + std::fmt::Debug> IntoRawNodeId for T {
     fn raw_node_id(self) -> indextree::NodeId {
-        self.into().raw()
+        self.into().0
     }
 }
 
@@ -51,25 +51,13 @@ impl NodeId {
         NodeId(id)
     }
 
-    /// Returns the raw (backend) node ID.
-    pub(crate) fn raw(self) -> indextree::NodeId {
-        self.0
-    }
-
-    /// Returns whether the node is registered in the document.
-    pub fn is_present(self, doc: &Document) -> bool {
-        doc.node(self).is_some()
-    }
-
     /// Returns the node from the node ID.
     ///
     /// # Panics
     ///
-    /// Panics if the node with the id is not in the given document (i.e.
-    /// when [`is_present`] returns `false`).
+    /// Panics if the node with the id does not exist in the given document.
     pub fn node(self, doc: &Document) -> Node<'_> {
         doc.node(self)
-            .expect("The node is not registered in the document")
     }
 }
 
