@@ -24,7 +24,7 @@ pub struct Core {
 }
 
 impl Core {
-    /// Create a new `Core`.
+    /// Creates a new `Core`.
     pub(crate) fn new(
         strings: StringInterner<StrSym>,
         nodes: Arena<NodeData>,

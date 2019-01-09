@@ -169,7 +169,7 @@ impl Loader {
         Ok(())
     }
 
-    /// Register object node.
+    /// Registers object node.
     fn add_object(&mut self, node_id: NodeId) -> Result<(), LoadError> {
         use std::collections::hash_map::Entry;
 

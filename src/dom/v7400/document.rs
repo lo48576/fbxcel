@@ -19,7 +19,7 @@ pub struct Document {
 }
 
 impl Document {
-    /// Create a new `Document`.
+    /// Creates a new `Document`.
     pub(crate) fn new(core: Core, object_ids: HashMap<ObjectId, ObjectNodeId>) -> Self {
         Self { core, object_ids }
     }
