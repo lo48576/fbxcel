@@ -1,8 +1,11 @@
 //! FBX DOM document.
 
+use std::collections::HashMap;
+
 use indextree::Arena;
 use string_interner::StringInterner;
 
+use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
 use crate::dom::v7400::{Node, NodeData, NodeId, StrSym};
 
 pub use self::loader::Loader;
@@ -18,6 +21,8 @@ pub struct Document {
     nodes: Arena<NodeData>,
     /// (Implicit) root node.
     root: NodeId,
+    /// Map from object ID to node ID.
+    object_ids: HashMap<ObjectId, ObjectNodeId>,
 }
 
 impl Document {
@@ -26,11 +31,13 @@ impl Document {
         strings: StringInterner<StrSym>,
         nodes: Arena<NodeData>,
         root: NodeId,
+        object_ids: HashMap<ObjectId, ObjectNodeId>,
     ) -> Self {
         Self {
             strings,
             nodes,
             root,
+            object_ids,
         }
     }
 

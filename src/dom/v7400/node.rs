@@ -125,4 +125,14 @@ impl NodeData {
     pub(crate) fn new(name: StrSym, attributes: Vec<DirectAttributeValue>) -> Self {
         Self { name, attributes }
     }
+
+    /// Returns node name symbol.
+    pub(crate) fn name_sym(&self) -> StrSym {
+        self.name
+    }
+
+    /// Returns node attributes.
+    pub(crate) fn attributes(&self) -> &[DirectAttributeValue] {
+        &self.attributes
+    }
 }

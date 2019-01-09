@@ -7,3 +7,4 @@ pub use self::node::{Node, NodeId};
 
 mod document;
 mod node;
+pub mod object;
