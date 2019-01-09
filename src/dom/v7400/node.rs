@@ -20,6 +20,27 @@ impl string_interner::Symbol for StrSym {
     }
 }
 
+/// A trait for types convertible into `indextree::NodeId`.
+///
+/// This should be crate-local (should not exposed to crate users), so this is
+/// not implemented using `Into` trait.
+pub(crate) trait IntoRawNodeId: Copy + std::fmt::Debug {
+    /// Returns raw node ID.
+    fn raw_node_id(self) -> indextree::NodeId;
+}
+
+impl IntoRawNodeId for indextree::NodeId {
+    fn raw_node_id(self) -> indextree::NodeId {
+        self
+    }
+}
+
+impl<T: Into<NodeId> + Copy + std::fmt::Debug> IntoRawNodeId for T {
+    fn raw_node_id(self) -> indextree::NodeId {
+        self.into().raw()
+    }
+}
+
 /// FBX tree node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct NodeId(indextree::NodeId);
