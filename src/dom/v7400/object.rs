@@ -82,6 +82,12 @@ impl ObjectNodeId {
     }
 }
 
+impl Into<NodeId> for ObjectNodeId {
+    fn into(self) -> NodeId {
+        self.0
+    }
+}
+
 /// Object ID.
 ///
 /// This is not objcet node ID.
