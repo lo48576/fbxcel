@@ -5,6 +5,7 @@ pub use self::document::{Document, Loader};
 pub(crate) use self::node::{IntoRawNodeId, NodeData, StrSym};
 pub use self::node::{Node, NodeId};
 
+mod connection;
 mod core;
 mod document;
 mod node;

@@ -96,6 +96,9 @@ impl Loader {
         // Load objects.
         self.load_objects()?;
 
+        // Load object connections.
+        self.load_connections()?;
+
         Ok(Document::new(
             self.core
                 .expect("Should never fail: `self.core` is `Some(_)` here"),
@@ -220,5 +223,34 @@ impl Loader {
         assert!(!meta_dup);
 
         Ok(())
+    }
+
+    /// Load connetions.
+    fn load_connections(&mut self) -> Result<(), LoadError> {
+        // `/Connections/C` nodes.
+        if let Some(connections_node_id) = self.find_toplevel("Connections") {
+            let c_sym = self.core().sym_opt("C");
+            let mut next_node_id = self.core().node(connections_node_id).first_child();
+            while let Some(connection_node_id) = next_node_id {
+                if Some(self.core().node(connection_node_id).data().name_sym()) == c_sym {
+                    self.add_connection(connection_node_id)?;
+                }
+                next_node_id = self.core().node(connection_node_id).next_sibling();
+            }
+        } else {
+            warn_noncritical!(self.strict, "`Connections` node not found");
+            bail_if_strict!(
+                self.strict,
+                AccessError::NodeNotFound("`Connections`".to_owned()),
+                return Ok(())
+            );
+        }
+
+        Ok(())
+    }
+
+    /// Registers object connection.
+    fn add_connection(&mut self, node_id: NodeId) -> Result<(), LoadError> {
+        unimplemented!("Register connection node: {:?}", node_id);
     }
 }
