@@ -2,15 +2,12 @@
 
 use std::collections::HashMap;
 
-use indextree::Arena;
-use log::{error, warn};
-use string_interner::StringInterner;
+use log::warn;
 
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
-use crate::dom::v7400::{Document, NodeData, NodeId, StrSym};
+use crate::dom::v7400::{Core, Document, IntoRawNodeId, NodeId};
 use crate::dom::{AccessError, LoadError};
-use crate::pull_parser::v7400::attribute::visitor::DirectVisitor;
-use crate::pull_parser::v7400::{Event, Parser, StartNode};
+use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
 
 macro_rules! bail_if_strict {
@@ -41,14 +38,10 @@ macro_rules! warn_noncritical {
 }
 
 /// DOM document loader.
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct Loader {
-    /// FBX node names.
-    strings: StringInterner<StrSym>,
-    /// FBX nodes.
-    nodes: Arena<NodeData>,
-    /// (Implicit) root node.
-    root: NodeId,
+    /// DOM core.
+    core: Option<Core>,
     /// Strict mode flag.
     ///
     /// If this is `true`, non-critical errors should be `Err`.
@@ -69,106 +62,60 @@ impl Loader {
         Self { strict: v, ..self }
     }
 
+    /// Returns the reference to the DOM core.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the DOM core is uninitialized.
+    #[inline]
+    fn core(&self) -> &Core {
+        self.core.as_ref().expect("DOM core is not yet initialized")
+    }
+
+    /// Returns the mutable reference to the DOM core.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the DOM core is uninitialized.
+    #[inline]
+    fn core_mut(&mut self) -> &mut Core {
+        self.core.as_mut().expect("DOM core is not yet initialized")
+    }
+
     /// Loads the DOM document from the parser.
     pub fn load_document<R>(mut self, parser: &mut Parser<R>) -> Result<Document, LoadError>
     where
         R: ParserSource,
     {
         // Load basic tree.
-        self.load_tree(parser)?;
+        self.core = Some(self.load_core(parser)?);
 
         // Load objects.
         self.load_objects()?;
 
         Ok(Document::new(
-            self.strings,
-            self.nodes,
-            self.root,
+            self.core
+                .expect("Should never fail: `self.core` is `Some(_)` here"),
             self.object_ids,
         ))
     }
 
-    /// Loads simple tree data.
-    fn load_tree<R>(&mut self, parser: &mut Parser<R>) -> Result<(), LoadError>
+    /// Loads DOM core.
+    fn load_core<R>(&self, parser: &mut Parser<R>) -> Result<Core, LoadError>
     where
         R: ParserSource,
     {
-        if parser.current_depth() != 0 {
-            error!("The given parser should be brand-new, but it has already emitted some events");
-            return Err(LoadError::BadParser);
-        }
-
-        let mut open_nodes = vec![self.root];
-        loop {
-            assert!(
-                !open_nodes.is_empty(),
-                "Open nodes stack should not be empty on loop start"
-            );
-
-            match parser.next_event()? {
-                Event::StartNode(start) => {
-                    let parent = open_nodes
-                        .last_mut()
-                        .expect("Should never fail: Open nodes stack should not be empty here");
-                    let current = self.add_node(*parent, start)?;
-
-                    // Update the open nodes stack.
-                    open_nodes.push(current);
-                }
-                Event::EndNode => {
-                    open_nodes
-                        .pop()
-                        .expect("Should never fail: Open nodes stack should not be empty here");
-                }
-                Event::EndFbx(_) => {
-                    open_nodes
-                        .pop()
-                        .expect("Should never fail: Open nodes stack should not be empty here");
-                    break;
-                }
-            }
-        }
-        assert!(
-            open_nodes.is_empty(),
-            "Should never fail: There should be no open nodes after `EndFbx` event is emitted"
-        );
-
-        Ok(())
-    }
-
-    /// Creates and adds a new node to the tree.
-    fn add_node<R>(&mut self, parent: NodeId, start: StartNode<'_, R>) -> Result<NodeId, LoadError>
-    where
-        R: ParserSource,
-    {
-        // Create a new node.
-        let current = {
-            let name = self.strings.get_or_intern(start.name());
-            let attributes = start
-                .attributes()
-                .into_iter(std::iter::repeat(DirectVisitor))
-                .collect::<Result<Vec<_>, _>>()?;
-
-            NodeId::new(self.nodes.new_node(NodeData::new(name, attributes)))
-        };
-
-        // Set the parent.
-        parent.raw().append(current.raw(), &mut self.nodes).expect(
-            "Should never fail: The newly created node should always be successfully appended",
-        );
-
-        Ok(current)
+        assert!(self.core.is_none(), "Attempt to initialize DOM core twice");
+        Core::load(parser)
     }
 
     /// Finds a toplevel node by the name.
     fn find_toplevel(&self, target_name: &str) -> Option<NodeId> {
-        let target_sym = self.strings.get(target_name)?;
-        for toplevel_id in self.root.raw().children(&self.nodes) {
-            let toplevel = self
-                .nodes
-                .get(toplevel_id)
-                .expect("Should never fail: node should exist");
-            if toplevel.data.name_sym() == target_sym {
+        let core = self.core();
+        let target_sym = core.sym_opt(target_name)?;
+        for toplevel_id in core.root().raw_node_id().children(&core.nodes()) {
+            let toplevel = core.node(toplevel_id);
+            if toplevel.data().name_sym() == target_sym {
                 return Some(NodeId::new(toplevel_id));
             }
         }
@@ -186,20 +133,10 @@ impl Loader {
 
         // `/Objects/*` nodes.
         if let Some(objects_node_id) = self.find_toplevel("Objects") {
-            let mut next_node_id = self
-                .nodes
-                .get(objects_node_id.raw())
-                .expect("Should never fail: node should exist")
-                .first_child()
-                .map(NodeId::new);
+            let mut next_node_id = self.core().node(objects_node_id).first_child();
             while let Some(object_node_id) = next_node_id {
                 self.add_object(object_node_id)?;
-                next_node_id = self
-                    .nodes
-                    .get(object_node_id.raw())
-                    .expect("Should never fail: node should exist")
-                    .next_sibling()
-                    .map(NodeId::new);
+                next_node_id = self.core().node(object_node_id).next_sibling();
             }
         } else {
             warn_noncritical!(self.strict, "`Objects` node not found");
@@ -212,30 +149,13 @@ impl Loader {
 
         // `/Documents/Document` nodes.
         if let Some(documents_node_id) = self.find_toplevel("Documents") {
-            let document_sym = self.strings.get("Document");
-            let mut next_node_id = self
-                .nodes
-                .get(documents_node_id.raw())
-                .expect("Should never fail: node should exist")
-                .first_child()
-                .map(NodeId::new);
+            let document_sym = self.core().sym_opt("Document");
+            let mut next_node_id = self.core().node(documents_node_id).first_child();
             while let Some(document_node_id) = next_node_id {
-                if Some(
-                    self.nodes
-                        .get(document_node_id.raw())
-                        .expect("Should never fail: node should exist")
-                        .data
-                        .name_sym(),
-                ) == document_sym
-                {
+                if Some(self.core().node(document_node_id).data().name_sym()) == document_sym {
                     self.add_object(document_node_id)?;
                 }
-                next_node_id = self
-                    .nodes
-                    .get(document_node_id.raw())
-                    .expect("Should never fail: node should exist")
-                    .next_sibling()
-                    .map(NodeId::new);
+                next_node_id = self.core().node(document_node_id).next_sibling();
             }
         } else {
             warn_noncritical!(self.strict, "`Documents` node not found");
@@ -253,16 +173,15 @@ impl Loader {
     fn add_object(&mut self, node_id: NodeId) -> Result<(), LoadError> {
         use std::collections::hash_map::Entry;
 
-        let node = self
-            .nodes
-            .get(node_id.raw())
-            .expect("Should never fail: node should exist");
-        let obj_meta = match ObjectMeta::from_attributes(node.data.attributes(), &mut self.strings)
-        {
-            Ok(v) => v,
-            Err(e) => {
-                warn_noncritical!(self.strict, "Object load error: {}", e);
-                bail_if_strict!(self.strict, e, return Ok(()));
+        let obj_meta = {
+            let (node, strings) = self.core_mut().node_and_strings(node_id);
+            let attrs = node.data().attributes();
+            match ObjectMeta::from_attributes(attrs, strings) {
+                Ok(v) => v,
+                Err(e) => {
+                    warn_noncritical!(self.strict, "Object load error: {}", e);
+                    bail_if_strict!(self.strict, e, return Ok(()));
+                }
             }
         };
         let obj_id = obj_meta.id();
@@ -290,22 +209,5 @@ impl Loader {
         }
 
         Ok(())
-    }
-}
-
-impl Default for Loader {
-    fn default() -> Self {
-        let mut strings = StringInterner::new();
-        let mut nodes = Arena::new();
-        let root =
-            NodeId::new(nodes.new_node(NodeData::new(strings.get_or_intern(""), Vec::new())));
-
-        Self {
-            strings,
-            nodes,
-            root,
-            strict: false,
-            object_ids: HashMap::new(),
-        }
     }
 }

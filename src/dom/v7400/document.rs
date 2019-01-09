@@ -2,11 +2,8 @@
 
 use std::collections::HashMap;
 
-use indextree::Arena;
-use string_interner::StringInterner;
-
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
-use crate::dom::v7400::{Node, NodeData, NodeId, StrSym};
+use crate::dom::v7400::{Core, Node, NodeId, StrSym};
 
 pub use self::loader::Loader;
 
@@ -15,49 +12,36 @@ mod loader;
 /// FBX DOM document.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Document {
-    /// FBX node names.
-    strings: StringInterner<StrSym>,
-    /// FBX nodes.
-    nodes: Arena<NodeData>,
-    /// (Implicit) root node.
-    root: NodeId,
+    /// DOM core.
+    core: Core,
     /// Map from object ID to node ID.
     object_ids: HashMap<ObjectId, ObjectNodeId>,
 }
 
 impl Document {
     /// Create a new `Document`.
-    pub(crate) fn new(
-        strings: StringInterner<StrSym>,
-        nodes: Arena<NodeData>,
-        root: NodeId,
-        object_ids: HashMap<ObjectId, ObjectNodeId>,
-    ) -> Self {
-        Self {
-            strings,
-            nodes,
-            root,
-            object_ids,
-        }
+    pub(crate) fn new(core: Core, object_ids: HashMap<ObjectId, ObjectNodeId>) -> Self {
+        Self { core, object_ids }
     }
 
     /// Resolves the given interned string symbol into the corresponding string.
     ///
     /// Returns `None` if the given symbol is registered to the document.
     pub(crate) fn string(&self, sym: StrSym) -> Option<&str> {
-        self.strings.resolve(sym)
+        self.core.string(sym)
     }
 
     /// Returns the node from the node ID.
     ///
-    /// Returns `None` if the node with the given ID is not registered to the
-    /// document.
-    pub(crate) fn node(&self, id: NodeId) -> Option<Node<'_>> {
-        self.nodes.get(id.raw()).map(Node::new)
+    /// # Panics
+    ///
+    /// Panics if the node with the given ID is not available.
+    pub(crate) fn node(&self, id: NodeId) -> Node<'_> {
+        self.core.node(id)
     }
 
     /// Returns the root node ID.
     pub fn root(&self) -> NodeId {
-        self.root
+        self.core.root()
     }
 }
