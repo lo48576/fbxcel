@@ -4,7 +4,6 @@ use std::collections::HashMap;
 
 use log::warn;
 
-use crate::dom::v7400::core::CoreLoader;
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
 use crate::dom::v7400::{Core, Document, IntoRawNodeId, NodeId};
 use crate::dom::{AccessError, LoadError};
@@ -107,7 +106,7 @@ impl Loader {
         R: ParserSource,
     {
         assert!(self.core.is_none(), "Attempt to initialize DOM core twice");
-        CoreLoader::new().load(parser)
+        Core::load(parser)
     }
 
     /// Finds a toplevel node by the name.

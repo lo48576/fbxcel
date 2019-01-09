@@ -4,8 +4,11 @@ use indextree::Arena;
 use string_interner::StringInterner;
 
 use crate::dom::v7400::{IntoRawNodeId, Node, NodeData, NodeId, StrSym};
+use crate::dom::LoadError;
+use crate::pull_parser::v7400::Parser;
+use crate::pull_parser::ParserSource;
 
-pub use self::loader::CoreLoader;
+use self::loader::CoreLoader;
 
 mod loader;
 
@@ -32,6 +35,14 @@ impl Core {
             nodes,
             root,
         }
+    }
+
+    /// Loads the DOM core data from the given parser.
+    pub fn load<R>(parser: &mut Parser<R>) -> Result<Self, LoadError>
+    where
+        R: ParserSource,
+    {
+        CoreLoader::new().load(parser)
     }
 
     /// Resolves the given interned string symbol into the corresponding string.
