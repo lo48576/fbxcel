@@ -82,9 +82,9 @@ impl ObjectNodeId {
     }
 }
 
-impl Into<NodeId> for ObjectNodeId {
-    fn into(self) -> NodeId {
-        self.0
+impl From<ObjectNodeId> for NodeId {
+    fn from(v: ObjectNodeId) -> Self {
+        v.0
     }
 }
 
