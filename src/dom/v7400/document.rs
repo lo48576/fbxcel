@@ -6,8 +6,10 @@ use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
 use crate::dom::v7400::{Core, Node, NodeId, StrSym};
 
 pub use self::loader::Loader;
+pub(crate) use self::parsed::ParsedData;
 
 mod loader;
+mod parsed;
 
 /// FBX DOM document.
 #[derive(Debug, Clone, PartialEq)]
@@ -16,12 +18,22 @@ pub struct Document {
     core: Core,
     /// Map from object ID to node ID.
     object_ids: HashMap<ObjectId, ObjectNodeId>,
+    /// Parsed node data.
+    parsed_node_data: ParsedData,
 }
 
 impl Document {
     /// Creates a new `Document`.
-    pub(crate) fn new(core: Core, object_ids: HashMap<ObjectId, ObjectNodeId>) -> Self {
-        Self { core, object_ids }
+    pub(crate) fn new(
+        core: Core,
+        object_ids: HashMap<ObjectId, ObjectNodeId>,
+        parsed_node_data: ParsedData,
+    ) -> Self {
+        Self {
+            core,
+            object_ids,
+            parsed_node_data,
+        }
     }
 
     /// Resolves the given interned string symbol into the corresponding string.
@@ -43,5 +55,10 @@ impl Document {
     /// Returns the root node ID.
     pub fn root(&self) -> NodeId {
         self.core.root()
+    }
+
+    /// Returns the reference to the parsed node data.
+    pub fn parsed_node_data(&self) -> &ParsedData {
+        &self.parsed_node_data
     }
 }

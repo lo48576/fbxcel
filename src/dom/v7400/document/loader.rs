@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 use log::warn;
 
+use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
 use crate::dom::v7400::{Core, Document, IntoRawNodeId, NodeId};
 use crate::dom::{AccessError, LoadError};
@@ -49,6 +50,8 @@ pub struct Loader {
     strict: bool,
     /// Map from object ID to node ID.
     object_ids: HashMap<ObjectId, ObjectNodeId>,
+    /// Parsed node data.
+    parsed_node_data: ParsedData,
 }
 
 impl Loader {
@@ -97,6 +100,7 @@ impl Loader {
             self.core
                 .expect("Should never fail: `self.core` is `Some(_)` here"),
             self.object_ids,
+            self.parsed_node_data,
         ))
     }
 
@@ -207,6 +211,13 @@ impl Loader {
                 entry.insert(node_id);
             }
         }
+
+        let meta_dup = self
+            .parsed_node_data
+            .object_meta_mut()
+            .insert(node_id, obj_meta)
+            .is_some();
+        assert!(!meta_dup);
 
         Ok(())
     }
