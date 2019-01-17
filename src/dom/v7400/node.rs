@@ -1,24 +1,9 @@
 //! DOM node.
 
 use indextree;
-use string_interner;
 
-use crate::dom::v7400::Document;
+use crate::dom::v7400::{Document, StrSym};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
-
-/// Symbol for interned string.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct StrSym(usize);
-
-impl string_interner::Symbol for StrSym {
-    fn from_usize(v: usize) -> Self {
-        StrSym(v)
-    }
-
-    fn to_usize(self) -> usize {
-        self.0
-    }
-}
 
 /// A trait for types convertible into `indextree::NodeId`.
 ///
