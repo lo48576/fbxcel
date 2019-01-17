@@ -3,7 +3,7 @@
 pub(crate) use self::core::Core;
 pub use self::document::{Document, Loader};
 pub(crate) use self::node::IntoRawNodeId;
-pub use self::node::NodeId;
+pub use self::node::{DowncastId, NodeId};
 pub use self::parsed::ParsedData;
 
 mod connection;

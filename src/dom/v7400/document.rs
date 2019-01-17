@@ -63,24 +63,13 @@ impl Document {
         self.core.root()
     }
 
+    /// Returns the object node ID corresponding to the given object ID.
+    pub(crate) fn object_id_to_object_node_id(&self, id: ObjectId) -> Option<ObjectNodeId> {
+        self.object_ids.get(&id).cloned()
+    }
+
     /// Returns the reference to the parsed node data.
     pub fn parsed_node_data(&self) -> &ParsedData {
         &self.parsed_node_data
-    }
-
-    /// Tries to convert the given node ID to an object node ID.
-    pub fn get_object_id(&self, id: NodeId) -> Option<ObjectNodeId> {
-        let maybe_invalid_id = ObjectNodeId::new(id);
-        if self
-            .parsed_node_data()
-            .object_meta()
-            .contains_key(&maybe_invalid_id)
-        {
-            // Valid!
-            Some(maybe_invalid_id)
-        } else {
-            // Invalid.
-            None
-        }
     }
 }

@@ -2,7 +2,7 @@
 
 use string_interner::StringInterner;
 
-use crate::dom::v7400::{Document, NodeId, StrSym};
+use crate::dom::v7400::{Document, DowncastId, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
@@ -122,6 +122,29 @@ impl ObjectNodeId {
 impl From<ObjectNodeId> for NodeId {
     fn from(v: ObjectNodeId) -> Self {
         v.0
+    }
+}
+
+impl DowncastId<ObjectNodeId> for NodeId {
+    fn downcast(self, doc: &Document) -> Option<ObjectNodeId> {
+        let maybe_invalid_id = ObjectNodeId::new(self);
+        if doc
+            .parsed_node_data()
+            .object_meta()
+            .contains_key(&maybe_invalid_id)
+        {
+            // Valid!
+            Some(maybe_invalid_id)
+        } else {
+            // Invalid.
+            None
+        }
+    }
+}
+
+impl DowncastId<ObjectNodeId> for ObjectId {
+    fn downcast(self, doc: &Document) -> Option<ObjectNodeId> {
+        doc.object_id_to_object_node_id(self)
     }
 }
 

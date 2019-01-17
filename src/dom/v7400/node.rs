@@ -26,6 +26,12 @@ impl<T: Into<NodeId> + Copy + std::fmt::Debug> IntoRawNodeId for T {
     }
 }
 
+/// A trait for types which might be convertible from other ID types.
+pub trait DowncastId<T>: Copy {
+    /// Returns an ID corresponding to the `self`.
+    fn downcast(self, doc: &Document) -> Option<T>;
+}
+
 /// FBX tree node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct NodeId(indextree::NodeId);
