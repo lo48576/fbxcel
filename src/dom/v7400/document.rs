@@ -68,4 +68,20 @@ impl Document {
     pub fn parsed_node_data(&self) -> &ParsedData {
         &self.parsed_node_data
     }
+
+    /// Tries to convert the given node ID to an object node ID.
+    pub fn get_object_id(&self, id: NodeId) -> Option<ObjectNodeId> {
+        let maybe_invalid_id = ObjectNodeId::new(id);
+        if self
+            .parsed_node_data()
+            .object_meta()
+            .contains_key(&maybe_invalid_id)
+        {
+            // Valid!
+            Some(maybe_invalid_id)
+        } else {
+            // Invalid.
+            None
+        }
+    }
 }
