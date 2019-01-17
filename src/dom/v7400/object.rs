@@ -127,7 +127,7 @@ impl From<ObjectNodeId> for NodeId {
 
 /// Object ID.
 ///
-/// This is not objcet node ID.
+/// This is not object node ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ObjectId(i64);
 
