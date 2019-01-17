@@ -8,6 +8,8 @@ use std::fmt;
 pub enum AccessError {
     /// Attribute not found.
     AttributeNotFound(Option<usize>),
+    /// Invalid node attribute type or value.
+    InvalidNodeAttribute(Option<String>, Option<usize>),
     /// Target node not found.
     NodeNotFound(String),
     /// Unexpected attribute type.
@@ -22,6 +24,14 @@ impl fmt::Display for AccessError {
             }
             AccessError::AttributeNotFound(Some(index)) => {
                 write!(f, "Attribute (index={}) not found", index)
+            }
+            AccessError::InvalidNodeAttribute(name, index) => {
+                f.write_str("Invalid node attribute")?;
+                match (name, index) {
+                    (Some(name), index) => write!(f, ": node={:?}, attr-index={:?}", name, index),
+                    (None, Some(index)) => write!(f, ": attr-index={}", index),
+                    (None, None) => Ok(()),
+                }
             }
             AccessError::NodeNotFound(desc) => write!(f, "Node not found: {}", desc),
             AccessError::UnexpectedAttributeType(index) => {

@@ -12,13 +12,14 @@ keywords = ["FBX", "3D", "model"]
 [features]
 default = []
 
-dom = ["indextree", "string-interner"]
+dom = ["indextree", "petgraph", "string-interner"]
 
 [dependencies]
 byteorder = "1"
 indextree = { version = "3", optional = true }
 libflate = "0.1"
 log = "0.4.4"
+petgraph = { version = "0.4", optional = true, default-features = false, features = ["graphmap"] }
 string-interner = { version = "0.7", optional = true, default-features = false }
 
 [dev-dependencies]

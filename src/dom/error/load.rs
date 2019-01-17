@@ -15,6 +15,12 @@ pub enum LoadError {
     ///
     /// This error will be mainly caused by user logic error.
     BadParser,
+    /// Duplicate connection.
+    ///
+    /// The first is kind of ID, the second and the third is content of ID.
+    ///
+    /// Use `String` to make it version independent.
+    DuplicateConnection(String, String, String),
     /// Duplicate ID.
     ///
     /// The first is kind of ID, the second is content of ID.
@@ -30,6 +36,11 @@ impl fmt::Display for LoadError {
         match self {
             LoadError::Access(e) => write!(f, "Node data access error: {}", e),
             LoadError::BadParser => f.write_str("Bad parser is given"),
+            LoadError::DuplicateConnection(kind, from, to) => write!(
+                f,
+                "Duplicate Connection ({}): from {} to {}",
+                kind, from, to
+            ),
             LoadError::DuplicateId(kind, id) => write!(f, "Duplicate ID ({}): {}", kind, id),
             LoadError::Parser(e) => write!(f, "Parser error: {}", e),
         }

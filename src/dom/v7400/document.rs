@@ -2,6 +2,9 @@
 
 use std::collections::HashMap;
 
+use petgraph::graphmap::DiGraphMap;
+
+use crate::dom::v7400::connection::ConnectionEdge;
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
 use crate::dom::v7400::{Core, Node, NodeId, StrSym};
 
@@ -12,7 +15,7 @@ mod loader;
 mod parsed;
 
 /// FBX DOM document.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Document {
     /// DOM core.
     core: Core,
@@ -20,6 +23,8 @@ pub struct Document {
     object_ids: HashMap<ObjectId, ObjectNodeId>,
     /// Parsed node data.
     parsed_node_data: ParsedData,
+    /// Objects graph.
+    objects_graph: DiGraphMap<ObjectId, ConnectionEdge>,
 }
 
 impl Document {
@@ -28,11 +33,13 @@ impl Document {
         core: Core,
         object_ids: HashMap<ObjectId, ObjectNodeId>,
         parsed_node_data: ParsedData,
+        objects_graph: DiGraphMap<ObjectId, ConnectionEdge>,
     ) -> Self {
         Self {
             core,
             object_ids,
             parsed_node_data,
+            objects_graph,
         }
     }
 

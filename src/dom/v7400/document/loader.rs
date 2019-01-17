@@ -3,7 +3,9 @@
 use std::collections::HashMap;
 
 use log::warn;
+use petgraph::graphmap::DiGraphMap;
 
+use crate::dom::v7400::connection::{Connection, ConnectionEdge};
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
 use crate::dom::v7400::{Core, Document, IntoRawNodeId, NodeId};
@@ -52,6 +54,8 @@ pub struct Loader {
     object_ids: HashMap<ObjectId, ObjectNodeId>,
     /// Parsed node data.
     parsed_node_data: ParsedData,
+    /// Objects graph.
+    objects_graph: DiGraphMap<ObjectId, ConnectionEdge>,
 }
 
 impl Loader {
@@ -104,6 +108,7 @@ impl Loader {
                 .expect("Should never fail: `self.core` is `Some(_)` here"),
             self.object_ids,
             self.parsed_node_data,
+            self.objects_graph,
         ))
     }
 
@@ -251,6 +256,40 @@ impl Loader {
 
     /// Registers object connection.
     fn add_connection(&mut self, node_id: NodeId) -> Result<(), LoadError> {
-        unimplemented!("Register connection node: {:?}", node_id);
+        //use std::collections::hash_map::Entry;
+
+        let conn = {
+            let (node, strings) = self.core_mut().node_and_strings(node_id);
+            let attrs = node.data().attributes();
+            Connection::load_from_attributes(attrs, strings)?
+        };
+
+        if let Some(old_conn) = self
+            .objects_graph
+            .edge_weight(conn.source_id(), conn.destination_id())
+        {
+            warn_noncritical!(
+                self.strict,
+                "Duplicate object connections: found more than two objects connections \
+                 from {:?} to {:?} edge={:?}, ignored={:?}",
+                conn.source_id(),
+                conn.destination_id(),
+                old_conn,
+                conn.edge()
+            );
+            bail_if_strict!(
+                self.strict,
+                LoadError::DuplicateConnection(
+                    "objects".to_owned(),
+                    format!("{:?}", conn.source_id()),
+                    format!("{:?}", conn.destination_id())
+                ),
+                return Ok(())
+            );
+        }
+        self.objects_graph
+            .add_edge(conn.source_id(), conn.destination_id(), *conn.edge());
+
+        Ok(())
     }
 }
