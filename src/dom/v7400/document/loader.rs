@@ -3,7 +3,9 @@
 use std::collections::HashMap;
 
 use log::warn;
+use petgraph::graphmap::DiGraphMap;
 
+use crate::dom::v7400::connection::{Connection, ConnectionEdge};
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
 use crate::dom::v7400::{Core, Document, IntoRawNodeId, NodeId};
@@ -52,6 +54,8 @@ pub struct Loader {
     object_ids: HashMap<ObjectId, ObjectNodeId>,
     /// Parsed node data.
     parsed_node_data: ParsedData,
+    /// Objects graph.
+    objects_graph: DiGraphMap<ObjectId, ConnectionEdge>,
 }
 
 impl Loader {
@@ -96,11 +100,15 @@ impl Loader {
         // Load objects.
         self.load_objects()?;
 
+        // Load object connections.
+        self.load_connections()?;
+
         Ok(Document::new(
             self.core
                 .expect("Should never fail: `self.core` is `Some(_)` here"),
             self.object_ids,
             self.parsed_node_data,
+            self.objects_graph,
         ))
     }
 
@@ -218,6 +226,69 @@ impl Loader {
             .insert(node_id, obj_meta)
             .is_some();
         assert!(!meta_dup);
+
+        Ok(())
+    }
+
+    /// Load connetions.
+    fn load_connections(&mut self) -> Result<(), LoadError> {
+        // `/Connections/C` nodes.
+        if let Some(connections_node_id) = self.find_toplevel("Connections") {
+            let c_sym = self.core().sym_opt("C");
+            let mut next_node_id = self.core().node(connections_node_id).first_child();
+            while let Some(connection_node_id) = next_node_id {
+                if Some(self.core().node(connection_node_id).data().name_sym()) == c_sym {
+                    self.add_connection(connection_node_id)?;
+                }
+                next_node_id = self.core().node(connection_node_id).next_sibling();
+            }
+        } else {
+            warn_noncritical!(self.strict, "`Connections` node not found");
+            bail_if_strict!(
+                self.strict,
+                AccessError::NodeNotFound("`Connections`".to_owned()),
+                return Ok(())
+            );
+        }
+
+        Ok(())
+    }
+
+    /// Registers object connection.
+    fn add_connection(&mut self, node_id: NodeId) -> Result<(), LoadError> {
+        //use std::collections::hash_map::Entry;
+
+        let conn = {
+            let (node, strings) = self.core_mut().node_and_strings(node_id);
+            let attrs = node.data().attributes();
+            Connection::load_from_attributes(attrs, strings)?
+        };
+
+        if let Some(old_conn) = self
+            .objects_graph
+            .edge_weight(conn.source_id(), conn.destination_id())
+        {
+            warn_noncritical!(
+                self.strict,
+                "Duplicate object connections: found more than two objects connections \
+                 from {:?} to {:?} edge={:?}, ignored={:?}",
+                conn.source_id(),
+                conn.destination_id(),
+                old_conn,
+                conn.edge()
+            );
+            bail_if_strict!(
+                self.strict,
+                LoadError::DuplicateConnection(
+                    "objects".to_owned(),
+                    format!("{:?}", conn.source_id()),
+                    format!("{:?}", conn.destination_id())
+                ),
+                return Ok(())
+            );
+        }
+        self.objects_graph
+            .add_edge(conn.source_id(), conn.destination_id(), *conn.edge());
 
         Ok(())
     }
