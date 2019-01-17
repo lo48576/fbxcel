@@ -2,7 +2,7 @@
 
 use string_interner::StringInterner;
 
-use crate::dom::v7400::{NodeId, StrSym};
+use crate::dom::v7400::{Document, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
@@ -23,6 +23,31 @@ impl ObjectMeta {
     /// Returns ID.
     pub fn id(&self) -> ObjectId {
         self.id
+    }
+
+    /// Returns object name.
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_ref().map(|v| v.as_ref())
+    }
+
+    /// Returns object class.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the data is stored in the given document.
+    pub fn class<'a>(&self, doc: &'a Document) -> &'a str {
+        doc.string(self.class)
+            .expect("The `ObjectMeta` is not stored in the given document")
+    }
+
+    /// Returns object subclass.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the data is stored in the given document.
+    pub fn subclass<'a>(&self, doc: &'a Document) -> &'a str {
+        doc.string(self.subclass)
+            .expect("The `ObjectMeta` is not stored in the given document")
     }
 
     /// Creates `ObjectMeta` from the given attributes.
