@@ -29,6 +29,8 @@ pub enum LoadError {
     DuplicateId(String, String),
     /// Parser error.
     Parser(ParserError),
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 impl fmt::Display for LoadError {
@@ -43,6 +45,7 @@ impl fmt::Display for LoadError {
             ),
             LoadError::DuplicateId(kind, id) => write!(f, "Duplicate ID ({}): {}", kind, id),
             LoadError::Parser(e) => write!(f, "Parser error: {}", e),
+            LoadError::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
 }

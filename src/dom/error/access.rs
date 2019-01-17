@@ -14,6 +14,8 @@ pub enum AccessError {
     NodeNotFound(String),
     /// Unexpected attribute type.
     UnexpectedAttributeType(Option<usize>),
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 impl fmt::Display for AccessError {
@@ -41,6 +43,7 @@ impl fmt::Display for AccessError {
                 }
                 Ok(())
             }
+            AccessError::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
 }
