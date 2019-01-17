@@ -6,13 +6,11 @@ use petgraph::graphmap::DiGraphMap;
 
 use crate::dom::v7400::connection::ConnectionEdge;
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
-use crate::dom::v7400::{Core, Node, NodeId, StrSym};
+use crate::dom::v7400::{Core, Node, NodeId, ParsedData, StrSym};
 
 pub use self::loader::Loader;
-pub(crate) use self::parsed::ParsedData;
 
 mod loader;
-mod parsed;
 
 /// FBX DOM document.
 #[derive(Debug, Clone)]
