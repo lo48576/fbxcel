@@ -5,8 +5,9 @@ use std::collections::HashMap;
 use petgraph::graphmap::DiGraphMap;
 
 use crate::dom::v7400::connection::ConnectionEdge;
+use crate::dom::v7400::node::Node;
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
-use crate::dom::v7400::{Core, Node, NodeId, ParsedData, StrSym};
+use crate::dom::v7400::{Core, NodeId, ParsedData, StrSym};
 
 pub use self::loader::Loader;
 

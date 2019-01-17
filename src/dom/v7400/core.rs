@@ -3,7 +3,8 @@
 use indextree::Arena;
 use string_interner::StringInterner;
 
-use crate::dom::v7400::{IntoRawNodeId, Node, NodeData, NodeId, StrSym};
+use crate::dom::v7400::node::{IntoRawNodeId, Node, NodeData};
+use crate::dom::v7400::{NodeId, StrSym};
 use crate::dom::LoadError;
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
