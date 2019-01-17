@@ -105,6 +105,18 @@ impl ObjectNodeId {
     pub(crate) fn new(id: NodeId) -> Self {
         ObjectNodeId(id)
     }
+
+    /// Returns the object meta data.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the object node with the ID is stored in the given document.
+    pub fn meta<'a>(&self, doc: &'a Document) -> &'a ObjectMeta {
+        doc.parsed_node_data()
+            .object_meta()
+            .get(self)
+            .expect("The object node with the `ObjectNodeId` is not stored in the given document")
+    }
 }
 
 impl From<ObjectNodeId> for NodeId {
