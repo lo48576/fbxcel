@@ -3,7 +3,8 @@
 use indextree::Arena;
 use string_interner::StringInterner;
 
-use crate::dom::v7400::{IntoRawNodeId, Node, NodeData, NodeId, StrSym};
+use crate::dom::v7400::node::{IntoRawNodeId, Node, NodeData};
+use crate::dom::v7400::{NodeId, StrSym};
 use crate::dom::LoadError;
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
@@ -90,5 +91,17 @@ impl Core {
     /// Returns the root node ID.
     pub fn root(&self) -> NodeId {
         self.root
+    }
+
+    /// Finds a toplevel node by the name.
+    pub(crate) fn find_toplevel(&self, target_name: &str) -> Option<NodeId> {
+        let target_sym = self.sym_opt(target_name)?;
+        for toplevel_id in self.root().raw_node_id().children(&self.nodes()) {
+            let toplevel = self.node(toplevel_id);
+            if toplevel.data().name_sym() == target_sym {
+                return Some(NodeId::new(toplevel_id));
+            }
+        }
+        None
     }
 }

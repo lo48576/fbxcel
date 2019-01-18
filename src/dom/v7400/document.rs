@@ -5,14 +5,13 @@ use std::collections::HashMap;
 use petgraph::graphmap::DiGraphMap;
 
 use crate::dom::v7400::connection::ConnectionEdge;
+use crate::dom::v7400::node::Node;
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
-use crate::dom::v7400::{Core, Node, NodeId, StrSym};
+use crate::dom::v7400::{Core, NodeId, ParsedData, StrSym};
 
 pub use self::loader::Loader;
-pub(crate) use self::parsed::ParsedData;
 
 mod loader;
-mod parsed;
 
 /// FBX DOM document.
 #[derive(Debug, Clone)]
@@ -62,6 +61,11 @@ impl Document {
     /// Returns the root node ID.
     pub fn root(&self) -> NodeId {
         self.core.root()
+    }
+
+    /// Returns the object node ID corresponding to the given object ID.
+    pub(crate) fn object_id_to_object_node_id(&self, id: ObjectId) -> Option<ObjectNodeId> {
+        self.object_ids.get(&id).cloned()
     }
 
     /// Returns the reference to the parsed node data.

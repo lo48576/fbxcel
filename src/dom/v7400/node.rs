@@ -1,24 +1,9 @@
 //! DOM node.
 
 use indextree;
-use string_interner;
 
-use crate::dom::v7400::Document;
+use crate::dom::v7400::{Document, StrSym};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
-
-/// Symbol for interned string.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct StrSym(usize);
-
-impl string_interner::Symbol for StrSym {
-    fn from_usize(v: usize) -> Self {
-        StrSym(v)
-    }
-
-    fn to_usize(self) -> usize {
-        self.0
-    }
-}
 
 /// A trait for types convertible into `indextree::NodeId`.
 ///
@@ -39,6 +24,12 @@ impl<T: Into<NodeId> + Copy + std::fmt::Debug> IntoRawNodeId for T {
     fn raw_node_id(self) -> indextree::NodeId {
         self.into().0
     }
+}
+
+/// A trait for types which might be convertible from other ID types.
+pub trait DowncastId<T>: Copy {
+    /// Returns an ID corresponding to the `self`.
+    fn downcast(self, doc: &Document) -> Option<T>;
 }
 
 /// FBX tree node.

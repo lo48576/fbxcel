@@ -5,7 +5,8 @@ use log::error;
 use string_interner::StringInterner;
 
 use crate::dom::v7400::core::Core;
-use crate::dom::v7400::{IntoRawNodeId, NodeData, NodeId, StrSym};
+use crate::dom::v7400::node::{IntoRawNodeId, NodeData};
+use crate::dom::v7400::{NodeId, StrSym};
 use crate::dom::LoadError;
 use crate::pull_parser::v7400::attribute::visitor::DirectVisitor;
 use crate::pull_parser::v7400::{Event, Parser, StartNode};

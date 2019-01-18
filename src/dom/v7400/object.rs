@@ -2,7 +2,7 @@
 
 use string_interner::StringInterner;
 
-use crate::dom::v7400::{NodeId, StrSym};
+use crate::dom::v7400::{Document, DowncastId, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
@@ -23,6 +23,31 @@ impl ObjectMeta {
     /// Returns ID.
     pub fn id(&self) -> ObjectId {
         self.id
+    }
+
+    /// Returns object name.
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_ref().map(|v| v.as_ref())
+    }
+
+    /// Returns object class.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the data is stored in the given document.
+    pub fn class<'a>(&self, doc: &'a Document) -> &'a str {
+        doc.string(self.class)
+            .expect("The `ObjectMeta` is not stored in the given document")
+    }
+
+    /// Returns object subclass.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the data is stored in the given document.
+    pub fn subclass<'a>(&self, doc: &'a Document) -> &'a str {
+        doc.string(self.subclass)
+            .expect("The `ObjectMeta` is not stored in the given document")
     }
 
     /// Creates `ObjectMeta` from the given attributes.
@@ -80,6 +105,18 @@ impl ObjectNodeId {
     pub(crate) fn new(id: NodeId) -> Self {
         ObjectNodeId(id)
     }
+
+    /// Returns the object meta data.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the object node with the ID is stored in the given document.
+    pub fn meta<'a>(&self, doc: &'a Document) -> &'a ObjectMeta {
+        doc.parsed_node_data()
+            .object_meta()
+            .get(self)
+            .expect("The object node with the `ObjectNodeId` is not stored in the given document")
+    }
 }
 
 impl From<ObjectNodeId> for NodeId {
@@ -88,9 +125,32 @@ impl From<ObjectNodeId> for NodeId {
     }
 }
 
+impl DowncastId<ObjectNodeId> for NodeId {
+    fn downcast(self, doc: &Document) -> Option<ObjectNodeId> {
+        let maybe_invalid_id = ObjectNodeId::new(self);
+        if doc
+            .parsed_node_data()
+            .object_meta()
+            .contains_key(&maybe_invalid_id)
+        {
+            // Valid!
+            Some(maybe_invalid_id)
+        } else {
+            // Invalid.
+            None
+        }
+    }
+}
+
+impl DowncastId<ObjectNodeId> for ObjectId {
+    fn downcast(self, doc: &Document) -> Option<ObjectNodeId> {
+        doc.object_id_to_object_node_id(self)
+    }
+}
+
 /// Object ID.
 ///
-/// This is not objcet node ID.
+/// This is not object node ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ObjectId(i64);
 

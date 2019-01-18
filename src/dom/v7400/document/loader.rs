@@ -8,7 +8,7 @@ use petgraph::graphmap::DiGraphMap;
 use crate::dom::v7400::connection::{Connection, ConnectionEdge};
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
-use crate::dom::v7400::{Core, Document, IntoRawNodeId, NodeId};
+use crate::dom::v7400::{Core, Document, NodeId};
 use crate::dom::{AccessError, LoadError};
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
@@ -121,19 +121,6 @@ impl Loader {
         Core::load(parser)
     }
 
-    /// Finds a toplevel node by the name.
-    fn find_toplevel(&self, target_name: &str) -> Option<NodeId> {
-        let core = self.core();
-        let target_sym = core.sym_opt(target_name)?;
-        for toplevel_id in core.root().raw_node_id().children(&core.nodes()) {
-            let toplevel = core.node(toplevel_id);
-            if toplevel.data().name_sym() == target_sym {
-                return Some(NodeId::new(toplevel_id));
-            }
-        }
-        None
-    }
-
     /// Loads objects.
     fn load_objects(&mut self) -> Result<(), LoadError> {
         assert!(
@@ -144,7 +131,7 @@ impl Loader {
         // Cannot use `indextree::NodeId::children()`, because it borrows arena.
 
         // `/Objects/*` nodes.
-        if let Some(objects_node_id) = self.find_toplevel("Objects") {
+        if let Some(objects_node_id) = self.core().find_toplevel("Objects") {
             let mut next_node_id = self.core().node(objects_node_id).first_child();
             while let Some(object_node_id) = next_node_id {
                 self.add_object(object_node_id)?;
@@ -160,7 +147,7 @@ impl Loader {
         }
 
         // `/Documents/Document` nodes.
-        if let Some(documents_node_id) = self.find_toplevel("Documents") {
+        if let Some(documents_node_id) = self.core().find_toplevel("Documents") {
             let document_sym = self.core().sym_opt("Document");
             let mut next_node_id = self.core().node(documents_node_id).first_child();
             while let Some(document_node_id) = next_node_id {
@@ -233,7 +220,7 @@ impl Loader {
     /// Load connetions.
     fn load_connections(&mut self) -> Result<(), LoadError> {
         // `/Connections/C` nodes.
-        if let Some(connections_node_id) = self.find_toplevel("Connections") {
+        if let Some(connections_node_id) = self.core().find_toplevel("Connections") {
             let c_sym = self.core().sym_opt("C");
             let mut next_node_id = self.core().node(connections_node_id).first_child();
             while let Some(connection_node_id) = next_node_id {
