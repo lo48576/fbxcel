@@ -111,3 +111,9 @@ impl Core {
             .map(NodeId::new)
     }
 }
+
+impl AsRef<Core> for Core {
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}

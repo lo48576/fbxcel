@@ -73,3 +73,9 @@ impl Document {
         &self.parsed_node_data
     }
 }
+
+impl AsRef<Core> for Document {
+    fn as_ref(&self) -> &Core {
+        &self.core
+    }
+}
