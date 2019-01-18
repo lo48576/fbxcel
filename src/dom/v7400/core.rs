@@ -95,13 +95,19 @@ impl Core {
 
     /// Finds a toplevel node by the name.
     pub(crate) fn find_toplevel(&self, target_name: &str) -> Option<NodeId> {
+        self.find_child_by_name(self.root(), target_name)
+    }
+
+    /// Finds the first child with the given name.
+    pub(crate) fn find_child_by_name(&self, parent: NodeId, target_name: &str) -> Option<NodeId> {
         let target_sym = self.sym_opt(target_name)?;
-        for toplevel_id in self.root().raw_node_id().children(&self.nodes()) {
-            let toplevel = self.node(toplevel_id);
-            if toplevel.data().name_sym() == target_sym {
-                return Some(NodeId::new(toplevel_id));
-            }
-        }
-        None
+        parent
+            .raw_node_id()
+            .children(&self.nodes())
+            .find(|&child_id| {
+                let child = self.node(child_id);
+                child.data().name_sym() == target_sym
+            })
+            .map(NodeId::new)
     }
 }
