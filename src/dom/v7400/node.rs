@@ -59,6 +59,20 @@ impl NodeId {
     ) -> impl Iterator<Item = NodeId> + 'a {
         core.as_ref().children_by_name(self, name)
     }
+
+    /// Returns the node ID of first found node with the given path.
+    pub fn first_node_by_path(self, core: impl AsRef<Core>, path: &[&str]) -> Option<Self> {
+        self.first_node_by_path_impl(core.as_ref(), path)
+    }
+
+    /// Returns the node ID of first found node with the given path.
+    fn first_node_by_path_impl(self, core: &Core, path: &[&str]) -> Option<Self> {
+        let mut current = self;
+        for component in path {
+            current = core.children_by_name(current, component).next()?;
+        }
+        Some(current)
+    }
 }
 
 /// Node data (including related node ID info).
