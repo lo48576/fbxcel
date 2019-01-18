@@ -2,7 +2,7 @@
 
 use indextree;
 
-use crate::dom::v7400::{Document, StrSym};
+use crate::dom::v7400::{Core, Document, StrSym};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
 /// A trait for types convertible into `indextree::NodeId`.
@@ -47,8 +47,8 @@ impl NodeId {
     /// # Panics
     ///
     /// Panics if the node with the id does not exist in the given document.
-    pub fn node(self, doc: &Document) -> Node<'_> {
-        doc.node(self)
+    pub fn node(self, core: &impl AsRef<Core>) -> Node<'_> {
+        core.as_ref().node(self)
     }
 }
 
@@ -75,8 +75,9 @@ impl<'a> Node<'a> {
     /// # Panics
     ///
     /// Panics if the node is not in the given document.
-    pub fn name(&self, doc: &'a Document) -> &'a str {
-        doc.string(self.data().name)
+    pub fn name(&self, core: &'a impl AsRef<Core>) -> &'a str {
+        core.as_ref()
+            .string(self.data().name)
             .expect("The node is not registered in the document")
     }
 

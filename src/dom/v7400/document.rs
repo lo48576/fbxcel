@@ -5,9 +5,8 @@ use std::collections::HashMap;
 use petgraph::graphmap::DiGraphMap;
 
 use crate::dom::v7400::connection::ConnectionEdge;
-use crate::dom::v7400::node::Node;
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
-use crate::dom::v7400::{Core, NodeId, ParsedData, StrSym};
+use crate::dom::v7400::{Core, NodeId, ParsedData};
 
 pub use self::loader::Loader;
 
@@ -40,22 +39,6 @@ impl Document {
             parsed_node_data,
             objects_graph,
         }
-    }
-
-    /// Resolves the given interned string symbol into the corresponding string.
-    ///
-    /// Returns `None` if the given symbol is registered to the document.
-    pub(crate) fn string(&self, sym: StrSym) -> Option<&str> {
-        self.core.string(sym)
-    }
-
-    /// Returns the node from the node ID.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node with the given ID is not available.
-    pub(crate) fn node(&self, id: NodeId) -> Node<'_> {
-        self.core.node(id)
     }
 
     /// Returns the root node ID.
