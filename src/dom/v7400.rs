@@ -1,6 +1,6 @@
 //! FBX DOM for FBX 7.4 (or compatible versions).
 
-pub(crate) use self::core::Core;
+pub use self::core::Core;
 pub use self::document::{Document, Loader};
 pub use self::node::{DowncastId, NodeId};
 pub use self::parsed::ParsedData;
