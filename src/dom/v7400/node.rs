@@ -50,6 +50,15 @@ impl NodeId {
     pub fn node(self, core: &impl AsRef<Core>) -> Node<'_> {
         core.as_ref().node(self)
     }
+
+    /// Returns an iterator of childrens with the given name.
+    pub fn children_by_name<'a>(
+        self,
+        core: &'a impl AsRef<Core>,
+        name: &str,
+    ) -> impl Iterator<Item = NodeId> + 'a {
+        core.as_ref().children_by_name(self, name)
+    }
 }
 
 /// Node data (including related node ID info).

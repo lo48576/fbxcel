@@ -95,20 +95,26 @@ impl Core {
 
     /// Finds a toplevel node by the name.
     pub(crate) fn find_toplevel(&self, target_name: &str) -> Option<NodeId> {
-        self.find_child_by_name(self.root(), target_name)
+        self.children_by_name(self.root(), target_name).next()
     }
 
-    /// Finds the first child with the given name.
-    pub(crate) fn find_child_by_name(&self, parent: NodeId, target_name: &str) -> Option<NodeId> {
-        let target_sym = self.sym_opt(target_name)?;
-        parent
-            .raw_node_id()
-            .children(&self.nodes())
-            .find(|&child_id| {
-                let child = self.node(child_id);
-                child.data().name_sym() == target_sym
+    /// Returns an iterator of childrens with the given name.
+    pub(crate) fn children_by_name<'a>(
+        &'a self,
+        parent: NodeId,
+        target_name: &str,
+    ) -> impl Iterator<Item = NodeId> + 'a {
+        // By using `flat_map` first, the iterator can return `None` before
+        // traversing the tree if `target_name` is not registered.
+        self.sym_opt(target_name)
+            .into_iter()
+            .flat_map(move |target_sym| {
+                parent
+                    .raw_node_id()
+                    .children(&self.nodes())
+                    .filter(move |&child_id| self.node(child_id).data().name_sym() == target_sym)
+                    .map(NodeId::new)
             })
-            .map(NodeId::new)
     }
 }
 
