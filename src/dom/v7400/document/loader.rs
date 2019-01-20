@@ -223,11 +223,13 @@ impl Loader {
         if let Some(connections_node_id) = self.core().find_toplevel("Connections") {
             let c_sym = self.core().sym_opt("C");
             let mut next_node_id = self.core().node(connections_node_id).first_child();
+            let mut conn_index = 0;
             while let Some(connection_node_id) = next_node_id {
                 if Some(self.core().node(connection_node_id).data().name_sym()) == c_sym {
-                    self.add_connection(connection_node_id)?;
+                    self.add_connection(connection_node_id, conn_index)?;
                 }
                 next_node_id = self.core().node(connection_node_id).next_sibling();
+                conn_index = conn_index.checked_add(1).expect("Too many connections");
             }
         } else {
             warn_noncritical!(self.strict, "`Connections` node not found");
@@ -242,11 +244,11 @@ impl Loader {
     }
 
     /// Registers object connection.
-    fn add_connection(&mut self, node_id: NodeId) -> Result<(), LoadError> {
+    fn add_connection(&mut self, node_id: NodeId, conn_index: usize) -> Result<(), LoadError> {
         let conn = {
             let (node, strings) = self.core_mut().node_and_strings(node_id);
             let attrs = node.data().attributes();
-            Connection::load_from_attributes(attrs, strings)?
+            Connection::load_from_attributes(attrs, strings, conn_index)?
         };
 
         if let Some(old_conn) = self

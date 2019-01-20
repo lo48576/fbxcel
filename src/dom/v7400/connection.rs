@@ -26,6 +26,8 @@ pub struct ConnectionEdge {
     destination_type: ConnectedNodeType,
     /// Label.
     label: Option<StrSym>,
+    /// Connection node index.
+    index: usize,
 }
 
 /// Connection data (provided by `C` node).
@@ -59,6 +61,7 @@ impl Connection {
     pub(crate) fn load_from_attributes(
         attrs: &[DirectAttributeValue],
         strings: &mut StringInterner<StrSym>,
+        conn_index: usize,
     ) -> Result<Self, LoadError> {
         let ty_str = match attrs.get(0) {
             Some(DirectAttributeValue::String(v)) => v,
@@ -102,6 +105,7 @@ impl Connection {
                 source_type,
                 destination_type,
                 label,
+                index: conn_index,
             },
             source_id,
             destination_id,
