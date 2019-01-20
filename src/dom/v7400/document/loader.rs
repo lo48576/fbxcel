@@ -243,8 +243,6 @@ impl Loader {
 
     /// Registers object connection.
     fn add_connection(&mut self, node_id: NodeId) -> Result<(), LoadError> {
-        //use std::collections::hash_map::Entry;
-
         let conn = {
             let (node, strings) = self.core_mut().node_and_strings(node_id);
             let attrs = node.data().attributes();
