@@ -6,7 +6,7 @@ use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
-use self::connection::ConnectionEdge;
+use self::connection::ConnectionRef;
 pub(crate) use self::graph::ObjectsGraph;
 
 pub mod connection;
@@ -132,10 +132,7 @@ impl ObjectNodeId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn sources(
-        self,
-        doc: &Document,
-    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+    pub fn sources(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
         self.meta(doc).id().sources(doc)
     }
 
@@ -145,10 +142,7 @@ impl ObjectNodeId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn destinations(
-        self,
-        doc: &Document,
-    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
         self.meta(doc).id().destinations(doc)
     }
 }
@@ -200,11 +194,10 @@ impl ObjectId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn sources(
-        self,
-        doc: &Document,
-    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
-        doc.objects_graph().incoming_edges(self)
+    pub fn sources(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+        doc.objects_graph()
+            .incoming_edges(self)
+            .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
     }
 
     /// Returns an iterator of the connections with destination objects and
@@ -213,10 +206,9 @@ impl ObjectId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn destinations(
-        self,
-        doc: &Document,
-    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
-        doc.objects_graph().outgoing_edges(self)
+    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+        doc.objects_graph()
+            .outgoing_edges(self)
+            .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
     }
 }

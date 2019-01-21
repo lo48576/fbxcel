@@ -160,3 +160,44 @@ fn get_object_id_from_attrs(
         }
     }
 }
+
+/// Reference to connection data (provided by `C` node).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ConnectionRef<'a> {
+    /// Edge data.
+    edge: &'a ConnectionEdge,
+    /// Source object ID.
+    source_id: ObjectId,
+    /// Destination object ID.
+    destination_id: ObjectId,
+}
+
+impl<'a> ConnectionRef<'a> {
+    /// Creates a new `ConnectionRef`.
+    pub(crate) fn new(
+        source_id: ObjectId,
+        destination_id: ObjectId,
+        edge: &'a ConnectionEdge,
+    ) -> Self {
+        Self {
+            edge,
+            source_id,
+            destination_id,
+        }
+    }
+
+    /// Returns source ID.
+    pub fn source_id(&self) -> ObjectId {
+        self.source_id
+    }
+
+    /// Returns destination ID.
+    pub fn destination_id(&self) -> ObjectId {
+        self.destination_id
+    }
+
+    /// Returns connection edge.
+    pub fn edge(&self) -> &'a ConnectionEdge {
+        &self.edge
+    }
+}
