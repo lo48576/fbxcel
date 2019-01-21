@@ -4,7 +4,7 @@ use petgraph::graph::DiGraph;
 use petgraph::Direction;
 use std::collections::HashMap;
 
-use crate::dom::v7400::connection::{Connection, ConnectionEdge};
+use crate::dom::v7400::object::connection::{Connection, ConnectionEdge};
 use crate::dom::v7400::object::ObjectId;
 
 /// Internal representation of graph node index type.

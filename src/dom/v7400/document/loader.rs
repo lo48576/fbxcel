@@ -4,8 +4,8 @@ use std::collections::HashMap;
 
 use log::warn;
 
-use crate::dom::v7400::connection::Connection;
 use crate::dom::v7400::document::ParsedData;
+use crate::dom::v7400::object::connection::Connection;
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraph};
 use crate::dom::v7400::{Core, Document, NodeId};
 use crate::dom::{AccessError, LoadError};

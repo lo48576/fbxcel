@@ -2,13 +2,14 @@
 
 use string_interner::StringInterner;
 
-use crate::dom::v7400::connection::ConnectionEdge;
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
+use self::connection::ConnectionEdge;
 pub(crate) use self::graph::ObjectsGraph;
 
+pub mod connection;
 mod graph;
 
 /// Metadata of object node.
