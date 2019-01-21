@@ -52,6 +52,11 @@ impl Document {
     pub fn parsed_node_data(&self) -> &ParsedData {
         &self.parsed_node_data
     }
+
+    /// Returns the reference to the objects graph.
+    pub(crate) fn objects_graph(&self) -> &ObjectsGraph {
+        &self.objects_graph
+    }
 }
 
 impl AsRef<Core> for Document {

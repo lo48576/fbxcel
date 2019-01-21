@@ -4,7 +4,7 @@ use log::warn;
 use string_interner::StringInterner;
 
 use crate::dom::v7400::object::ObjectId;
-use crate::dom::v7400::StrSym;
+use crate::dom::v7400::{Core, StrSym};
 use crate::dom::{AccessError, LoadError};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
@@ -28,6 +28,32 @@ pub struct ConnectionEdge {
     label: Option<StrSym>,
     /// Connection node index.
     index: usize,
+}
+
+impl ConnectionEdge {
+    /// Returns source node type.
+    pub fn source_type(&self) -> ConnectedNodeType {
+        self.source_type
+    }
+
+    /// Returns destination node type.
+    pub fn destination_type(&self) -> ConnectedNodeType {
+        self.destination_type
+    }
+
+    /// Returns label.
+    pub fn label<'a>(&self, core: &'a impl AsRef<Core>) -> Option<&'a str> {
+        self.label.map(|label| {
+            core.as_ref()
+                .string(label)
+                .expect("The string symbol is not registered in the document")
+        })
+    }
+
+    /// Connection node index.
+    pub fn index(&self) -> usize {
+        self.index
+    }
 }
 
 /// Connection data (provided by `C` node).

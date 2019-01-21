@@ -1,6 +1,7 @@
 //! Objects graph.
 
 use petgraph::graph::DiGraph;
+use petgraph::Direction;
 use std::collections::HashMap;
 
 use crate::dom::v7400::connection::{Connection, ConnectionEdge};
@@ -35,6 +36,18 @@ impl ObjectsGraph {
             .unwrap_or_else(|| self.graph.add_node(obj_id))
     }
 
+    /// Returns `GraphNodeIndex` corresponding to the given `ObjectId`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the object ID is not added to the graph.
+    fn object_id(&self, node_index: GraphNodeIndex) -> ObjectId {
+        self.graph
+            .node_weight(node_index)
+            .cloned()
+            .expect("The given object ID is not added to the graph")
+    }
+
     /// Inserts or updates the given connection.
     ///
     /// This does not create duplicate edge.
@@ -56,5 +69,45 @@ impl ObjectsGraph {
         self.graph
             .find_edge(source, destination)
             .and_then(|edge| self.graph.edge_weight(edge))
+    }
+
+    /// Returns the iterator of outgoing edges.
+    pub(crate) fn outgoing_edges(
+        &self,
+        source: ObjectId,
+    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+        use petgraph::visit::EdgeRef;
+
+        self.graph_node_index(source)
+            .into_iter()
+            .flat_map(move |source| {
+                self.graph
+                    .edges_directed(source, Direction::Outgoing)
+                    .map(move |edge| {
+                        let source = self.object_id(edge.source());
+                        let destination = self.object_id(edge.target());
+                        (source, destination, edge.weight())
+                    })
+            })
+    }
+
+    /// Returns the iterator of incoming edges.
+    pub(crate) fn incoming_edges(
+        &self,
+        destination: ObjectId,
+    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+        use petgraph::visit::EdgeRef;
+
+        self.graph_node_index(destination)
+            .into_iter()
+            .flat_map(move |destination| {
+                self.graph
+                    .edges_directed(destination, Direction::Incoming)
+                    .map(move |edge| {
+                        let source = self.object_id(edge.source());
+                        let destination = self.object_id(edge.target());
+                        (source, destination, edge.weight())
+                    })
+            })
     }
 }

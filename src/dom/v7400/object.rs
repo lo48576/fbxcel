@@ -2,6 +2,7 @@
 
 use string_interner::StringInterner;
 
+use crate::dom::v7400::connection::ConnectionEdge;
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
@@ -123,6 +124,32 @@ impl ObjectNodeId {
             .get(self)
             .expect("The object node with the `ObjectNodeId` is not stored in the given document")
     }
+
+    /// Returns an iterator of the connections with source objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn sources(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+        self.meta(doc).id().sources(doc)
+    }
+
+    /// Returns an iterator of the connections with destination objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn destinations(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+        self.meta(doc).id().destinations(doc)
+    }
 }
 
 impl From<ObjectNodeId> for NodeId {
@@ -164,5 +191,31 @@ impl ObjectId {
     /// Creates a new `ObjectId`.
     pub(crate) fn new(v: i64) -> Self {
         ObjectId(v)
+    }
+
+    /// Returns an iterator of the connections with source objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn sources(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+        doc.objects_graph().incoming_edges(self)
+    }
+
+    /// Returns an iterator of the connections with destination objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn destinations(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
+        doc.objects_graph().outgoing_edges(self)
     }
 }
