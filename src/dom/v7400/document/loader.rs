@@ -3,11 +3,10 @@
 use std::collections::HashMap;
 
 use log::warn;
-use petgraph::graphmap::DiGraphMap;
 
-use crate::dom::v7400::connection::{Connection, ConnectionEdge};
+use crate::dom::v7400::connection::Connection;
 use crate::dom::v7400::document::ParsedData;
-use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId};
+use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraph};
 use crate::dom::v7400::{Core, Document, NodeId};
 use crate::dom::{AccessError, LoadError};
 use crate::pull_parser::v7400::Parser;
@@ -55,7 +54,7 @@ pub struct Loader {
     /// Parsed node data.
     parsed_node_data: ParsedData,
     /// Objects graph.
-    objects_graph: DiGraphMap<ObjectId, ConnectionEdge>,
+    objects_graph: ObjectsGraph,
 }
 
 impl Loader {
@@ -274,8 +273,7 @@ impl Loader {
                 return Ok(())
             );
         }
-        self.objects_graph
-            .add_edge(conn.source_id(), conn.destination_id(), *conn.edge());
+        self.objects_graph.add_connection(conn);
 
         Ok(())
     }

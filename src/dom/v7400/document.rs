@@ -2,10 +2,7 @@
 
 use std::collections::HashMap;
 
-use petgraph::graphmap::DiGraphMap;
-
-use crate::dom::v7400::connection::ConnectionEdge;
-use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
+use crate::dom::v7400::object::{ObjectId, ObjectNodeId, ObjectsGraph};
 use crate::dom::v7400::{Core, NodeId, ParsedData};
 
 pub use self::loader::Loader;
@@ -22,7 +19,7 @@ pub struct Document {
     /// Parsed node data.
     parsed_node_data: ParsedData,
     /// Objects graph.
-    objects_graph: DiGraphMap<ObjectId, ConnectionEdge>,
+    objects_graph: ObjectsGraph,
 }
 
 impl Document {
@@ -31,7 +28,7 @@ impl Document {
         core: Core,
         object_ids: HashMap<ObjectId, ObjectNodeId>,
         parsed_node_data: ParsedData,
-        objects_graph: DiGraphMap<ObjectId, ConnectionEdge>,
+        objects_graph: ObjectsGraph,
     ) -> Self {
         Self {
             core,

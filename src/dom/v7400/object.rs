@@ -6,6 +6,10 @@ use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
+pub(crate) use self::graph::ObjectsGraph;
+
+mod graph;
+
 /// Metadata of object node.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ObjectMeta {
