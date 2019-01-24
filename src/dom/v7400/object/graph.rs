@@ -72,7 +72,16 @@ impl ObjectsGraph {
     }
 
     /// Returns the iterator of outgoing edges.
-    pub(crate) fn outgoing_edges(
+    ///
+    /// Note that there are no guarantee about edges order.
+    // NOTE: `petgraph-0.4.13` guarantees that `Graph::neigbors_directed()` [1]
+    // sees edges in reverse order of edges addition.
+    // However, it is not explicitly specified that returned iterator from
+    // `Graph::edges_directed()` [2] has specific ordering.
+    //
+    // [1]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.neighbors_directed
+    // [2]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.edges_directed
+    pub(crate) fn outgoing_edges_unordered(
         &self,
         source: ObjectId,
     ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
@@ -92,7 +101,16 @@ impl ObjectsGraph {
     }
 
     /// Returns the iterator of incoming edges.
-    pub(crate) fn incoming_edges(
+    ///
+    /// Note that there are no guarantee about edges order.
+    // NOTE: `petgraph-0.4.13` guarantees that `Graph::neigbors_directed()` [1]
+    // sees edges in reverse order of edges addition.
+    // However, it is not explicitly specified that returned iterator from
+    // `Graph::edges_directed()` [2] has specific ordering.
+    //
+    // [1]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.neighbors_directed
+    // [2]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.edges_directed
+    pub(crate) fn incoming_edges_unordered(
         &self,
         destination: ObjectId,
     ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {

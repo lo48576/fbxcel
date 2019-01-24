@@ -132,8 +132,8 @@ impl ObjectNodeId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn sources(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
-        self.meta(doc).id().sources(doc)
+    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+        self.meta(doc).id().sources_undirected(doc)
     }
 
     /// Returns an iterator of the connections with destination objects and
@@ -142,8 +142,11 @@ impl ObjectNodeId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
-        self.meta(doc).id().destinations(doc)
+    pub fn destinations_undirected(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = ConnectionRef<'_>> {
+        self.meta(doc).id().destinations_undirected(doc)
     }
 }
 
@@ -194,9 +197,9 @@ impl ObjectId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn sources(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
         doc.objects_graph()
-            .incoming_edges(self)
+            .incoming_edges_unordered(self)
             .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
     }
 
@@ -206,9 +209,12 @@ impl ObjectId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+    pub fn destinations_undirected(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = ConnectionRef<'_>> {
         doc.objects_graph()
-            .outgoing_edges(self)
+            .outgoing_edges_unordered(self)
             .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
     }
 }
