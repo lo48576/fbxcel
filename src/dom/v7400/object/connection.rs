@@ -4,7 +4,7 @@ use log::warn;
 use string_interner::StringInterner;
 
 use crate::dom::v7400::object::ObjectId;
-use crate::dom::v7400::StrSym;
+use crate::dom::v7400::{Core, StrSym};
 use crate::dom::{AccessError, LoadError};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
@@ -26,6 +26,34 @@ pub struct ConnectionEdge {
     destination_type: ConnectedNodeType,
     /// Label.
     label: Option<StrSym>,
+    /// Connection node index.
+    index: usize,
+}
+
+impl ConnectionEdge {
+    /// Returns source node type.
+    pub fn source_type(&self) -> ConnectedNodeType {
+        self.source_type
+    }
+
+    /// Returns destination node type.
+    pub fn destination_type(&self) -> ConnectedNodeType {
+        self.destination_type
+    }
+
+    /// Returns label.
+    pub fn label<'a>(&self, core: &'a impl AsRef<Core>) -> Option<&'a str> {
+        self.label.map(|label| {
+            core.as_ref()
+                .string(label)
+                .expect("The string symbol is not registered in the document")
+        })
+    }
+
+    /// Connection node index.
+    pub fn index(&self) -> usize {
+        self.index
+    }
 }
 
 /// Connection data (provided by `C` node).
@@ -59,6 +87,7 @@ impl Connection {
     pub(crate) fn load_from_attributes(
         attrs: &[DirectAttributeValue],
         strings: &mut StringInterner<StrSym>,
+        conn_index: usize,
     ) -> Result<Self, LoadError> {
         let ty_str = match attrs.get(0) {
             Some(DirectAttributeValue::String(v)) => v,
@@ -102,6 +131,7 @@ impl Connection {
                 source_type,
                 destination_type,
                 label,
+                index: conn_index,
             },
             source_id,
             destination_id,
@@ -128,5 +158,46 @@ fn get_object_id_from_attrs(
             warn!("Attribute[{}] not found for `C`: expected i64", index);
             Err(AccessError::AttributeNotFound(Some(index)))
         }
+    }
+}
+
+/// Reference to connection data (provided by `C` node).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ConnectionRef<'a> {
+    /// Edge data.
+    edge: &'a ConnectionEdge,
+    /// Source object ID.
+    source_id: ObjectId,
+    /// Destination object ID.
+    destination_id: ObjectId,
+}
+
+impl<'a> ConnectionRef<'a> {
+    /// Creates a new `ConnectionRef`.
+    pub(crate) fn new(
+        source_id: ObjectId,
+        destination_id: ObjectId,
+        edge: &'a ConnectionEdge,
+    ) -> Self {
+        Self {
+            edge,
+            source_id,
+            destination_id,
+        }
+    }
+
+    /// Returns source ID.
+    pub fn source_id(&self) -> ObjectId {
+        self.source_id
+    }
+
+    /// Returns destination ID.
+    pub fn destination_id(&self) -> ObjectId {
+        self.destination_id
+    }
+
+    /// Returns connection edge.
+    pub fn edge(&self) -> &'a ConnectionEdge {
+        &self.edge
     }
 }

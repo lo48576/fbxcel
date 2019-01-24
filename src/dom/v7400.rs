@@ -7,7 +7,6 @@ pub use self::document::{Document, Loader};
 pub use self::node::{DowncastId, NodeId};
 pub use self::parsed::ParsedData;
 
-mod connection;
 mod core;
 mod document;
 pub mod node;

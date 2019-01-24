@@ -6,6 +6,12 @@ use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
 use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
+use self::connection::ConnectionRef;
+pub(crate) use self::graph::ObjectsGraph;
+
+pub mod connection;
+mod graph;
+
 /// Metadata of object node.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ObjectMeta {
@@ -119,6 +125,29 @@ impl ObjectNodeId {
             .get(self)
             .expect("The object node with the `ObjectNodeId` is not stored in the given document")
     }
+
+    /// Returns an iterator of the connections with source objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+        self.meta(doc).id().sources_undirected(doc)
+    }
+
+    /// Returns an iterator of the connections with destination objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn destinations_undirected(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = ConnectionRef<'_>> {
+        self.meta(doc).id().destinations_undirected(doc)
+    }
 }
 
 impl From<ObjectNodeId> for NodeId {
@@ -160,5 +189,32 @@ impl ObjectId {
     /// Creates a new `ObjectId`.
     pub(crate) fn new(v: i64) -> Self {
         ObjectId(v)
+    }
+
+    /// Returns an iterator of the connections with source objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+        doc.objects_graph()
+            .incoming_edges_unordered(self)
+            .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
+    }
+
+    /// Returns an iterator of the connections with destination objects and
+    /// properties.
+    ///
+    /// Note that this would not be ordered.
+    /// To access them in correct order, sort by return value of
+    /// [`ConnectionEdge::index()`].
+    pub fn destinations_undirected(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = ConnectionRef<'_>> {
+        doc.objects_graph()
+            .outgoing_edges_unordered(self)
+            .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
     }
 }
