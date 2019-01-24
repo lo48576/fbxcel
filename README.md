@@ -10,6 +10,10 @@
 
 * Pull parser for FBX binary (`pull_parser` module)
     + FBX 7.4 and 7.5 is explicitly supported.
+* Basic FBX DOM
+    + This is optional and enabled by `dom` feature.
+    + FBX 7.4 and 7.5 is explicitly supported.
+    + Currently, quite basic tree and objects traversal functions are available.
 
 ### FBX versions
 

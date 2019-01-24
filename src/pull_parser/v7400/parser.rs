@@ -10,7 +10,11 @@ use crate::low::{FbxHeader, FbxVersion};
 use crate::pull_parser::error::{DataError, OperationError};
 use crate::pull_parser::reader::{PlainSource, SeekableSource};
 use crate::pull_parser::v7400::{Event, FromParser, StartNode};
-use crate::pull_parser::{ParserSource, ParserVersion, Result, Warning};
+use crate::pull_parser::SyntacticPosition;
+use crate::pull_parser::{Error, ParserSource, ParserVersion, Result, Warning};
+
+/// Warning handler type.
+type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;
 
 /// Creates a new `Parser` from the given reader.
 ///
@@ -45,7 +49,7 @@ pub struct Parser<R> {
     /// Reader.
     reader: R,
     /// Warning handler.
-    warning_handler: Option<Box<dyn FnMut(Warning) -> Result<()>>>,
+    warning_handler: Option<WarningHandler>,
 }
 
 impl<R: ParserSource> Parser<R> {
@@ -72,7 +76,7 @@ impl<R: ParserSource> Parser<R> {
     /// Sets the warning handler.
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
-        F: 'static + FnMut(Warning) -> Result<()>,
+        F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
     {
         self.warning_handler = Some(Box::new(warning_handler));
     }
@@ -120,7 +124,10 @@ impl<R: ParserSource> Parser<R> {
         match self.state.health() {
             Health::Running => Ok(()),
             Health::Finished => Err(OperationError::AlreadyFinished.into()),
-            Health::Aborted => Err(OperationError::AlreadyAborted.into()),
+            Health::Aborted(err_pos) => Err(Error::with_position(
+                OperationError::AlreadyAborted.into(),
+                err_pos.clone(),
+            )),
         }
     }
 
@@ -130,9 +137,12 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Passes the given warning to the warning handler.
-    pub(crate) fn warn(&mut self, warning: Warning) -> Result<()> {
+    pub(crate) fn warn(&mut self, warning: Warning, pos: SyntacticPosition) -> Result<()> {
         match self.warning_handler {
-            Some(ref mut handler) => handler(warning),
+            Some(ref mut handler) => match handler(warning, &pos) {
+                Ok(()) => Ok(()),
+                Err(e) => Err(e.and_position(pos)),
+            },
             None => Ok(()),
         }
     }
@@ -153,8 +163,9 @@ impl<R: ParserSource> Parser<R> {
         let event_kind = match self.next_event_impl() {
             Ok(v) => v,
             Err(e) => {
-                self.set_aborted();
-                return Err(e);
+                let err_pos = self.position();
+                self.set_aborted(err_pos.clone());
+                return Err(e.and_position(err_pos));
             }
         };
         if event_kind == EventKind::EndFbx {
@@ -214,7 +225,7 @@ impl<R: ParserSource> Parser<R> {
     /// Reads the next node header and changes the parser state (except for
     /// parser health and the last event kind).
     fn next_event_impl(&mut self) -> Result<EventKind> {
-        assert_eq!(self.state.health(), Health::Running);
+        assert_eq!(self.state.health(), &Health::Running);
         assert_ne!(self.state.last_event_kind(), Some(EventKind::EndFbx));
 
         // Skip unread attribute of previous node, if exists.
@@ -289,7 +300,20 @@ impl<R: ParserSource> Parser<R> {
         }
 
         if node_header.bytelen_name == 0 {
-            self.warn(Warning::EmptyNodeName)?;
+            let mut pos = self.position();
+            // Need to modify position, because the currently reading node is
+            // not reflected to the parser.
+            pos.byte_pos = self.reader().position();
+            pos.component_byte_pos = event_start_offset;
+            let local_node_index = self
+                .state
+                .current_node()
+                .map_or(self.state.known_toplevel_nodes_count, |v| {
+                    v.known_children_count
+                });
+            pos.node_path.push((local_node_index, String::new()));
+
+            self.warn(Warning::EmptyNodeName, pos)?;
         }
 
         // Read the node name.
@@ -305,9 +329,14 @@ impl<R: ParserSource> Parser<R> {
             attributes_count: node_header.num_attributes,
             attributes_end_offset: current_offset + node_header.bytelen_attributes,
             name,
+            known_children_count: 0,
         };
 
         // Update parser status.
+        match self.state.started_nodes.last_mut() {
+            Some(parent) => parent.known_children_count += 1,
+            None => self.state.known_toplevel_nodes_count += 1,
+        }
         self.state.started_nodes.push(starting);
         Ok(EventKind::StartNode)
     }
@@ -329,8 +358,73 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Sets the parser to aborted state.
-    pub(crate) fn set_aborted(&mut self) {
-        self.state.health = Health::Aborted;
+    pub(crate) fn set_aborted(&mut self, pos: SyntacticPosition) {
+        self.state.health = Health::Aborted(pos);
+    }
+
+    /// Ignore events until the current node closes.
+    ///
+    /// This method seeks to the already known node end position, without
+    /// parsing events to be ignored.
+    /// Because of this, some errors can be overlooked, or some errors can be
+    /// detected at the different position from the true error position.
+    ///
+    /// To detect errors correctly, you should use [`next_event`] manually.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are no open nodes.
+    pub fn skip_current_node(&mut self) -> Result<()> {
+        let end_pos = self
+            .state
+            .current_node()
+            .expect("Attempt to skip implicit top-level node")
+            .node_end_offset;
+        self.reader.skip_to(end_pos)?;
+
+        Ok(())
+    }
+    /// Returns the syntactic position of the current node.
+    ///
+    /// Note that this allocates memory.
+    pub fn position(&self) -> SyntacticPosition {
+        let byte_pos = self.reader.position();
+        if self.state.current_node().is_none() {
+            // Reading implicit root node.
+            return SyntacticPosition {
+                byte_pos,
+                component_byte_pos: 0,
+                node_path: Vec::new(),
+                attribute_index: None,
+            };
+        }
+
+        let toplevel_index = self
+            .state
+            .known_toplevel_nodes_count
+            .checked_sub(1)
+            .expect("Should never fail: implicit root node should have some children here");
+        // For now, use 0 for start offset of implicit root node.
+        // This behaviour may change in future.
+        let node_start_pos = self.state.current_node().map_or(0, |v| v.node_start_offset);
+        // Use not `checked_sub` but `saturating_sub` here, because
+        // `Iterator::zip` might read extra elements which can be used as
+        // result.
+        let trailing_indices = self
+            .state
+            .started_nodes
+            .iter()
+            .map(|v| v.known_children_count.saturating_sub(1));
+        let node_indices = std::iter::once(toplevel_index).chain(trailing_indices);
+        let node_names = self.state.started_nodes.iter().map(|v| v.name.clone());
+        let node_path = node_indices.zip(node_names).collect();
+
+        SyntacticPosition {
+            byte_pos,
+            component_byte_pos: node_start_pos,
+            node_path,
+            attribute_index: None,
+        }
     }
 }
 
@@ -348,14 +442,14 @@ impl<R: fmt::Debug> fmt::Debug for Parser<R> {
 }
 
 /// Health of a parser.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum Health {
     /// Ready or already started, but not yet finished, and no critical errors.
     Running,
     /// Successfully finished.
     Finished,
     /// Aborted due to critical error.
-    Aborted,
+    Aborted(SyntacticPosition),
 }
 
 /// Parser state.
@@ -374,6 +468,10 @@ struct State {
     started_nodes: Vec<StartedNode>,
     /// Last event kind.
     last_event_kind: Option<EventKind>,
+    /// Number of known top-level nodes.
+    ///
+    /// This is here because [`StartedNode`] is not used for implicit root node.
+    known_toplevel_nodes_count: usize,
 }
 
 impl State {
@@ -384,12 +482,13 @@ impl State {
             health: Health::Running,
             started_nodes: Vec::new(),
             last_event_kind: None,
+            known_toplevel_nodes_count: 0,
         }
     }
 
     /// Returns health of the parser.
-    fn health(&self) -> Health {
-        self.health
+    fn health(&self) -> &Health {
+        &self.health
     }
 
     /// Returns info about current node (except for implicit root node).
@@ -431,4 +530,6 @@ struct StartedNode {
     attributes_end_offset: u64,
     /// Node name.
     name: String,
+    /// Number of known children.
+    known_children_count: usize,
 }

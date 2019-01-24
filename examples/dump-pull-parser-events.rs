@@ -10,7 +10,7 @@ fn main() {
     let path = match std::env::args_os().nth(1) {
         Some(v) => PathBuf::from(v),
         None => {
-            eprintln!("Usage: list-parser-events <FBX_FILE>");
+            eprintln!("Usage: dump-pull-parser-events <FBX_FILE>");
             std::process::exit(1);
         }
     };
@@ -31,8 +31,8 @@ fn main() {
         pull_parser::ParserVersion::V7400 => {
             let mut parser = pull_parser::v7400::from_seekable_reader(header, reader)
                 .expect("Should never fail: Unsupported FBX verison");
-            parser.set_warning_handler(|w| {
-                eprintln!("WARNING: {}", w);
+            parser.set_warning_handler(|w, pos| {
+                eprintln!("WARNING: {} (pos={:?})", w, pos);
                 Ok(())
             });
             dump_fbx_7400(parser).expect("Failed to parse FBX file");
