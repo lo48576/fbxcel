@@ -10,6 +10,9 @@ pub use self::loader::Loader;
 mod loader;
 
 /// FBX DOM document.
+///
+/// This manages not only tree structure, but also interpreted high-level
+/// structures.
 #[derive(Debug, Clone)]
 pub struct Document {
     /// DOM core.

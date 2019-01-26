@@ -14,6 +14,8 @@ use self::loader::CoreLoader;
 mod loader;
 
 /// FBX DOM core.
+///
+/// This manages basic tree structure and interned string tables.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Core {
     /// FBX node names.
