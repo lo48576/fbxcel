@@ -5,8 +5,6 @@ use std::collections::HashMap;
 use crate::dom::v7400::object::{ObjectMeta, ObjectNodeId};
 
 /// Parsed node data.
-///
-/// This behaves as map from `Map<TypeId, Map<NodeId, SomeData>>`.
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct ParsedData {
     /// Object meta.
