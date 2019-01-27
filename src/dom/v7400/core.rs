@@ -60,6 +60,11 @@ impl Core {
         self.strings.get(s)
     }
 
+    /// Interns the given string and returns the corresponding symbol.
+    pub(crate) fn sym(&mut self, s: &str) -> StrSym {
+        self.strings.get_or_intern(s)
+    }
+
     /// Returns the node from the node ID.
     ///
     /// # Panics

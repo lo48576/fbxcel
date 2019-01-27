@@ -6,7 +6,8 @@ use log::warn;
 
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::connection::Connection;
-use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraph};
+use crate::dom::v7400::object::scene::SceneNodeData;
+use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraph, SceneNodeId};
 use crate::dom::v7400::{Core, Document, NodeId};
 use crate::dom::{AccessError, LoadError};
 use crate::pull_parser::v7400::Parser;
@@ -148,10 +149,55 @@ impl Loader {
         // `/Documents/Document` nodes.
         if let Some(documents_node_id) = self.core().find_toplevel("Documents") {
             let document_sym = self.core().sym_opt("Document");
+            let scene_sym = self.core_mut().sym("Scene");
             let mut next_node_id = self.core().node(documents_node_id).first_child();
             while let Some(document_node_id) = next_node_id {
                 if Some(self.core().node(document_node_id).data().name_sym()) == document_sym {
                     self.add_object(document_node_id)?;
+                    let object_node_id = ObjectNodeId::new(document_node_id);
+                    let node_meta = self
+                        .parsed_node_data
+                        .object_meta()
+                        .get(&object_node_id)
+                        .expect("Should never fail: `add_object()` should have added the entry");
+                    if node_meta.subclass_sym() == scene_sym {
+                        // Add scene data to `parsed_node_data`.
+                        match SceneNodeData::load(object_node_id, self.core()) {
+                            Ok(data) => {
+                                let scene_node_id = SceneNodeId::new(object_node_id);
+                                self.parsed_node_data
+                                    .scenes_mut()
+                                    .entry(scene_node_id)
+                                    .or_insert(data);
+                            }
+                            Err(e) => {
+                                warn_noncritical!(
+                                    self.strict,
+                                    "Failed to load scene object node data from `Document` node"
+                                );
+                                bail_if_strict!(self.strict, e, return Ok(()));
+                            }
+                        }
+                    } else {
+                        warn_noncritical!(
+                            self.strict,
+                            "`Document` node does not have `Scene` subclass"
+                        );
+                        bail_if_strict!(
+                            self.strict,
+                            LoadError::UnexpectedObjectType(
+                                "`Scene`".into(),
+                                self.core()
+                                    .string(node_meta.subclass_sym())
+                                    .expect(
+                                        "Should never fail: subclass string should be \
+                                         registered by `add_object()`"
+                                    )
+                                    .into(),
+                            ),
+                            return Ok(())
+                        );
+                    }
                 }
                 next_node_id = self.core().node(document_node_id).next_sibling();
             }
