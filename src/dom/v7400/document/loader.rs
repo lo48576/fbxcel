@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use log::warn;
+use log::{debug, trace, warn};
 
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::connection::Connection;
@@ -94,6 +94,8 @@ impl Loader {
     where
         R: ParserSource,
     {
+        debug!("Loading v7400 DOM from parser: strict={:?}", self.strict);
+
         // Load basic tree.
         self.core = Some(self.load_core(parser)?);
 
@@ -102,6 +104,8 @@ impl Loader {
 
         // Load object connections.
         self.load_connections()?;
+
+        debug!("successfully loaded v7400 DOM");
 
         Ok(Document::new(
             self.core
@@ -123,6 +127,8 @@ impl Loader {
 
     /// Loads objects.
     fn load_objects(&mut self) -> Result<(), LoadError> {
+        trace!("Loading objects");
+
         assert!(
             self.object_ids.is_empty(),
             "Attempt to initialize `self.object_ids` which has been already initialized"
@@ -132,8 +138,12 @@ impl Loader {
 
         // `/Objects/*` nodes.
         if let Some(objects_node_id) = self.core().find_toplevel("Objects") {
+            trace!("Loading `/Objects/*` under node_id={:?}", objects_node_id);
+
             let mut next_node_id = self.core().node(objects_node_id).first_child();
             while let Some(object_node_id) = next_node_id {
+                trace!("Found object node: node_id={:?}", object_node_id);
+
                 self.add_object(object_node_id)?;
                 next_node_id = self.core().node(object_node_id).next_sibling();
             }
@@ -148,12 +158,21 @@ impl Loader {
 
         // `/Documents/Document` nodes.
         if let Some(documents_node_id) = self.core().find_toplevel("Documents") {
+            trace!(
+                "Loading `/Documents/Document` under node_id={:?}",
+                documents_node_id
+            );
+
             let document_sym = self.core().sym_opt("Document");
             let scene_sym = self.core_mut().sym("Scene");
             let mut next_node_id = self.core().node(documents_node_id).first_child();
             while let Some(document_node_id) = next_node_id {
                 if Some(self.core().node(document_node_id).data().name_sym()) == document_sym {
+                    trace!("Found `Document` node: node_id={:?}", document_node_id);
+
                     self.add_object(document_node_id)?;
+
+                    trace!("Interpreting document (scene) data");
                     let object_node_id = ObjectNodeId::new(document_node_id);
                     let node_meta = self
                         .parsed_node_data
@@ -164,6 +183,8 @@ impl Loader {
                         // Add scene data to `parsed_node_data`.
                         match SceneNodeData::load(object_node_id, self.core()) {
                             Ok(data) => {
+                                trace!("Successfully interpreted `Document` node as scene data: data={:?}", data);
+
                                 let scene_node_id = SceneNodeId::new(object_node_id);
                                 self.parsed_node_data
                                     .scenes_mut()
@@ -210,12 +231,16 @@ impl Loader {
             );
         }
 
+        trace!("Successfully loaded objects");
+
         Ok(())
     }
 
     /// Registers object node.
     fn add_object(&mut self, node_id: NodeId) -> Result<(), LoadError> {
         use std::collections::hash_map::Entry;
+
+        trace!("Loading object: node_id={:?}", node_id);
 
         let obj_meta = {
             let (node, strings) = self.core_mut().node_and_strings(node_id);
@@ -230,6 +255,7 @@ impl Loader {
         };
         let obj_id = obj_meta.id();
         let node_id = ObjectNodeId::new(node_id);
+        trace!("Interpreted object: id={:?}, meta={:?}", node_id, obj_meta);
 
         // Register to `object_ids`.
         match self.object_ids.entry(obj_id) {
@@ -259,17 +285,31 @@ impl Loader {
             .is_some();
         assert!(!meta_dup);
 
+        trace!(
+            "Successfully loaded object: node_id={:?}, obj_id={:?}",
+            node_id,
+            obj_id
+        );
+
         Ok(())
     }
 
     /// Load connetions.
     fn load_connections(&mut self) -> Result<(), LoadError> {
+        trace!("Loading objects connections");
+
         // `/Connections/C` nodes.
         if let Some(connections_node_id) = self.core().find_toplevel("Connections") {
+            trace!(
+                "Loading `/Connections/C` nodes under {:?}",
+                connections_node_id
+            );
+
             let c_sym = self.core().sym_opt("C");
             let mut next_node_id = self.core().node(connections_node_id).first_child();
             let mut conn_index = 0;
             while let Some(connection_node_id) = next_node_id {
+                trace!("Found `C` node: node_id={:?}", connection_node_id);
                 if Some(self.core().node(connection_node_id).data().name_sym()) == c_sym {
                     self.add_connection(connection_node_id, conn_index)?;
                 }
@@ -285,16 +325,29 @@ impl Loader {
             );
         }
 
+        trace!("Successfully loaded objects connections");
+
         Ok(())
     }
 
     /// Registers object connection.
     fn add_connection(&mut self, node_id: NodeId, conn_index: usize) -> Result<(), LoadError> {
+        trace!(
+            "Adding a connection: node_id={:?}, conn_index={:?}",
+            node_id,
+            conn_index
+        );
+
         let conn = {
             let (node, strings) = self.core_mut().node_and_strings(node_id);
             let attrs = node.data().attributes();
             Connection::load_from_attributes(attrs, strings, conn_index)?
         };
+        trace!(
+            "Interpreted connection: node_id={:?}, conn={:?}",
+            node_id,
+            conn
+        );
 
         if let Some(old_conn) = self
             .objects_graph
@@ -320,6 +373,12 @@ impl Loader {
             );
         }
         self.objects_graph.add_connection(conn);
+
+        trace!(
+            "Successfully added the connection: node_id={:?}, conn_index={:?}",
+            node_id,
+            conn_index
+        );
 
         Ok(())
     }

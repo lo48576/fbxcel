@@ -1,6 +1,7 @@
 //! FBX DOM core.
 
 use indextree::Arena;
+use log::trace;
 use string_interner::StringInterner;
 
 use crate::dom::v7400::node::{IntoRawNodeId, Node, NodeData};
@@ -102,7 +103,15 @@ impl Core {
 
     /// Finds a toplevel node by the name.
     pub(crate) fn find_toplevel(&self, target_name: &str) -> Option<NodeId> {
-        self.children_by_name(self.root(), target_name).next()
+        trace!("Looking for toplevel node with name {:?}", target_name);
+
+        let result = self.children_by_name(self.root(), target_name).next();
+        match result.as_ref() {
+            Some(id) => trace!("Found toplevel node {:?}: id={:?}", target_name, id),
+            None => trace!("Toplevel node {:?} not found", target_name),
+        }
+
+        result
     }
 
     /// Returns an iterator of childrens with the given name.

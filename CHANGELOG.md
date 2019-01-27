@@ -13,6 +13,9 @@
       objects, and this prevents objects connections from correctly being
       tracked.
 
+### Others
+* `dom` module has little more detailed logging (mainly `trace` level).
+
 ## [0.2.0]
 
 * Syntactic position information for pull parser is supported.
