@@ -25,6 +25,8 @@ impl From<SceneNodeId> for ObjectNodeId {
 
 impl DowncastId<SceneNodeId> for ObjectNodeId {
     fn downcast(self, doc: &Document) -> Option<SceneNodeId> {
+        trace!("Trying to downcast {:?} to `SceneNodeId`", self);
+
         let maybe_invalid_id = SceneNodeId::new(self);
         if doc
             .parsed_node_data()
@@ -32,9 +34,18 @@ impl DowncastId<SceneNodeId> for ObjectNodeId {
             .contains_key(&maybe_invalid_id)
         {
             // Valid!
+            trace!(
+                "Successfully downcasted {:?} to {:?}",
+                self,
+                maybe_invalid_id
+            );
             Some(maybe_invalid_id)
         } else {
             // Invalid.
+            trace!(
+                "Downcast failed: {:?} is not convertible to `SceneNodeId`",
+                self
+            );
             None
         }
     }
