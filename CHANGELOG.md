@@ -6,6 +6,13 @@
 * `dom::v7400::object::scene` module and related types are added.
     + By these types, users can get scenes and their root object IDs.
 
+### Fixed
+#### `dom::v7400`
+* Objects graph structure is now correctly loadable.
+    + Previously, multiple nodes are created in internal graph for single
+      objects, and this prevents objects connections from correctly being
+      tracked.
+
 ## [0.2.0]
 
 * Syntactic position information for pull parser is supported.
