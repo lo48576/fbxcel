@@ -1,5 +1,7 @@
 //! Scene node.
 
+use log::trace;
+
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId};
 use crate::dom::AccessError;
@@ -48,10 +50,14 @@ pub struct SceneNodeData {
 impl SceneNodeData {
     /// Loads the scene node data.
     pub(crate) fn load(obj_node_id: ObjectNodeId, core: &Core) -> Result<Self, AccessError> {
+        trace!("Loading scene node data from object node {:?}", obj_node_id);
+
         let child_root_node_id = NodeId::from(obj_node_id)
             .children_by_name(core, "RootNode")
             .next()
             .ok_or_else(|| AccessError::NodeNotFound("`RootNode`".into()))?;
+        trace!("Found child node `RootNode`: node={:?}", child_root_node_id);
+
         let root_object = child_root_node_id
             .node(core)
             .attributes()
@@ -60,6 +66,9 @@ impl SceneNodeData {
             .get_i64()
             .map(ObjectId::new)
             .ok_or(AccessError::UnexpectedAttributeType(Some(0)))?;
+        trace!("Got root object id: obj_id={:?}", root_object);
+
+        trace!("Successfully loaded scene node data from {:?}", obj_node_id);
 
         Ok(Self { root_object })
     }

@@ -1,5 +1,6 @@
 //! Object.
 
+use log::trace;
 use string_interner::StringInterner;
 
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
@@ -70,12 +71,15 @@ impl ObjectMeta {
         attrs: &[DirectAttributeValue],
         strings: &mut StringInterner<StrSym>,
     ) -> Result<Self, AccessError> {
+        trace!("Loading object metadata");
+
         // Get ID.
         let id = match attrs.get(0) {
             Some(DirectAttributeValue::I64(v)) => ObjectId::new(*v),
             Some(_) => return Err(AccessError::UnexpectedAttributeType(Some(0))),
             None => return Err(AccessError::AttributeNotFound(Some(0))),
         };
+        trace!("Got object id: {:?}", id);
 
         // Get name and class.
         let (name, class) = match attrs.get(1) {
@@ -93,14 +97,20 @@ impl ObjectMeta {
             Some(_) => return Err(AccessError::UnexpectedAttributeType(Some(1))),
             None => return Err(AccessError::AttributeNotFound(Some(1))),
         };
+        trace!("Got name and class: name={:?}, class={:?}", name, class);
         let class = strings.get_or_intern(class);
 
         // Get subclass.
         let subclass = match attrs.get(2) {
-            Some(DirectAttributeValue::String(v)) => strings.get_or_intern(v.as_ref()),
+            Some(DirectAttributeValue::String(v)) => {
+                trace!("Got subclass: {:?}", v);
+                strings.get_or_intern(v.as_ref())
+            }
             Some(_) => return Err(AccessError::UnexpectedAttributeType(Some(2))),
             None => return Err(AccessError::AttributeNotFound(Some(2))),
         };
+
+        trace!("Successfully loaded object metadata");
 
         Ok(Self {
             id,

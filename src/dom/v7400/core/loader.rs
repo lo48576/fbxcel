@@ -1,7 +1,7 @@
 //! FBX DOM core loader.
 
 use indextree::Arena;
-use log::error;
+use log::{debug, error, trace};
 use string_interner::StringInterner;
 
 use crate::dom::v7400::core::Core;
@@ -35,7 +35,9 @@ impl CoreLoader {
         R: ParserSource,
     {
         // Load basic tree.
+        debug!("Loading `Core` tree from parser");
         self.load_tree(parser)?;
+        debug!("Successfully loaded `Core` tree");
 
         Ok(Core::new(self.strings, self.nodes, self.root))
     }
@@ -52,6 +54,7 @@ impl CoreLoader {
 
         let mut open_nodes = vec![self.root];
         loop {
+            trace!("open_nodes: {:?}", open_nodes);
             assert!(
                 !open_nodes.is_empty(),
                 "Open nodes stack should not be empty on loop start"
@@ -59,6 +62,7 @@ impl CoreLoader {
 
             match parser.next_event()? {
                 Event::StartNode(start) => {
+                    trace!("Got `Event::StartNode(name={:?})`", start.name());
                     let parent = open_nodes
                         .last_mut()
                         .expect("Should never fail: Open nodes stack should not be empty here");
@@ -68,11 +72,13 @@ impl CoreLoader {
                     open_nodes.push(current);
                 }
                 Event::EndNode => {
+                    trace!("Got `Event::EndNode`");
                     open_nodes
                         .pop()
                         .expect("Should never fail: Open nodes stack should not be empty here");
                 }
                 Event::EndFbx(_) => {
+                    trace!("Got `Event::EndFbx(_)`");
                     open_nodes
                         .pop()
                         .expect("Should never fail: Open nodes stack should not be empty here");
@@ -93,6 +99,12 @@ impl CoreLoader {
     where
         R: ParserSource,
     {
+        trace!(
+            "Adding a new child name={:?} to the parent {:?}",
+            start.name(),
+            parent
+        );
+
         // Create a new node.
         let current = {
             let name = self.strings.get_or_intern(start.name());
@@ -111,6 +123,12 @@ impl CoreLoader {
             .expect(
                 "Should never fail: The newly created node should always be successfully appended",
             );
+
+        trace!(
+            "Successfully added a new child {:?} to the parent {:?}",
+            current,
+            parent
+        );
 
         Ok(current)
     }

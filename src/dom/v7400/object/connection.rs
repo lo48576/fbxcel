@@ -1,6 +1,6 @@
 //! `Connections` and `C` node.
 
-use log::warn;
+use log::{trace, warn};
 use string_interner::StringInterner;
 
 use crate::dom::v7400::object::ObjectId;
@@ -89,6 +89,8 @@ impl Connection {
         strings: &mut StringInterner<StrSym>,
         conn_index: usize,
     ) -> Result<Self, LoadError> {
+        trace!("Loading `C` node: conn_index={:?}", conn_index);
+
         let ty_str = match attrs.get(0) {
             Some(DirectAttributeValue::String(v)) => v,
             Some(v) => {
@@ -103,6 +105,7 @@ impl Connection {
                 return Err(AccessError::AttributeNotFound(Some(0)).into());
             }
         };
+        trace!("Got raw connection types value: {:?}", ty_str);
         let (destination_type, source_type) = match ty_str.as_ref() {
             "OO" => (ConnectedNodeType::Object, ConnectedNodeType::Object),
             "OP" => (ConnectedNodeType::Object, ConnectedNodeType::Property),
@@ -110,13 +113,26 @@ impl Connection {
             "PP" => (ConnectedNodeType::Property, ConnectedNodeType::Property),
             _ => return Err(AccessError::InvalidNodeAttribute(Some("C".into()), Some(0)).into()),
         };
+        trace!(
+            "Got connection types: dest={:?}, src={:?}",
+            destination_type,
+            source_type
+        );
 
         let source_id = get_object_id_from_attrs(attrs, 1)?;
+        trace!("Got source object ID: {:?}", source_id);
         let destination_id = get_object_id_from_attrs(attrs, 2)?;
+        trace!("Got destination object ID: {:?}", destination_id);
 
         let label = match attrs.get(3) {
-            Some(DirectAttributeValue::String(v)) => Some(strings.get_or_intern(v.as_str())),
-            None => None,
+            Some(DirectAttributeValue::String(v)) => {
+                trace!("Got connection label string: {:?}", v);
+                Some(strings.get_or_intern(v.as_str()))
+            }
+            None => {
+                trace!("No connection label found");
+                None
+            }
             v => {
                 warn!(
                     "Invalid attribute[3] for `C`: expected optional string, but got {:?})",
@@ -125,6 +141,8 @@ impl Connection {
                 return Err(AccessError::InvalidNodeAttribute(Some("C".into()), Some(3)).into());
             }
         };
+
+        trace!("Successfully loaded `C` node: conn_index={:?}", conn_index);
 
         Ok(Connection {
             edge: ConnectionEdge {
