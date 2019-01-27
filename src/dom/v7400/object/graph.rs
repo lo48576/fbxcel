@@ -30,10 +30,12 @@ impl ObjectsGraph {
 
     /// Creates a node if necessary and returns node index.
     fn add_or_get_graph_node_index(&mut self, obj_id: ObjectId) -> GraphNodeIndex {
-        self.obj_id_to_graph_node_index
-            .get(&obj_id)
-            .cloned()
-            .unwrap_or_else(|| self.graph.add_node(obj_id))
+        use std::collections::hash_map::Entry;
+
+        match self.obj_id_to_graph_node_index.entry(obj_id) {
+            Entry::Occupied(entry) => *entry.get(),
+            Entry::Vacant(entry) => *entry.insert(self.graph.add_node(obj_id)),
+        }
     }
 
     /// Returns `GraphNodeIndex` corresponding to the given `ObjectId`.
