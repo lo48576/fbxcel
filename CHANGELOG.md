@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+* `dom::v7400::object::scene` module and related types are added.
+    + By these types, users can get scenes and their root object IDs.
+
 ## [0.2.0]
 
 * Syntactic position information for pull parser is supported.

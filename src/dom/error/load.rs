@@ -29,6 +29,10 @@ pub enum LoadError {
     DuplicateId(String, String),
     /// Parser error.
     Parser(ParserError),
+    /// Unexpected object type.
+    ///
+    /// The first is expected type, the second is actual type.
+    UnexpectedObjectType(String, String),
     #[doc(hidden)]
     __Nonexhaustive,
 }
@@ -45,6 +49,11 @@ impl fmt::Display for LoadError {
             ),
             LoadError::DuplicateId(kind, id) => write!(f, "Duplicate ID ({}): {}", kind, id),
             LoadError::Parser(e) => write!(f, "Parser error: {}", e),
+            LoadError::UnexpectedObjectType(expected, got) => write!(
+                f,
+                "Unexpected object type: expected {}, got {}",
+                expected, got
+            ),
             LoadError::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
