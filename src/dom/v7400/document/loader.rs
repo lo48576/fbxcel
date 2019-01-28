@@ -164,11 +164,11 @@ impl LoaderImpl {
                 documents_node_id
             );
 
-            let document_sym = self.core.sym_opt("Document");
+            let document_sym = self.core.sym("Document");
             let scene_sym = self.core.sym("Scene");
             let mut next_node_id = self.core.node(documents_node_id).first_child();
             while let Some(document_node_id) = next_node_id {
-                if Some(self.core.node(document_node_id).data().name_sym()) == document_sym {
+                if self.core.node(document_node_id).data().name_sym() == document_sym {
                     trace!("Found `Document` node: node_id={:?}", document_node_id);
 
                     self.add_object(document_node_id)?;
@@ -306,12 +306,12 @@ impl LoaderImpl {
                 connections_node_id
             );
 
-            let c_sym = self.core.sym_opt("C");
+            let c_sym = self.core.sym("C");
             let mut next_node_id = self.core.node(connections_node_id).first_child();
             let mut conn_index = 0;
             while let Some(connection_node_id) = next_node_id {
                 trace!("Found `C` node: node_id={:?}", connection_node_id);
-                if Some(self.core.node(connection_node_id).data().name_sym()) == c_sym {
+                if self.core.node(connection_node_id).data().name_sym() == c_sym {
                     self.add_connection(connection_node_id, conn_index)?;
                 }
                 next_node_id = self.core.node(connection_node_id).next_sibling();
