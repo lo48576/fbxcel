@@ -40,9 +40,43 @@ macro_rules! warn_noncritical {
     };
 }
 
+/// DOM document loader config.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Loader {
+    /// Strict mode flag.
+    ///
+    /// If this is `true`, non-critical errors should be `Err`.
+    /// If `false`, non-critical errors are ignored.
+    strict: bool,
+}
+
+impl Loader {
+    /// Creates a new `Loader`.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the strict mode flag.
+    pub fn strict(self, v: bool) -> Self {
+        Self { strict: v }
+    }
+
+    /// Loads the DOM document from the parser.
+    pub fn load_document<R>(self, parser: &mut Parser<R>) -> Result<Document, LoadError>
+    where
+        R: ParserSource,
+    {
+        let loader = LoaderImpl {
+            strict: self.strict,
+            ..LoaderImpl::default()
+        };
+        loader.load_document(parser)
+    }
+}
+
 /// DOM document loader.
 #[derive(Default, Debug, Clone)]
-pub struct Loader {
+struct LoaderImpl {
     /// DOM core.
     core: Option<Core>,
     /// Strict mode flag.
@@ -58,17 +92,7 @@ pub struct Loader {
     objects_graph: ObjectsGraph,
 }
 
-impl Loader {
-    /// Creates a new `Loader`.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Sets the strict mode flag.
-    pub fn strict(self, v: bool) -> Self {
-        Self { strict: v, ..self }
-    }
-
+impl LoaderImpl {
     /// Returns the reference to the DOM core.
     ///
     /// # Panics
@@ -90,7 +114,7 @@ impl Loader {
     }
 
     /// Loads the DOM document from the parser.
-    pub fn load_document<R>(mut self, parser: &mut Parser<R>) -> Result<Document, LoadError>
+    fn load_document<R>(mut self, parser: &mut Parser<R>) -> Result<Document, LoadError>
     where
         R: ParserSource,
     {
