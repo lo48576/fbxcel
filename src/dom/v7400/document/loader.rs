@@ -66,21 +66,17 @@ impl Loader {
     where
         R: ParserSource,
     {
-        let loader = LoaderImpl {
-            config: self,
-            ..LoaderImpl::default()
-        };
-        loader.load_document(parser)
+        LoaderImpl::new(parser, self)?.load_document()
     }
 }
 
 /// DOM document loader.
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 struct LoaderImpl {
     /// Loader config.
     config: Loader,
     /// DOM core.
-    core: Option<Core>,
+    core: Core,
     /// Map from object ID to node ID.
     object_ids: HashMap<ObjectId, ObjectNodeId>,
     /// Parsed node data.
@@ -90,24 +86,18 @@ struct LoaderImpl {
 }
 
 impl LoaderImpl {
-    /// Returns the reference to the DOM core.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the DOM core is uninitialized.
-    #[inline]
-    fn core(&self) -> &Core {
-        self.core.as_ref().expect("DOM core is not yet initialized")
-    }
-
-    /// Returns the mutable reference to the DOM core.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the DOM core is uninitialized.
-    #[inline]
-    fn core_mut(&mut self) -> &mut Core {
-        self.core.as_mut().expect("DOM core is not yet initialized")
+    /// Creates a new loader from the given config and parser.
+    fn new<R>(parser: &mut Parser<R>, config: Loader) -> Result<Self, LoadError>
+    where
+        R: ParserSource,
+    {
+        Ok(Self {
+            config,
+            core: Core::load(parser)?,
+            object_ids: Default::default(),
+            parsed_node_data: Default::default(),
+            objects_graph: Default::default(),
+        })
     }
 
     /// Returns the strict flag.
@@ -117,14 +107,8 @@ impl LoaderImpl {
     }
 
     /// Loads the DOM document from the parser.
-    fn load_document<R>(mut self, parser: &mut Parser<R>) -> Result<Document, LoadError>
-    where
-        R: ParserSource,
-    {
+    fn load_document(mut self) -> Result<Document, LoadError> {
         debug!("Loading v7400 DOM from parser: config={:?}", self.config);
-
-        // Load basic tree.
-        self.core = Some(self.load_core(parser)?);
 
         // Load objects.
         self.load_objects()?;
@@ -135,21 +119,11 @@ impl LoaderImpl {
         debug!("successfully loaded v7400 DOM");
 
         Ok(Document::new(
-            self.core
-                .expect("Should never fail: `self.core` is `Some(_)` here"),
+            self.core,
             self.object_ids,
             self.parsed_node_data,
             self.objects_graph,
         ))
-    }
-
-    /// Loads DOM core.
-    fn load_core<R>(&self, parser: &mut Parser<R>) -> Result<Core, LoadError>
-    where
-        R: ParserSource,
-    {
-        assert!(self.core.is_none(), "Attempt to initialize DOM core twice");
-        Core::load(parser)
     }
 
     /// Loads objects.
@@ -164,15 +138,15 @@ impl LoaderImpl {
         // Cannot use `indextree::NodeId::children()`, because it borrows arena.
 
         // `/Objects/*` nodes.
-        if let Some(objects_node_id) = self.core().find_toplevel("Objects") {
+        if let Some(objects_node_id) = self.core.find_toplevel("Objects") {
             trace!("Loading `/Objects/*` under node_id={:?}", objects_node_id);
 
-            let mut next_node_id = self.core().node(objects_node_id).first_child();
+            let mut next_node_id = self.core.node(objects_node_id).first_child();
             while let Some(object_node_id) = next_node_id {
                 trace!("Found object node: node_id={:?}", object_node_id);
 
                 self.add_object(object_node_id)?;
-                next_node_id = self.core().node(object_node_id).next_sibling();
+                next_node_id = self.core.node(object_node_id).next_sibling();
             }
         } else {
             warn_noncritical!(self.is_strict(), "`Objects` node not found");
@@ -184,17 +158,17 @@ impl LoaderImpl {
         }
 
         // `/Documents/Document` nodes.
-        if let Some(documents_node_id) = self.core().find_toplevel("Documents") {
+        if let Some(documents_node_id) = self.core.find_toplevel("Documents") {
             trace!(
                 "Loading `/Documents/Document` under node_id={:?}",
                 documents_node_id
             );
 
-            let document_sym = self.core().sym_opt("Document");
-            let scene_sym = self.core_mut().sym("Scene");
-            let mut next_node_id = self.core().node(documents_node_id).first_child();
+            let document_sym = self.core.sym_opt("Document");
+            let scene_sym = self.core.sym("Scene");
+            let mut next_node_id = self.core.node(documents_node_id).first_child();
             while let Some(document_node_id) = next_node_id {
-                if Some(self.core().node(document_node_id).data().name_sym()) == document_sym {
+                if Some(self.core.node(document_node_id).data().name_sym()) == document_sym {
                     trace!("Found `Document` node: node_id={:?}", document_node_id);
 
                     self.add_object(document_node_id)?;
@@ -208,7 +182,7 @@ impl LoaderImpl {
                         .expect("Should never fail: `add_object()` should have added the entry");
                     if node_meta.subclass_sym() == scene_sym {
                         // Add scene data to `parsed_node_data`.
-                        match SceneNodeData::load(object_node_id, self.core()) {
+                        match SceneNodeData::load(object_node_id, &self.core) {
                             Ok(data) => {
                                 trace!("Successfully interpreted `Document` node as scene data: data={:?}", data);
 
@@ -235,7 +209,7 @@ impl LoaderImpl {
                             self.is_strict(),
                             LoadError::UnexpectedObjectType(
                                 "`Scene`".into(),
-                                self.core()
+                                self.core
                                     .string(node_meta.subclass_sym())
                                     .expect(
                                         "Should never fail: subclass string should be \
@@ -247,7 +221,7 @@ impl LoaderImpl {
                         );
                     }
                 }
-                next_node_id = self.core().node(document_node_id).next_sibling();
+                next_node_id = self.core.node(document_node_id).next_sibling();
             }
         } else {
             warn_noncritical!(self.is_strict(), "`Documents` node not found");
@@ -270,7 +244,7 @@ impl LoaderImpl {
         trace!("Loading object: node_id={:?}", node_id);
 
         let obj_meta = {
-            let (node, strings) = self.core_mut().node_and_strings(node_id);
+            let (node, strings) = self.core.node_and_strings(node_id);
             let attrs = node.data().attributes();
             match ObjectMeta::from_attributes(attrs, strings) {
                 Ok(v) => v,
@@ -326,21 +300,21 @@ impl LoaderImpl {
         trace!("Loading objects connections");
 
         // `/Connections/C` nodes.
-        if let Some(connections_node_id) = self.core().find_toplevel("Connections") {
+        if let Some(connections_node_id) = self.core.find_toplevel("Connections") {
             trace!(
                 "Loading `/Connections/C` nodes under {:?}",
                 connections_node_id
             );
 
-            let c_sym = self.core().sym_opt("C");
-            let mut next_node_id = self.core().node(connections_node_id).first_child();
+            let c_sym = self.core.sym_opt("C");
+            let mut next_node_id = self.core.node(connections_node_id).first_child();
             let mut conn_index = 0;
             while let Some(connection_node_id) = next_node_id {
                 trace!("Found `C` node: node_id={:?}", connection_node_id);
-                if Some(self.core().node(connection_node_id).data().name_sym()) == c_sym {
+                if Some(self.core.node(connection_node_id).data().name_sym()) == c_sym {
                     self.add_connection(connection_node_id, conn_index)?;
                 }
-                next_node_id = self.core().node(connection_node_id).next_sibling();
+                next_node_id = self.core.node(connection_node_id).next_sibling();
                 conn_index = conn_index.checked_add(1).expect("Too many connections");
             }
         } else {
@@ -366,7 +340,7 @@ impl LoaderImpl {
         );
 
         let conn = {
-            let (node, strings) = self.core_mut().node_and_strings(node_id);
+            let (node, strings) = self.core.node_and_strings(node_id);
             let attrs = node.data().attributes();
             Connection::load_from_attributes(attrs, strings, conn_index)?
         };
