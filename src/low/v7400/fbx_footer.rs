@@ -83,7 +83,7 @@ impl FromParser for FbxFooter {
             // Expected padding length.
             let expected_padding_len = (buf_start_pos.wrapping_neg() & 0x0f) as usize;
             debug!(
-                "Current posiiton = {}, expected padding length = {}",
+                "Current position = {}, expected padding length = {}",
                 buf_start_pos, expected_padding_len
             );
 
