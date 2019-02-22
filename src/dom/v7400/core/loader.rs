@@ -5,9 +5,9 @@ use log::{debug, error, trace};
 use string_interner::StringInterner;
 
 use crate::dom::v7400::core::Core;
+use crate::dom::v7400::error::CoreLoadError;
 use crate::dom::v7400::node::{IntoRawNodeId, NodeData};
 use crate::dom::v7400::{NodeId, StrSym};
-use crate::dom::LoadError;
 use crate::pull_parser::v7400::attribute::visitor::DirectVisitor;
 use crate::pull_parser::v7400::{Event, Parser, StartNode};
 use crate::pull_parser::ParserSource;
@@ -30,7 +30,7 @@ impl CoreLoader {
     }
 
     /// Loads the DOM core from the parser.
-    pub fn load<R>(mut self, parser: &mut Parser<R>) -> Result<Core, LoadError>
+    pub fn load<R>(mut self, parser: &mut Parser<R>) -> Result<Core, CoreLoadError>
     where
         R: ParserSource,
     {
@@ -43,13 +43,13 @@ impl CoreLoader {
     }
 
     /// Loads simple tree data.
-    fn load_tree<R>(&mut self, parser: &mut Parser<R>) -> Result<(), LoadError>
+    fn load_tree<R>(&mut self, parser: &mut Parser<R>) -> Result<(), CoreLoadError>
     where
         R: ParserSource,
     {
         if parser.current_depth() != 0 {
             error!("The given parser should be brand-new, but it has already emitted some events");
-            return Err(LoadError::BadParser);
+            return Err(CoreLoadError::BadParser);
         }
 
         let mut open_nodes = vec![self.root];
@@ -95,7 +95,11 @@ impl CoreLoader {
     }
 
     /// Creates and adds a new node to the tree.
-    fn add_node<R>(&mut self, parent: NodeId, start: StartNode<'_, R>) -> Result<NodeId, LoadError>
+    fn add_node<R>(
+        &mut self,
+        parent: NodeId,
+        start: StartNode<'_, R>,
+    ) -> Result<NodeId, CoreLoadError>
     where
         R: ParserSource,
     {

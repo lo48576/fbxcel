@@ -3,6 +3,7 @@
 use std::error;
 use std::fmt;
 
+use crate::dom::v7400::error::CoreLoadError;
 use crate::dom::AccessError;
 use crate::pull_parser::Error as ParserError;
 
@@ -15,6 +16,8 @@ pub enum LoadError {
     ///
     /// This error will be mainly caused by user logic error.
     BadParser,
+    /// DOM core error.
+    Core(CoreLoadError),
     /// Duplicate connection.
     ///
     /// The first is kind of ID, the second and the third is content of ID.
@@ -42,6 +45,7 @@ impl fmt::Display for LoadError {
         match self {
             LoadError::Access(e) => write!(f, "Node data access error: {}", e),
             LoadError::BadParser => f.write_str("Bad parser is given"),
+            LoadError::Core(e) => write!(f, "DOM core load error: {}", e),
             LoadError::DuplicateConnection(kind, from, to) => write!(
                 f,
                 "Duplicate Connection ({}): from {} to {}",
@@ -63,6 +67,7 @@ impl error::Error for LoadError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             LoadError::Access(e) => Some(e),
+            LoadError::Core(e) => Some(e),
             LoadError::Parser(e) => Some(e),
             _ => None,
         }
@@ -72,6 +77,12 @@ impl error::Error for LoadError {
 impl From<AccessError> for LoadError {
     fn from(e: AccessError) -> Self {
         LoadError::Access(e)
+    }
+}
+
+impl From<CoreLoadError> for LoadError {
+    fn from(e: CoreLoadError) -> Self {
+        LoadError::Core(e)
     }
 }
 

@@ -4,9 +4,9 @@ use indextree::Arena;
 use log::trace;
 use string_interner::StringInterner;
 
+use crate::dom::v7400::error::CoreLoadError;
 use crate::dom::v7400::node::{IntoRawNodeId, Node, NodeData};
 use crate::dom::v7400::{NodeId, StrSym};
-use crate::dom::LoadError;
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
 
@@ -42,7 +42,7 @@ impl Core {
     }
 
     /// Loads the DOM core data from the given parser.
-    pub fn load<R>(parser: &mut Parser<R>) -> Result<Self, LoadError>
+    pub fn load<R>(parser: &mut Parser<R>) -> Result<Self, CoreLoadError>
     where
         R: ParserSource,
     {
