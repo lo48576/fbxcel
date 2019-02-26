@@ -2,9 +2,9 @@
 
 use log::trace;
 
+use crate::dom::error::{LoadError, StructureError};
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId};
-use crate::dom::AccessError;
 
 /// Scene node ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -60,23 +60,32 @@ pub struct SceneNodeData {
 
 impl SceneNodeData {
     /// Loads the scene node data.
-    pub(crate) fn load(obj_node_id: ObjectNodeId, core: &Core) -> Result<Self, AccessError> {
+    ///
+    /// This should be called for `Scene` node.
+    pub(crate) fn load(obj_node_id: ObjectNodeId, core: &Core) -> Result<Self, LoadError> {
         trace!("Loading scene node data from object node {:?}", obj_node_id);
 
         let child_root_node_id = NodeId::from(obj_node_id)
             .children_by_name(core, "RootNode")
             .next()
-            .ok_or_else(|| AccessError::NodeNotFound("`RootNode`".into()))?;
+            .ok_or_else(|| StructureError::node_not_found(&["Scene", "RootNode"]))?;
         trace!("Found child node `RootNode`: node={:?}", child_root_node_id);
 
         let root_object = child_root_node_id
             .node(core)
             .attributes()
             .get(0)
-            .ok_or(AccessError::AttributeNotFound(Some(0)))?
-            .get_i64()
+            .ok_or_else(|| StructureError::attribute_not_found(&["Scene", "RootNode"], Some(0)))?
+            .get_i64_or_type()
             .map(ObjectId::new)
-            .ok_or(AccessError::UnexpectedAttributeType(Some(0)))?;
+            .map_err(|ty| {
+                StructureError::unexpected_attribute_type(
+                    &["Scene", "RootNode"],
+                    Some(0),
+                    "`i64`",
+                    format!("{:?}", ty),
+                )
+            })?;
         trace!("Got root object id: obj_id={:?}", root_object);
 
         trace!("Successfully loaded scene node data from {:?}", obj_node_id);

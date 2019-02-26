@@ -1,7 +1,6 @@
 //! DOM error.
 
-pub use self::access::AccessError;
 pub use self::load::LoadError;
+pub(crate) use self::load::{LoadErrorKind, StructureError};
 
-mod access;
 mod load;

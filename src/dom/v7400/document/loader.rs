@@ -2,14 +2,15 @@
 
 use std::collections::HashMap;
 
+use failure::format_err;
 use log::{debug, trace, warn};
 
+use crate::dom::error::{LoadError, LoadErrorKind, StructureError};
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::connection::Connection;
 use crate::dom::v7400::object::scene::SceneNodeData;
 use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraph, SceneNodeId};
 use crate::dom::v7400::{Core, Document, NodeId};
-use crate::dom::{AccessError, LoadError};
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
 
@@ -152,7 +153,7 @@ impl LoaderImpl {
             warn_noncritical!(self.is_strict(), "`Objects` node not found");
             bail_if_strict!(
                 self.is_strict(),
-                AccessError::NodeNotFound("`Objects`".to_owned()),
+                StructureError::node_not_found(&["Objects"]),
                 return Ok(())
             );
         }
@@ -207,16 +208,15 @@ impl LoaderImpl {
                         );
                         bail_if_strict!(
                             self.is_strict(),
-                            LoadError::UnexpectedObjectType(
-                                "`Scene`".into(),
+                            format_err!(
+                                "Unexpected object type for `Document` node: expected `Scene`, got {:?}",
                                 self.core
                                     .string(node_meta.subclass_sym())
                                     .expect(
                                         "Should never fail: subclass string should be \
                                          registered by `add_object()`"
                                     )
-                                    .into(),
-                            ),
+                            ).context(LoadErrorKind::Value),
                             return Ok(())
                         );
                     }
@@ -227,7 +227,7 @@ impl LoaderImpl {
             warn_noncritical!(self.is_strict(), "`Documents` node not found");
             bail_if_strict!(
                 self.is_strict(),
-                AccessError::NodeNotFound("`Documents`".to_owned()),
+                StructureError::node_not_found(&["Documents"]),
                 return Ok(())
             );
         }
@@ -270,7 +270,7 @@ impl LoaderImpl {
                 );
                 bail_if_strict!(
                     self.is_strict(),
-                    LoadError::DuplicateId("object".to_owned(), format!("{:?}", obj_id)),
+                    format_err!("Duplicate object ID: {:?}", obj_id).context(LoadErrorKind::Value),
                     return Ok(())
                 );
             }
@@ -321,7 +321,7 @@ impl LoaderImpl {
             warn_noncritical!(self.is_strict(), "`Connections` node not found");
             bail_if_strict!(
                 self.is_strict(),
-                AccessError::NodeNotFound("`Connections`".to_owned()),
+                StructureError::node_not_found(&["Connections"]),
                 return Ok(())
             );
         }
@@ -365,11 +365,12 @@ impl LoaderImpl {
             );
             bail_if_strict!(
                 self.is_strict(),
-                LoadError::DuplicateConnection(
-                    "objects".to_owned(),
-                    format!("{:?}", conn.source_id()),
-                    format!("{:?}", conn.destination_id())
-                ),
+                format_err!(
+                    "Duplicate connection between objects: source={:?}, dest={:?}",
+                    conn.source_id(),
+                    conn.destination_id()
+                )
+                .context(LoadErrorKind::Value),
                 return Ok(())
             );
         }

@@ -15,10 +15,11 @@ all-features = true
 [features]
 default = []
 
-dom = ["indextree", "petgraph", "string-interner"]
+dom = ["failure", "indextree", "petgraph", "string-interner"]
 
 [dependencies]
 byteorder = "1"
+failure = { version = "0.1.5", optional = true }
 indextree = { version = "3", optional = true }
 libflate = "0.1"
 log = "0.4.4"
