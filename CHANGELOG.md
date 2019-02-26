@@ -5,6 +5,13 @@
 ### Added
 * `dom::v7400::object::scene` module and related types are added.
     + By these types, users can get scenes and their root object IDs.
+* `pull_parser::v7400::attribute::DirectAttributeValue::get_{{types}}_or_type()`
+  are added.
+    + `{{types}}` are: `bool`, `i16`, `i32`, `i64`, `f32`, `f64`, `arr_bool`,
+      `arr_i32`, `arr_i64`, `arr_f32`, `arr_f64`, `string`, and `binary`.
+    + This enables using type info at method chain, for example
+      `let val = attr.get_i64_or_type().map_err(|ty|
+      Error::new("Expected i64 but got {:?}", ty))?;`.
 
 ### Fixed
 #### `dom::v7400`
