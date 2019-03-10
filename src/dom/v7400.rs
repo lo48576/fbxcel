@@ -9,6 +9,7 @@ pub use self::parsed::ParsedData;
 
 mod core;
 mod document;
+pub mod error;
 pub mod node;
 pub mod object;
 mod parsed;

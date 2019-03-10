@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+* DOM load error handling are changed.
+    + Internal representation of `dom::error::LoadError` got hidden to reduce
+      incompatibility due to internal changes.
+    + New error handling is still not perfect, and might change in future.
+
+### Breaking changes
+* `dom::error::LoadError` is now `struct` and internal representation is hidden.
+  Users should not expect any guarantee except that it implements
+  `std::error::Error` trait.
+    + Currently some other interfaces are public (including
+      `impl From<CoreLoadError> for LoadError` and `impl Fail for LoadError`),
+      but they might (or might not) be changed or removed in future.
+* `dom::v7400::Core::load()` now uses dedicated error type.
+  That is, it now returns `Result<Core, dom::v7400::error::CoreLoadError>`
+  instead of `Result<Core, dom::error::LoadError>`.
+
 ### Added
+* `dom::v7400::error::CoreLoadError` type is added.
 * `dom::v7400::object::scene` module and related types are added.
     + By these types, users can get scenes and their root object IDs.
 * `pull_parser::v7400::attribute::DirectAttributeValue::get_{{types}}_or_type()`

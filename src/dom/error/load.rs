@@ -1,82 +1,193 @@
 //! DOM load error.
 
-use std::error;
 use std::fmt;
 
-use crate::dom::AccessError;
+use failure::{Backtrace, Context, Fail};
+
+use crate::dom::v7400::error::CoreLoadError;
 use crate::pull_parser::Error as ParserError;
+
+/// Error kind for DOM load error.
+#[derive(Debug, Clone, Fail)]
+pub enum LoadErrorKind {
+    /// Structure error.
+    #[fail(display = "Structure error")]
+    Structure,
+    /// Syntax error.
+    #[fail(display = "Syntax error")]
+    Syntax,
+    /// Value and type error.
+    #[fail(display = "Value and type error")]
+    Value,
+}
 
 /// Error on DOM load.
 #[derive(Debug)]
-pub enum LoadError {
-    /// Node data access error.
-    Access(AccessError),
-    /// Bad parser.
+pub struct LoadError {
+    /// Inner error.
+    inner: Context<LoadErrorKind>,
+}
+
+impl LoadError {
+    /// Creates a new `LoadError` from the given error context.
     ///
-    /// This error will be mainly caused by user logic error.
-    BadParser,
-    /// Duplicate connection.
-    ///
-    /// The first is kind of ID, the second and the third is content of ID.
-    ///
-    /// Use `String` to make it version independent.
-    DuplicateConnection(String, String, String),
-    /// Duplicate ID.
-    ///
-    /// The first is kind of ID, the second is content of ID.
-    ///
-    /// Use `String` to make it version independent.
-    DuplicateId(String, String),
-    /// Parser error.
-    Parser(ParserError),
-    /// Unexpected object type.
-    ///
-    /// The first is expected type, the second is actual type.
-    UnexpectedObjectType(String, String),
-    #[doc(hidden)]
-    __Nonexhaustive,
+    /// `From<failure::Error> for LoadError` is not used, because this
+    /// functionality should not be publicly exposed (for now).
+    pub(crate) fn new(inner: Context<LoadErrorKind>) -> Self {
+        Self { inner }
+    }
+}
+
+impl Fail for LoadError {
+    fn name(&self) -> Option<&str> {
+        self.inner.name()
+    }
+
+    fn cause(&self) -> Option<&dyn Fail> {
+        self.inner.cause()
+    }
+
+    fn backtrace(&self) -> Option<&Backtrace> {
+        self.inner.backtrace()
+    }
 }
 
 impl fmt::Display for LoadError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            LoadError::Access(e) => write!(f, "Node data access error: {}", e),
-            LoadError::BadParser => f.write_str("Bad parser is given"),
-            LoadError::DuplicateConnection(kind, from, to) => write!(
-                f,
-                "Duplicate Connection ({}): from {} to {}",
-                kind, from, to
-            ),
-            LoadError::DuplicateId(kind, id) => write!(f, "Duplicate ID ({}): {}", kind, id),
-            LoadError::Parser(e) => write!(f, "Parser error: {}", e),
-            LoadError::UnexpectedObjectType(expected, got) => write!(
-                f,
-                "Unexpected object type: expected {}, got {}",
-                expected, got
-            ),
-            LoadError::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
-        }
+        self.inner.fmt(f)
     }
 }
 
-impl error::Error for LoadError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        match self {
-            LoadError::Access(e) => Some(e),
-            LoadError::Parser(e) => Some(e),
-            _ => None,
-        }
+impl From<LoadErrorKind> for LoadError {
+    fn from(kind: LoadErrorKind) -> Self {
+        Self::new(Context::new(kind))
     }
 }
 
-impl From<AccessError> for LoadError {
-    fn from(e: AccessError) -> Self {
-        LoadError::Access(e)
+impl From<Context<LoadErrorKind>> for LoadError {
+    fn from(e: Context<LoadErrorKind>) -> Self {
+        Self::new(e)
+    }
+}
+
+impl From<CoreLoadError> for LoadError {
+    fn from(e: CoreLoadError) -> Self {
+        Self::new(e.context(LoadErrorKind::Syntax))
     }
 }
 
 impl From<ParserError> for LoadError {
     fn from(e: ParserError) -> Self {
-        LoadError::Parser(e)
+        Self::new(e.context(LoadErrorKind::Syntax))
+    }
+}
+
+impl From<StructureError> for LoadError {
+    fn from(e: StructureError) -> Self {
+        let kind = match e.kind() {
+            StructureErrorKind::AttributeNotFound(..) => LoadErrorKind::Structure,
+            StructureErrorKind::NodeNotFound(..) => LoadErrorKind::Structure,
+            StructureErrorKind::UnexpectedAttributeType(..) => LoadErrorKind::Value,
+            StructureErrorKind::UnexpectedAttributeValue(..) => LoadErrorKind::Value,
+        };
+        Self::new(e.context(kind))
+    }
+}
+
+/// Error kind for `StructureError`.
+#[derive(Debug, Clone, Fail)]
+pub(crate) enum StructureErrorKind {
+    /// Attribute not found.
+    #[fail(display = "Attribute not found: index={:?}", _0)]
+    AttributeNotFound(Option<usize>),
+    /// Node not found.
+    #[fail(display = "Node not found: {}", _0)]
+    NodeNotFound(String),
+    /// Unexpected attribute type.
+    #[fail(
+        display = "Unexpected attribute type: index={:?}, expected {}, got {}",
+        _0, _1, _2
+    )]
+    UnexpectedAttributeType(Option<usize>, String, String),
+    /// Unexpected attribute value.
+    #[fail(
+        display = "Unexpected attribute value: index={:?}, expected {}, got {}",
+        _0, _1, _2
+    )]
+    UnexpectedAttributeValue(Option<usize>, String, String),
+}
+
+/// Structure error on DOM load.
+#[derive(Debug, Fail)]
+#[fail(display = "Structure error at node {:?}: {}", context_node, kind)]
+pub(crate) struct StructureError {
+    /// Error kind.
+    kind: StructureErrorKind,
+    /// Context node.
+    context_node: Option<String>,
+    /// Backtrace.
+    backtrace: Backtrace,
+}
+
+impl StructureError {
+    /// Creates a new `StructureError::AttributeNotFound` error.
+    pub(crate) fn attribute_not_found(attr_index: Option<usize>) -> Self {
+        StructureErrorKind::AttributeNotFound(attr_index).into()
+    }
+
+    /// Creates a new `StructureError::NodeNotfound` error.
+    pub(crate) fn node_not_found(target: impl ToString) -> Self {
+        StructureErrorKind::NodeNotFound(target.to_string()).into()
+    }
+
+    /// Creates a new `StructureError::UnexpectedAttributeType` error.
+    pub(crate) fn unexpected_attribute_type(
+        attr_index: Option<usize>,
+        expected: impl ToString,
+        got: impl ToString,
+    ) -> Self {
+        StructureErrorKind::UnexpectedAttributeType(
+            attr_index,
+            expected.to_string(),
+            got.to_string(),
+        )
+        .into()
+    }
+
+    /// Creates a new `StructureError::UnexpectedAttributeValue` error.
+    pub(crate) fn unexpected_attribute_value(
+        attr_index: Option<usize>,
+        expected: impl ToString,
+        got: impl ToString,
+    ) -> Self {
+        StructureErrorKind::UnexpectedAttributeValue(
+            attr_index,
+            expected.to_string(),
+            got.to_string(),
+        )
+        .into()
+    }
+
+    /// Creates the new error with given context node info.
+    pub(crate) fn with_context_node(self, context_node: impl ToString) -> Self {
+        Self {
+            context_node: Some(context_node.to_string()),
+            ..self
+        }
+    }
+
+    /// Returns a reference to the error kind.
+    fn kind(&self) -> &StructureErrorKind {
+        &self.kind
+    }
+}
+
+impl From<StructureErrorKind> for StructureError {
+    fn from(kind: StructureErrorKind) -> Self {
+        Self {
+            kind,
+            context_node: None,
+            backtrace: Backtrace::new(),
+        }
     }
 }

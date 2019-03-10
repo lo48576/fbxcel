@@ -3,8 +3,8 @@
 use log::trace;
 use string_interner::StringInterner;
 
+use crate::dom::error::StructureError;
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
-use crate::dom::AccessError;
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
 use self::connection::ConnectionRef;
@@ -70,14 +70,20 @@ impl ObjectMeta {
     pub(crate) fn from_attributes(
         attrs: &[DirectAttributeValue],
         strings: &mut StringInterner<StrSym>,
-    ) -> Result<Self, AccessError> {
+    ) -> Result<Self, StructureError> {
         trace!("Loading object metadata");
 
         // Get ID.
         let id = match attrs.get(0) {
             Some(DirectAttributeValue::I64(v)) => ObjectId::new(*v),
-            Some(_) => return Err(AccessError::UnexpectedAttributeType(Some(0))),
-            None => return Err(AccessError::AttributeNotFound(Some(0))),
+            Some(v) => {
+                return Err(StructureError::unexpected_attribute_type(
+                    Some(0),
+                    "`i64`",
+                    format!("{:?}", v.type_()),
+                ));
+            }
+            None => return Err(StructureError::attribute_not_found(Some(0))),
         };
         trace!("Got object id: {:?}", id);
 
@@ -94,8 +100,14 @@ impl ObjectMeta {
                     },
                 )
             }
-            Some(_) => return Err(AccessError::UnexpectedAttributeType(Some(1))),
-            None => return Err(AccessError::AttributeNotFound(Some(1))),
+            Some(v) => {
+                return Err(StructureError::unexpected_attribute_type(
+                    Some(1),
+                    "string",
+                    format!("{:?}", v.type_()),
+                ));
+            }
+            None => return Err(StructureError::attribute_not_found(Some(1))),
         };
         trace!("Got name and class: name={:?}, class={:?}", name, class);
         let class = strings.get_or_intern(class);
@@ -106,8 +118,14 @@ impl ObjectMeta {
                 trace!("Got subclass: {:?}", v);
                 strings.get_or_intern(v.as_ref())
             }
-            Some(_) => return Err(AccessError::UnexpectedAttributeType(Some(2))),
-            None => return Err(AccessError::AttributeNotFound(Some(2))),
+            Some(v) => {
+                return Err(StructureError::unexpected_attribute_type(
+                    Some(2),
+                    "string",
+                    format!("{:?}", v.type_()),
+                ));
+            }
+            None => return Err(StructureError::attribute_not_found(Some(2))),
         };
 
         trace!("Successfully loaded object metadata");
