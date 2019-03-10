@@ -1,5 +1,7 @@
 //! FBX DOM core.
 
+use std::fmt;
+
 use indextree::Arena;
 use log::trace;
 use string_interner::StringInterner;
@@ -132,10 +134,85 @@ impl Core {
                     .map(NodeId::new)
             })
     }
+
+    /// Returns the path of the node.
+    pub(crate) fn path(&self, target: impl Into<NodeId>) -> NodePath<'_> {
+        self.path_impl(target.into())
+    }
+
+    /// Internal implementation of `path()`.
+    fn path_impl(&self, target: NodeId) -> NodePath<'_> {
+        let mut revpath = Vec::new();
+        let mut current = target;
+        let root = self.root();
+        while current != root {
+            let node = self.node(current);
+            let name_sym = node.data().name_sym();
+            let (name_order, all_order) = current
+                .raw_node_id()
+                .preceding_siblings(&self.nodes)
+                .skip(1)
+                .fold((0, 0), |(mut name_order, all_order), sib| {
+                    if self.node(sib).data().name_sym() == name_sym {
+                        name_order += 1;
+                    }
+                    (name_order, all_order + 1)
+                });
+            revpath.push(PathComponent {
+                name: node.name(self),
+                name_order,
+                all_order,
+            });
+            current = current
+                .node(self)
+                .parent()
+                .expect("Should never fail: `current` must not be root node here");
+        }
+        revpath.reverse();
+        NodePath {
+            components: revpath,
+        }
+    }
 }
 
 impl AsRef<Core> for Core {
     fn as_ref(&self) -> &Self {
         self
+    }
+}
+
+/// FBX node path.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct NodePath<'a> {
+    /// Path components.
+    components: Vec<PathComponent<'a>>,
+}
+
+impl NodePath<'_> {
+    /// Returns an object that implements `Display` for printing `NodePath` with
+    /// debug format.
+    pub(crate) fn debug_display(&self) -> NodePathDebugDisplay<'_, '_> {
+        NodePathDebugDisplay(self)
+    }
+}
+
+/// FBX node path component.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct PathComponent<'a> {
+    /// Node name.
+    name: &'a str,
+    /// Index of the node among the nodes with the same name.
+    name_order: usize,
+    /// Index of the node among the all siblings.
+    all_order: usize,
+}
+
+/// Adapter to use debug format for `Display`.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct NodePathDebugDisplay<'a, 'b>(&'a NodePath<'b>);
+
+impl fmt::Display for NodePathDebugDisplay<'_, '_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }
