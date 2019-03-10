@@ -153,7 +153,7 @@ impl LoaderImpl {
             warn_noncritical!(self.is_strict(), "`Objects` node not found");
             bail_if_strict!(
                 self.is_strict(),
-                StructureError::node_not_found(&["Objects"]),
+                StructureError::node_not_found("`Objects`").with_context_node(""),
                 return Ok(())
             );
         }
@@ -227,7 +227,7 @@ impl LoaderImpl {
             warn_noncritical!(self.is_strict(), "`Documents` node not found");
             bail_if_strict!(
                 self.is_strict(),
-                StructureError::node_not_found(&["Documents"]),
+                StructureError::node_not_found("`Documents`").with_context_node(""),
                 return Ok(())
             );
         }
@@ -246,7 +246,9 @@ impl LoaderImpl {
         let obj_meta = {
             let (node, strings) = self.core.node_and_strings(node_id);
             let attrs = node.data().attributes();
-            match ObjectMeta::from_attributes(attrs, strings) {
+            match ObjectMeta::from_attributes(attrs, strings)
+                .map_err(|e| e.with_context_node(self.core.path(node_id).debug_display()))
+            {
                 Ok(v) => v,
                 Err(e) => {
                     warn_noncritical!(self.is_strict(), "Object load error: {}", e);
@@ -321,7 +323,7 @@ impl LoaderImpl {
             warn_noncritical!(self.is_strict(), "`Connections` node not found");
             bail_if_strict!(
                 self.is_strict(),
-                StructureError::node_not_found(&["Connections"]),
+                StructureError::node_not_found("`Connections`").with_context_node(""),
                 return Ok(())
             );
         }
@@ -342,7 +344,8 @@ impl LoaderImpl {
         let conn = {
             let (node, strings) = self.core.node_and_strings(node_id);
             let attrs = node.data().attributes();
-            Connection::load_from_attributes(attrs, strings, conn_index)?
+            Connection::load_from_attributes(attrs, strings, conn_index)
+                .map_err(|e| e.with_context_node(self.core.path(node_id).debug_display()))?
         };
         trace!(
             "Interpreted connection: node_id={:?}, conn={:?}",

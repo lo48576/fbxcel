@@ -3,7 +3,7 @@
 use log::{trace, warn};
 use string_interner::StringInterner;
 
-use crate::dom::error::{LoadError, StructureError};
+use crate::dom::error::StructureError;
 use crate::dom::v7400::object::ObjectId;
 use crate::dom::v7400::{Core, StrSym};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
@@ -88,7 +88,7 @@ impl Connection {
         attrs: &[DirectAttributeValue],
         strings: &mut StringInterner<StrSym>,
         conn_index: usize,
-    ) -> Result<Self, LoadError> {
+    ) -> Result<Self, StructureError> {
         trace!("Loading `C` node: conn_index={:?}", conn_index);
 
         let ty_str = match attrs.get(0) {
@@ -99,18 +99,14 @@ impl Connection {
                     v.type_()
                 );
                 return Err(StructureError::unexpected_attribute_type(
-                    &["Connection", "C"],
                     Some(0),
                     "string",
                     format!("{:?}", v.type_()),
-                )
-                .into());
+                ));
             }
             None => {
                 warn!("Attribute[0] not found for `C`: expected string");
-                return Err(
-                    StructureError::attribute_not_found(&["Connection", "C"], Some(0)).into(),
-                );
+                return Err(StructureError::attribute_not_found(Some(0)));
             }
         };
         trace!("Got raw connection types value: {:?}", ty_str);
@@ -121,12 +117,10 @@ impl Connection {
             "PP" => (ConnectedNodeType::Property, ConnectedNodeType::Property),
             v => {
                 return Err(StructureError::unexpected_attribute_value(
-                    &["Connection", "C"],
                     Some(0),
                     "connection type",
                     format!("{:?}", v),
-                )
-                .into());
+                ));
             }
         };
         trace!(
@@ -155,12 +149,10 @@ impl Connection {
                     v
                 );
                 return Err(StructureError::unexpected_attribute_type(
-                    &["Connection", "C"],
                     Some(3),
                     "string or nothing",
                     format!("{:?}", v.type_()),
-                )
-                .into());
+                ));
             }
         };
 
@@ -183,7 +175,7 @@ impl Connection {
 fn get_object_id_from_attrs(
     attrs: &[DirectAttributeValue],
     index: usize,
-) -> Result<ObjectId, LoadError> {
+) -> Result<ObjectId, StructureError> {
     match attrs.get(index) {
         Some(DirectAttributeValue::I64(v)) => Ok(ObjectId::new(*v)),
         Some(v) => {
@@ -193,16 +185,14 @@ fn get_object_id_from_attrs(
                 v.type_()
             );
             Err(StructureError::unexpected_attribute_type(
-                &["Connections", "C"],
                 Some(index),
                 "`i64`",
                 format!("{:?}", v.type_()),
-            )
-            .into())
+            ))
         }
         None => {
             warn!("Attribute[{}] not found for `C`: expected i64", index);
-            Err(StructureError::attribute_not_found(&["Connections", "C"], Some(index)).into())
+            Err(StructureError::attribute_not_found(Some(index)))
         }
     }
 }

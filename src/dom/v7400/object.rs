@@ -3,7 +3,7 @@
 use log::trace;
 use string_interner::StringInterner;
 
-use crate::dom::error::{LoadError, StructureError};
+use crate::dom::error::StructureError;
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
@@ -70,7 +70,7 @@ impl ObjectMeta {
     pub(crate) fn from_attributes(
         attrs: &[DirectAttributeValue],
         strings: &mut StringInterner<StrSym>,
-    ) -> Result<Self, LoadError> {
+    ) -> Result<Self, StructureError> {
         trace!("Loading object metadata");
 
         // Get ID.
@@ -78,14 +78,12 @@ impl ObjectMeta {
             Some(DirectAttributeValue::I64(v)) => ObjectId::new(*v),
             Some(v) => {
                 return Err(StructureError::unexpected_attribute_type(
-                    &[],
                     Some(0),
                     "`i64`",
                     format!("{:?}", v.type_()),
-                )
-                .into());
+                ));
             }
-            None => return Err(StructureError::attribute_not_found(&[], Some(0)).into()),
+            None => return Err(StructureError::attribute_not_found(Some(0))),
         };
         trace!("Got object id: {:?}", id);
 
@@ -104,14 +102,12 @@ impl ObjectMeta {
             }
             Some(v) => {
                 return Err(StructureError::unexpected_attribute_type(
-                    &[],
                     Some(1),
                     "string",
                     format!("{:?}", v.type_()),
-                )
-                .into());
+                ));
             }
-            None => return Err(StructureError::attribute_not_found(&[], Some(1)).into()),
+            None => return Err(StructureError::attribute_not_found(Some(1))),
         };
         trace!("Got name and class: name={:?}, class={:?}", name, class);
         let class = strings.get_or_intern(class);
@@ -124,14 +120,12 @@ impl ObjectMeta {
             }
             Some(v) => {
                 return Err(StructureError::unexpected_attribute_type(
-                    &[],
                     Some(2),
                     "string",
                     format!("{:?}", v.type_()),
-                )
-                .into());
+                ));
             }
-            None => return Err(StructureError::attribute_not_found(&[], Some(2)).into()),
+            None => return Err(StructureError::attribute_not_found(Some(2))),
         };
 
         trace!("Successfully loaded object metadata");

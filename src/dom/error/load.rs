@@ -84,115 +84,110 @@ impl From<ParserError> for LoadError {
 
 impl From<StructureError> for LoadError {
     fn from(e: StructureError) -> Self {
-        let kind = match e {
-            StructureError::AttributeNotFound(_, _) => LoadErrorKind::Structure,
-            StructureError::NodeNotFound(_, _) => LoadErrorKind::Structure,
-            StructureError::UnexpectedAttributeType(_, _, _, _) => LoadErrorKind::Value,
-            StructureError::UnexpectedAttributeValue(_, _, _, _) => LoadErrorKind::Value,
+        let kind = match e.kind() {
+            StructureErrorKind::AttributeNotFound(..) => LoadErrorKind::Structure,
+            StructureErrorKind::NodeNotFound(..) => LoadErrorKind::Structure,
+            StructureErrorKind::UnexpectedAttributeType(..) => LoadErrorKind::Value,
+            StructureErrorKind::UnexpectedAttributeValue(..) => LoadErrorKind::Value,
         };
         Self::new(e.context(kind))
     }
 }
 
-/// Error on DOM load.
-#[derive(Debug, Fail)]
-pub(crate) enum StructureError {
+/// Error kind for `StructureError`.
+#[derive(Debug, Clone, Fail)]
+pub(crate) enum StructureErrorKind {
     /// Attribute not found.
-    #[fail(display = "Attribute not found: {}", _0)]
-    AttributeNotFound(String, Backtrace),
+    #[fail(display = "Attribute not found: index={:?}", _0)]
+    AttributeNotFound(Option<usize>),
     /// Node not found.
     #[fail(display = "Node not found: {}", _0)]
-    NodeNotFound(String, Backtrace),
+    NodeNotFound(String),
     /// Unexpected attribute type.
     #[fail(
-        display = "Unexpected attribute type: {}, expected {}, got {}",
+        display = "Unexpected attribute type: index={:?}, expected {}, got {}",
         _0, _1, _2
     )]
-    UnexpectedAttributeType(String, String, String, Backtrace),
+    UnexpectedAttributeType(Option<usize>, String, String),
     /// Unexpected attribute value.
     #[fail(
-        display = "Unexpected attribute value: {}, expected {}, got {}",
+        display = "Unexpected attribute value: index={:?}, expected {}, got {}",
         _0, _1, _2
     )]
-    UnexpectedAttributeValue(String, String, String, Backtrace),
+    UnexpectedAttributeValue(Option<usize>, String, String),
+}
+
+/// Structure error on DOM load.
+#[derive(Debug, Fail)]
+#[fail(display = "Structure error at node {:?}: {}", context_node, kind)]
+pub(crate) struct StructureError {
+    /// Error kind.
+    kind: StructureErrorKind,
+    /// Context node.
+    context_node: Option<String>,
+    /// Backtrace.
+    backtrace: Backtrace,
 }
 
 impl StructureError {
     /// Creates a new `StructureError::AttributeNotFound` error.
-    pub(crate) fn attribute_not_found(node_path: &[&str], attr_index: Option<usize>) -> Self {
-        use std::fmt::Write;
-
-        let mut path = node_path.iter().fold(String::new(), |mut v, component| {
-            write!(&mut v, "{:?}/", component).expect("Should never fail");
-            v
-        });
-        path.push_str("attr");
-        if let Some(index) = attr_index {
-            write!(&mut path, "{}", index).expect("Should never fail");
-        }
-
-        StructureError::AttributeNotFound(path, Backtrace::new())
+    pub(crate) fn attribute_not_found(attr_index: Option<usize>) -> Self {
+        StructureErrorKind::AttributeNotFound(attr_index).into()
     }
 
     /// Creates a new `StructureError::NodeNotfound` error.
-    pub(crate) fn node_not_found(node_path: &[&str]) -> Self {
-        use std::fmt::Write;
-
-        let path = node_path
-            .iter()
-            .fold((String::new(), ""), |(mut v, leading_sep), component| {
-                write!(&mut v, "{}{:?}", leading_sep, component).expect("Should never fail");
-                (v, "/")
-            })
-            .0;
-
-        StructureError::NodeNotFound(path, Backtrace::new())
+    pub(crate) fn node_not_found(target: impl ToString) -> Self {
+        StructureErrorKind::NodeNotFound(target.to_string()).into()
     }
 
     /// Creates a new `StructureError::UnexpectedAttributeType` error.
     pub(crate) fn unexpected_attribute_type(
-        node_path: &[&str],
         attr_index: Option<usize>,
-        expected: impl Into<String>,
-        got: impl Into<String>,
+        expected: impl ToString,
+        got: impl ToString,
     ) -> Self {
-        use std::fmt::Write;
-
-        let mut path = node_path.iter().fold(String::new(), |mut v, component| {
-            write!(&mut v, "{:?}/", component).expect("Should never fail");
-            v
-        });
-        path.push_str("attr");
-        if let Some(index) = attr_index {
-            write!(&mut path, "{}", index).expect("Should never fail");
-        }
-
-        StructureError::UnexpectedAttributeType(path, expected.into(), got.into(), Backtrace::new())
+        StructureErrorKind::UnexpectedAttributeType(
+            attr_index,
+            expected.to_string(),
+            got.to_string(),
+        )
+        .into()
     }
 
     /// Creates a new `StructureError::UnexpectedAttributeValue` error.
     pub(crate) fn unexpected_attribute_value(
-        node_path: &[&str],
         attr_index: Option<usize>,
-        expected: impl Into<String>,
-        got: impl Into<String>,
+        expected: impl ToString,
+        got: impl ToString,
     ) -> Self {
-        use std::fmt::Write;
-
-        let mut path = node_path.iter().fold(String::new(), |mut v, component| {
-            write!(&mut v, "{:?}/", component).expect("Should never fail");
-            v
-        });
-        path.push_str("attr");
-        if let Some(index) = attr_index {
-            write!(&mut path, "{}", index).expect("Should never fail");
-        }
-
-        StructureError::UnexpectedAttributeValue(
-            path,
-            expected.into(),
-            got.into(),
-            Backtrace::new(),
+        StructureErrorKind::UnexpectedAttributeValue(
+            attr_index,
+            expected.to_string(),
+            got.to_string(),
         )
+        .into()
+    }
+
+    /// Creates the new error with given context node info.
+    pub(crate) fn with_context_node(self, context_node: impl ToString) -> Self {
+        Self {
+            context_node: Some(context_node.to_string()),
+            ..self
+        }
+    }
+
+    /// Returns a reference to the error kind.
+    fn kind(&self) -> &StructureErrorKind {
+        &self.kind
+    }
+}
+
+impl From<StructureErrorKind> for StructureError {
+    fn from(kind: StructureErrorKind) -> Self {
+        Self {
+            kind,
+            context_node: None,
+            backtrace: Backtrace::new(),
+        }
     }
 }
