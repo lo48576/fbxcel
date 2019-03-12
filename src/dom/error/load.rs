@@ -169,9 +169,9 @@ impl StructureError {
     }
 
     /// Creates the new error with given context node info.
-    pub(crate) fn with_context_node(self, context_node: impl ToString) -> Self {
+    pub(crate) fn with_context_node(self, context_node: impl ErrorContextNode) -> Self {
         Self {
-            context_node: Some(context_node.to_string()),
+            context_node: Some(context_node.to_context_string()),
             ..self
         }
     }
@@ -189,5 +189,33 @@ impl From<StructureErrorKind> for StructureError {
             context_node: None,
             backtrace: Backtrace::new(),
         }
+    }
+}
+
+/// A trait for types representing error context node.
+pub(crate) trait ErrorContextNode {
+    /// Converts the value into string representation.
+    fn to_context_string(self) -> String;
+}
+
+impl ErrorContextNode for &'_ str {
+    fn to_context_string(self) -> String {
+        self.into()
+    }
+}
+
+impl ErrorContextNode for String {
+    fn to_context_string(self) -> String {
+        self
+    }
+}
+
+impl<T> ErrorContextNode for (&'_ crate::dom::v7400::Core, T)
+where
+    T: Into<crate::dom::v7400::NodeId>,
+{
+    fn to_context_string(self) -> String {
+        let (core, node_id) = (self.0, self.1.into());
+        core.path(node_id).debug_display().to_string()
     }
 }

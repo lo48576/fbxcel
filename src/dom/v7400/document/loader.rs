@@ -14,30 +14,12 @@ use crate::dom::v7400::{Core, Document, NodeId};
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
 
-macro_rules! bail_if_strict {
-    ($is_strict:expr, $err:expr, $loose:expr) => {
-        if $is_strict {
-            return Err($err.into());
-        } else {
-            $loose
-        }
+macro_rules! warn_ignored_error {
+    ($format:expr) => {
+        warn!(concat!("Ignoring non-critical DOM load error: ", $format))
     };
-    ($is_strict:expr, $err:expr) => {
-        if $is_strict {
-            return Err($err.into());
-        }
-    };
-}
-
-macro_rules! warn_noncritical {
-    ($strict:expr, $format:expr) => {
-        warn!(concat!("Noncritical DOM load error [strict={}] ", $format), $strict)
-    };
-    ($strict:expr, $format:expr, $($args:tt)*) => {
-        warn!(
-            concat!("Noncritical DOM load error [strict={}] ", $format),
-            $strict, $($args)*
-        )
+    ($format:expr, $($args:tt)*) => {
+        warn!(concat!("Ignoring non-critical DOM load error: ", $format), $($args)*)
     };
 }
 
@@ -107,6 +89,22 @@ impl LoaderImpl {
         self.config.strict
     }
 
+    /// Returns the result based on the strict flag.
+    fn err_if_strict<T, E>(
+        &self,
+        err: E,
+        loosen: impl FnOnce(E) -> Result<T, E>,
+    ) -> Result<T, LoadError>
+    where
+        E: Into<LoadError>,
+    {
+        if self.is_strict() {
+            Err(err.into())
+        } else {
+            loosen(err).map_err(Into::into)
+        }
+    }
+
     /// Loads the DOM document from the parser.
     fn load_document(mut self) -> Result<Document, LoadError> {
         debug!("Loading v7400 DOM from parser: config={:?}", self.config);
@@ -139,97 +137,103 @@ impl LoaderImpl {
         // Cannot use `indextree::NodeId::children()`, because it borrows arena.
 
         // `/Objects/*` nodes.
-        if let Some(objects_node_id) = self.core.find_toplevel("Objects") {
-            trace!("Loading `/Objects/*` under node_id={:?}", objects_node_id);
-
-            let mut next_node_id = self.core.node(objects_node_id).first_child();
-            while let Some(object_node_id) = next_node_id {
-                trace!("Found object node: node_id={:?}", object_node_id);
-
-                self.add_object(object_node_id)?;
-                next_node_id = self.core.node(object_node_id).next_sibling();
+        let objects_node_id = match self.core.find_toplevel("Objects") {
+            Some(v) => v,
+            None => {
+                return self.err_if_strict(
+                    StructureError::node_not_found("`Objects`").with_context_node(""),
+                    |e| {
+                        warn_ignored_error!("{}", e);
+                        Ok(())
+                    },
+                );
             }
-        } else {
-            warn_noncritical!(self.is_strict(), "`Objects` node not found");
-            bail_if_strict!(
-                self.is_strict(),
-                StructureError::node_not_found("`Objects`").with_context_node(""),
-                return Ok(())
-            );
+        };
+
+        trace!("Loading `/Objects/*` under node_id={:?}", objects_node_id);
+
+        let mut next_node_id = self.core.node(objects_node_id).first_child();
+        while let Some(object_node_id) = next_node_id {
+            trace!("Found object node: node_id={:?}", object_node_id);
+
+            self.add_object(object_node_id)?;
+            next_node_id = self.core.node(object_node_id).next_sibling();
         }
 
         // `/Documents/Document` nodes.
-        if let Some(documents_node_id) = self.core.find_toplevel("Documents") {
-            trace!(
-                "Loading `/Documents/Document` under node_id={:?}",
-                documents_node_id
-            );
-
-            let document_sym = self.core.sym("Document");
-            let scene_sym = self.core.sym("Scene");
-            let mut next_node_id = self.core.node(documents_node_id).first_child();
-            while let Some(document_node_id) = next_node_id {
-                if self.core.node(document_node_id).data().name_sym() == document_sym {
-                    trace!("Found `Document` node: node_id={:?}", document_node_id);
-
-                    self.add_object(document_node_id)?;
-
-                    trace!("Interpreting document (scene) data");
-                    let object_node_id = ObjectNodeId::new(document_node_id);
-                    let node_meta = self
-                        .parsed_node_data
-                        .object_meta()
-                        .get(&object_node_id)
-                        .expect("Should never fail: `add_object()` should have added the entry");
-                    if node_meta.subclass_sym() == scene_sym {
-                        // Add scene data to `parsed_node_data`.
-                        match SceneNodeData::load(object_node_id, &self.core) {
-                            Ok(data) => {
-                                trace!("Successfully interpreted `Document` node as scene data: data={:?}", data);
-
-                                let scene_node_id = SceneNodeId::new(object_node_id);
-                                self.parsed_node_data
-                                    .scenes_mut()
-                                    .entry(scene_node_id)
-                                    .or_insert(data);
-                            }
-                            Err(e) => {
-                                warn_noncritical!(
-                                    self.is_strict(),
-                                    "Failed to load scene object node data from `Document` node"
-                                );
-                                bail_if_strict!(self.is_strict(), e, return Ok(()));
-                            }
-                        }
-                    } else {
-                        warn_noncritical!(
-                            self.is_strict(),
-                            "`Document` node does not have `Scene` subclass"
-                        );
-                        bail_if_strict!(
-                            self.is_strict(),
-                            format_err!(
-                                "Unexpected object type for `Document` node: expected `Scene`, got {:?}",
-                                self.core
-                                    .string(node_meta.subclass_sym())
-                                    .expect(
-                                        "Should never fail: subclass string should be \
-                                         registered by `add_object()`"
-                                    )
-                            ).context(LoadErrorKind::Value),
-                            return Ok(())
-                        );
-                    }
-                }
-                next_node_id = self.core.node(document_node_id).next_sibling();
+        let documents_node_id = match self.core.find_toplevel("Documents") {
+            Some(v) => v,
+            None => {
+                return self.err_if_strict(
+                    StructureError::node_not_found("`Documents`").with_context_node(""),
+                    |e| {
+                        warn_ignored_error!("{}", e);
+                        Ok(())
+                    },
+                );
             }
-        } else {
-            warn_noncritical!(self.is_strict(), "`Documents` node not found");
-            bail_if_strict!(
-                self.is_strict(),
-                StructureError::node_not_found("`Documents`").with_context_node(""),
-                return Ok(())
-            );
+        };
+        trace!(
+            "Loading `/Documents/Document` under node_id={:?}",
+            documents_node_id
+        );
+
+        let document_sym = self.core.sym("Document");
+        let scene_sym = self.core.sym("Scene");
+        let mut next_node_id = self.core.node(documents_node_id).first_child();
+        while let Some(document_node_id) = next_node_id {
+            if self.core.node(document_node_id).data().name_sym() == document_sym {
+                trace!("Found `Document` node: node_id={:?}", document_node_id);
+
+                self.add_object(document_node_id)?;
+
+                trace!("Interpreting document (scene) data");
+                let object_node_id = ObjectNodeId::new(document_node_id);
+                let node_meta = self
+                    .parsed_node_data
+                    .object_meta()
+                    .get(&object_node_id)
+                    .expect("Should never fail: `add_object()` should have added the entry");
+                if node_meta.subclass_sym() != scene_sym {
+                    let err = format_err!(
+                        "Unexpected object type for `Document` node: expected `Scene`, got {:?}",
+                        self.core.string(node_meta.subclass_sym()).expect(
+                            "Should never fail: subclass string should be \
+                             registered by `add_object()`"
+                        )
+                    )
+                    .context(LoadErrorKind::Value);
+                    return self.err_if_strict(err, |e| {
+                        warn_ignored_error!("{}", e);
+                        Ok(())
+                    });
+                }
+
+                // Add scene data to `parsed_node_data`.
+                let data = match SceneNodeData::load(object_node_id, &self.core) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        return self.err_if_strict(e, |e| {
+                            warn_ignored_error!(
+                                "Failed to load scene object node data from `Document` node: {}",
+                                e
+                            );
+                            Ok(())
+                        });
+                    }
+                };
+                trace!(
+                    "Successfully interpreted `Document` node as scene data: data={:?}",
+                    data
+                );
+
+                let scene_node_id = SceneNodeId::new(object_node_id);
+                self.parsed_node_data
+                    .scenes_mut()
+                    .entry(scene_node_id)
+                    .or_insert(data);
+            }
+            next_node_id = self.core.node(document_node_id).next_sibling();
         }
 
         trace!("Successfully loaded objects");
@@ -247,12 +251,14 @@ impl LoaderImpl {
             let (node, strings) = self.core.node_and_strings(node_id);
             let attrs = node.data().attributes();
             match ObjectMeta::from_attributes(attrs, strings)
-                .map_err(|e| e.with_context_node(self.core.path(node_id).debug_display()))
+                .map_err(|e| e.with_context_node((&self.core, node_id)))
             {
                 Ok(v) => v,
                 Err(e) => {
-                    warn_noncritical!(self.is_strict(), "Object load error: {}", e);
-                    bail_if_strict!(self.is_strict(), e, return Ok(()));
+                    return self.err_if_strict(e.with_context_node((&self.core, node_id)), |e| {
+                        warn_ignored_error!("Object load error: {}", e);
+                        Ok(())
+                    });
                 }
             }
         };
@@ -263,18 +269,17 @@ impl LoaderImpl {
         // Register to `object_ids`.
         match self.object_ids.entry(obj_id) {
             Entry::Occupied(entry) => {
-                warn_noncritical!(
-                    self.config.strict,
-                    "Duplicate object ID: nodes with ID {:?} and {:?} have same object ID {:?}",
+                let err = format_err!(
+                    "Duplicate object ID: {:?} (nodes=({:?}, {:?}))",
+                    obj_id,
                     entry.get(),
-                    node_id,
-                    obj_id
-                );
-                bail_if_strict!(
-                    self.is_strict(),
-                    format_err!("Duplicate object ID: {:?}", obj_id).context(LoadErrorKind::Value),
-                    return Ok(())
-                );
+                    node_id
+                )
+                .context(LoadErrorKind::Value);
+                return self.err_if_strict(err, |e| {
+                    warn_ignored_error!("{}", e);
+                    Ok(())
+                });
             }
             Entry::Vacant(entry) => {
                 entry.insert(node_id);
@@ -302,30 +307,34 @@ impl LoaderImpl {
         trace!("Loading objects connections");
 
         // `/Connections/C` nodes.
-        if let Some(connections_node_id) = self.core.find_toplevel("Connections") {
-            trace!(
-                "Loading `/Connections/C` nodes under {:?}",
-                connections_node_id
-            );
-
-            let c_sym = self.core.sym("C");
-            let mut next_node_id = self.core.node(connections_node_id).first_child();
-            let mut conn_index = 0;
-            while let Some(connection_node_id) = next_node_id {
-                trace!("Found `C` node: node_id={:?}", connection_node_id);
-                if self.core.node(connection_node_id).data().name_sym() == c_sym {
-                    self.add_connection(connection_node_id, conn_index)?;
-                }
-                next_node_id = self.core.node(connection_node_id).next_sibling();
-                conn_index = conn_index.checked_add(1).expect("Too many connections");
+        let connections_node_id = match self.core.find_toplevel("Connections") {
+            Some(v) => v,
+            None => {
+                return self.err_if_strict(
+                    StructureError::node_not_found("`Connections`").with_context_node(""),
+                    |e| {
+                        warn_ignored_error!("{}", e);
+                        Ok(())
+                    },
+                );
             }
-        } else {
-            warn_noncritical!(self.is_strict(), "`Connections` node not found");
-            bail_if_strict!(
-                self.is_strict(),
-                StructureError::node_not_found("`Connections`").with_context_node(""),
-                return Ok(())
-            );
+        };
+
+        trace!(
+            "Loading `/Connections/C` nodes under {:?}",
+            connections_node_id
+        );
+
+        let c_sym = self.core.sym("C");
+        let mut next_node_id = self.core.node(connections_node_id).first_child();
+        let mut conn_index = 0;
+        while let Some(connection_node_id) = next_node_id {
+            trace!("Found `C` node: node_id={:?}", connection_node_id);
+            if self.core.node(connection_node_id).data().name_sym() == c_sym {
+                self.add_connection(connection_node_id, conn_index)?;
+            }
+            next_node_id = self.core.node(connection_node_id).next_sibling();
+            conn_index = conn_index.checked_add(1).expect("Too many connections");
         }
 
         trace!("Successfully loaded objects connections");
@@ -345,7 +354,7 @@ impl LoaderImpl {
             let (node, strings) = self.core.node_and_strings(node_id);
             let attrs = node.data().attributes();
             Connection::load_from_attributes(attrs, strings, conn_index)
-                .map_err(|e| e.with_context_node(self.core.path(node_id).debug_display()))?
+                .map_err(|e| e.with_context_node((&self.core, node_id)))?
         };
         trace!(
             "Interpreted connection: node_id={:?}, conn={:?}",
@@ -357,25 +366,19 @@ impl LoaderImpl {
             .objects_graph
             .edge_weight(conn.source_id(), conn.destination_id())
         {
-            warn_noncritical!(
-                self.is_strict(),
-                "Duplicate object connections: found more than two objects connections \
-                 from {:?} to {:?} edge={:?}, ignored={:?}",
+            let err = format_err!(
+                "Duplicate connection between objects: \
+                 source={:?}, dest={:?}, edge={:?}, ignored={:?}",
                 conn.source_id(),
                 conn.destination_id(),
                 old_conn,
-                conn.edge()
-            );
-            bail_if_strict!(
-                self.is_strict(),
-                format_err!(
-                    "Duplicate connection between objects: source={:?}, dest={:?}",
-                    conn.source_id(),
-                    conn.destination_id()
-                )
-                .context(LoadErrorKind::Value),
-                return Ok(())
-            );
+                conn.edge(),
+            )
+            .context(LoadErrorKind::Value);
+            return self.err_if_strict(err, |e| {
+                warn_ignored_error!("{}", e);
+                Ok(())
+            });
         }
         self.objects_graph.add_connection(conn);
 

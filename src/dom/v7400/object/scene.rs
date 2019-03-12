@@ -69,8 +69,7 @@ impl SceneNodeData {
             .children_by_name(core, "RootNode")
             .next()
             .ok_or_else(|| {
-                StructureError::node_not_found("`RootNode`")
-                    .with_context_node(core.path(obj_node_id).debug_display())
+                StructureError::node_not_found("`RootNode`").with_context_node((core, obj_node_id))
             })?;
         trace!("Found child node `RootNode`: node={:?}", child_root_node_id);
 
@@ -80,13 +79,13 @@ impl SceneNodeData {
             .get(0)
             .ok_or_else(|| {
                 StructureError::attribute_not_found(Some(0))
-                    .with_context_node(core.path(child_root_node_id).debug_display())
+                    .with_context_node((core, child_root_node_id))
             })?
             .get_i64_or_type()
             .map(ObjectId::new)
             .map_err(|ty| {
                 StructureError::unexpected_attribute_type(Some(0), "`i64`", format!("{:?}", ty))
-                    .with_context_node(core.path(child_root_node_id).debug_display())
+                    .with_context_node((core, child_root_node_id))
             })?;
         trace!("Got root object id: obj_id={:?}", root_object);
 
