@@ -28,6 +28,14 @@ macro_rules! define_node_id_type {
             }
         }
 
+        impl std::ops::Deref for $ty_id {
+            type Target = $ty_parent;
+
+            fn deref(&self) -> &Self::Target {
+                &self.0
+            }
+        }
+
         impl $crate::dom::v7400::DowncastId<$ty_id> for $ty_parent {
             fn downcast(self, doc: &$crate::dom::v7400::Document) -> Option<$ty_id> {
                 trace!(
