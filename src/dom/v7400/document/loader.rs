@@ -90,11 +90,18 @@ impl LoaderImpl {
     }
 
     /// Returns the result based on the strict flag.
-    fn err_if_strict<T, E>(&self, err: E, loosen: impl FnOnce(E) -> Result<T, E>) -> Result<T, E> {
+    fn err_if_strict<T, E>(
+        &self,
+        err: E,
+        loosen: impl FnOnce(E) -> Result<T, E>,
+    ) -> Result<T, LoadError>
+    where
+        E: Into<LoadError>,
+    {
         if self.is_strict() {
-            Err(err)
+            Err(err.into())
         } else {
-            loosen(err)
+            loosen(err).map_err(Into::into)
         }
     }
 
@@ -134,9 +141,7 @@ impl LoaderImpl {
             Some(v) => v,
             None => {
                 return self.err_if_strict(
-                    StructureError::node_not_found("`Objects`")
-                        .with_context_node("")
-                        .into(),
+                    StructureError::node_not_found("`Objects`").with_context_node(""),
                     |e| {
                         warn_ignored_error!("{}", e);
                         Ok(())
@@ -160,9 +165,7 @@ impl LoaderImpl {
             Some(v) => v,
             None => {
                 return self.err_if_strict(
-                    StructureError::node_not_found("`Documents`")
-                        .with_context_node("")
-                        .into(),
+                    StructureError::node_not_found("`Documents`").with_context_node(""),
                     |e| {
                         warn_ignored_error!("{}", e);
                         Ok(())
@@ -199,8 +202,7 @@ impl LoaderImpl {
                              registered by `add_object()`"
                         )
                     )
-                    .context(LoadErrorKind::Value)
-                    .into();
+                    .context(LoadErrorKind::Value);
                     return self.err_if_strict(err, |e| {
                         warn_ignored_error!("{}", e);
                         Ok(())
@@ -253,13 +255,10 @@ impl LoaderImpl {
             {
                 Ok(v) => v,
                 Err(e) => {
-                    return self.err_if_strict(
-                        e.with_context_node((&self.core, node_id)).into(),
-                        |e| {
-                            warn_ignored_error!("Object load error: {}", e);
-                            Ok(())
-                        },
-                    );
+                    return self.err_if_strict(e.with_context_node((&self.core, node_id)), |e| {
+                        warn_ignored_error!("Object load error: {}", e);
+                        Ok(())
+                    });
                 }
             }
         };
@@ -276,8 +275,7 @@ impl LoaderImpl {
                     entry.get(),
                     node_id
                 )
-                .context(LoadErrorKind::Value)
-                .into();
+                .context(LoadErrorKind::Value);
                 return self.err_if_strict(err, |e| {
                     warn_ignored_error!("{}", e);
                     Ok(())
@@ -313,9 +311,7 @@ impl LoaderImpl {
             Some(v) => v,
             None => {
                 return self.err_if_strict(
-                    StructureError::node_not_found("`Connections`")
-                        .with_context_node("")
-                        .into(),
+                    StructureError::node_not_found("`Connections`").with_context_node(""),
                     |e| {
                         warn_ignored_error!("{}", e);
                         Ok(())
@@ -378,8 +374,7 @@ impl LoaderImpl {
                 old_conn,
                 conn.edge(),
             )
-            .context(LoadErrorKind::Value)
-            .into();
+            .context(LoadErrorKind::Value);
             return self.err_if_strict(err, |e| {
                 warn_ignored_error!("{}", e);
                 Ok(())
