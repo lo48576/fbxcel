@@ -4,8 +4,13 @@ use string_interner::Sym;
 
 pub use self::core::Core;
 pub use self::document::{Document, Loader};
+pub(crate) use self::node::ValidateId;
 pub use self::node::{DowncastId, NodeId};
 pub use self::parsed::ParsedData;
+
+/// Utility macros.
+#[macro_use]
+pub(crate) mod macros;
 
 mod core;
 mod document;
