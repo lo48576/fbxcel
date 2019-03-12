@@ -4,50 +4,18 @@ use log::trace;
 
 use crate::dom::error::{LoadError, StructureError};
 use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
-use crate::dom::v7400::{Core, Document, DowncastId, NodeId};
+use crate::dom::v7400::{Core, Document, NodeId, ValidateId};
 
-/// Scene node ID.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct SceneNodeId(ObjectNodeId);
-
-impl SceneNodeId {
-    /// Creates a new `SceneNodeId`.
-    pub(crate) fn new(id: ObjectNodeId) -> Self {
-        Self(id)
+define_node_id_type! {
+    /// Scene node ID.
+    SceneNodeId {
+        ancestors { ObjectNodeId, NodeId }
     }
 }
 
-impl From<SceneNodeId> for ObjectNodeId {
-    fn from(v: SceneNodeId) -> Self {
-        v.0
-    }
-}
-
-impl DowncastId<SceneNodeId> for ObjectNodeId {
-    fn downcast(self, doc: &Document) -> Option<SceneNodeId> {
-        trace!("Trying to downcast {:?} to `SceneNodeId`", self);
-
-        let maybe_invalid_id = SceneNodeId::new(self);
-        if doc
-            .parsed_node_data()
-            .scenes()
-            .contains_key(&maybe_invalid_id)
-        {
-            // Valid!
-            trace!(
-                "Successfully downcasted {:?} to {:?}",
-                self,
-                maybe_invalid_id
-            );
-            Some(maybe_invalid_id)
-        } else {
-            // Invalid.
-            trace!(
-                "Downcast failed: {:?} is not convertible to `SceneNodeId`",
-                self
-            );
-            None
-        }
+impl ValidateId for SceneNodeId {
+    fn validate_id(self, doc: &Document) -> bool {
+        doc.parsed_node_data().scenes().contains_key(&self)
     }
 }
 

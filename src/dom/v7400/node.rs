@@ -32,6 +32,14 @@ pub trait DowncastId<T>: Copy {
     fn downcast(self, doc: &Document) -> Option<T>;
 }
 
+/// A trait for ID types.
+pub(crate) trait ValidateId: Copy {
+    /// Validates the ID value is valid in the given document.
+    ///
+    /// Note that the given `self` may be invalid.
+    fn validate_id(self, doc: &Document) -> bool;
+}
+
 /// FBX tree node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct NodeId(indextree::NodeId);

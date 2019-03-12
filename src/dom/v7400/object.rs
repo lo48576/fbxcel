@@ -4,7 +4,7 @@ use log::trace;
 use string_interner::StringInterner;
 
 use crate::dom::error::StructureError;
-use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym};
+use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym, ValidateId};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
 use self::connection::ConnectionRef;
@@ -139,16 +139,20 @@ impl ObjectMeta {
     }
 }
 
-/// Object node ID.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ObjectNodeId(NodeId);
+define_node_id_type! {
+    /// Object node ID.
+    ObjectNodeId {
+        ancestors { NodeId }
+    }
+}
+
+impl ValidateId for ObjectNodeId {
+    fn validate_id(self, doc: &Document) -> bool {
+        doc.parsed_node_data().object_meta().contains_key(&self)
+    }
+}
 
 impl ObjectNodeId {
-    /// Creates a new `ObjectNodeId`.
-    pub(crate) fn new(id: NodeId) -> Self {
-        ObjectNodeId(id)
-    }
-
     /// Returns the object meta data.
     ///
     /// # Panics
@@ -182,40 +186,6 @@ impl ObjectNodeId {
         doc: &Document,
     ) -> impl Iterator<Item = ConnectionRef<'_>> {
         self.meta(doc).id().destinations_undirected(doc)
-    }
-}
-
-impl From<ObjectNodeId> for NodeId {
-    fn from(v: ObjectNodeId) -> Self {
-        v.0
-    }
-}
-
-impl DowncastId<ObjectNodeId> for NodeId {
-    fn downcast(self, doc: &Document) -> Option<ObjectNodeId> {
-        trace!("Trying to downcast {:?} to `ObjectNodeId`", self);
-
-        let maybe_invalid_id = ObjectNodeId::new(self);
-        if doc
-            .parsed_node_data()
-            .object_meta()
-            .contains_key(&maybe_invalid_id)
-        {
-            // Valid!
-            trace!(
-                "Successfully downcasted {:?} to {:?}",
-                self,
-                maybe_invalid_id
-            );
-            Some(maybe_invalid_id)
-        } else {
-            // Invalid.
-            trace!(
-                "Downcast failed: {:?} is not convertible to `ObjectNodeId`",
-                self
-            );
-            None
-        }
     }
 }
 
