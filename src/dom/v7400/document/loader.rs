@@ -9,7 +9,9 @@ use crate::dom::error::{LoadError, LoadErrorKind, StructureError};
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::connection::Connection;
 use crate::dom::v7400::object::scene::SceneNodeData;
-use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraph, SceneNodeId};
+use crate::dom::v7400::object::{
+    ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraphBuilder, SceneNodeId,
+};
 use crate::dom::v7400::{Core, Document, NodeId};
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
@@ -64,8 +66,8 @@ struct LoaderImpl {
     object_ids: HashMap<ObjectId, ObjectNodeId>,
     /// Parsed node data.
     parsed_node_data: ParsedData,
-    /// Objects graph.
-    objects_graph: ObjectsGraph,
+    /// Objects graph builder.
+    objects_graph: ObjectsGraphBuilder,
 }
 
 impl LoaderImpl {
@@ -121,7 +123,7 @@ impl LoaderImpl {
             self.core,
             self.object_ids,
             self.parsed_node_data,
-            self.objects_graph,
+            self.objects_graph.build(),
         ))
     }
 
@@ -362,10 +364,11 @@ impl LoaderImpl {
             conn
         );
 
-        if let Some(old_conn) = self
-            .objects_graph
-            .edge_weight(conn.source_id(), conn.destination_id())
-        {
+        if let Some(old_conn) = self.objects_graph.connection(
+            conn.source_id(),
+            conn.destination_id(),
+            conn.edge().label_sym(),
+        ) {
             let err = format_err!(
                 "Duplicate connection between objects: \
                  source={:?}, dest={:?}, edge={:?}, ignored={:?}",

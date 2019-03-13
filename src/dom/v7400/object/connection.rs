@@ -41,6 +41,11 @@ impl ConnectionEdge {
         self.destination_type
     }
 
+    /// Returns label symbol.
+    pub(crate) fn label_sym(&self) -> Option<StrSym> {
+        self.label
+    }
+
     /// Returns label.
     pub fn label<'a>(&self, core: &'a impl AsRef<Core>) -> Option<&'a str> {
         self.label.map(|label| {
@@ -58,7 +63,7 @@ impl ConnectionEdge {
 
 /// Connection data (provided by `C` node).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct Connection {
+pub struct Connection {
     /// Edge data.
     edge: ConnectionEdge,
     /// Source object ID.
@@ -194,46 +199,5 @@ fn get_object_id_from_attrs(
             warn!("Attribute[{}] not found for `C`: expected i64", index);
             Err(StructureError::attribute_not_found(Some(index)))
         }
-    }
-}
-
-/// Reference to connection data (provided by `C` node).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ConnectionRef<'a> {
-    /// Edge data.
-    edge: &'a ConnectionEdge,
-    /// Source object ID.
-    source_id: ObjectId,
-    /// Destination object ID.
-    destination_id: ObjectId,
-}
-
-impl<'a> ConnectionRef<'a> {
-    /// Creates a new `ConnectionRef`.
-    pub(crate) fn new(
-        source_id: ObjectId,
-        destination_id: ObjectId,
-        edge: &'a ConnectionEdge,
-    ) -> Self {
-        Self {
-            edge,
-            source_id,
-            destination_id,
-        }
-    }
-
-    /// Returns source ID.
-    pub fn source_id(&self) -> ObjectId {
-        self.source_id
-    }
-
-    /// Returns destination ID.
-    pub fn destination_id(&self) -> ObjectId {
-        self.destination_id
-    }
-
-    /// Returns connection edge.
-    pub fn edge(&self) -> &'a ConnectionEdge {
-        &self.edge
     }
 }

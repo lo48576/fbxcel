@@ -15,7 +15,7 @@ all-features = true
 [features]
 default = []
 
-dom = ["failure", "indextree", "petgraph", "string-interner"]
+dom = ["failure", "indextree", "string-interner"]
 
 [dependencies]
 byteorder = "1"
@@ -23,7 +23,6 @@ failure = { version = "0.1.5", optional = true }
 indextree = { version = "3", optional = true }
 libflate = "0.1"
 log = "0.4.4"
-petgraph = { version = "0.4", optional = true, default-features = false }
 string-interner = { version = "0.7", optional = true, default-features = false }
 
 [dev-dependencies]

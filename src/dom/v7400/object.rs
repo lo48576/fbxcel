@@ -7,8 +7,8 @@ use crate::dom::error::StructureError;
 use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym, ValidateId};
 use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
-use self::connection::ConnectionRef;
-pub(crate) use self::graph::ObjectsGraph;
+use self::connection::Connection;
+pub(crate) use self::graph::{ObjectsGraph, ObjectsGraphBuilder};
 pub use self::scene::SceneNodeId;
 
 pub mod connection;
@@ -171,7 +171,7 @@ impl ObjectNodeId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
+    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
         self.meta(doc).id().sources_undirected(doc)
     }
 
@@ -181,10 +181,7 @@ impl ObjectNodeId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn destinations_undirected(
-        self,
-        doc: &Document,
-    ) -> impl Iterator<Item = ConnectionRef<'_>> {
+    pub fn destinations_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
         self.meta(doc).id().destinations_undirected(doc)
     }
 }
@@ -223,10 +220,8 @@ impl ObjectId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = ConnectionRef<'_>> {
-        doc.objects_graph()
-            .incoming_edges_unordered(self)
-            .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
+    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
+        doc.objects_graph().incoming_edges_unordered(self)
     }
 
     /// Returns an iterator of the connections with destination objects and
@@ -235,12 +230,7 @@ impl ObjectId {
     /// Note that this would not be ordered.
     /// To access them in correct order, sort by return value of
     /// [`ConnectionEdge::index()`].
-    pub fn destinations_undirected(
-        self,
-        doc: &Document,
-    ) -> impl Iterator<Item = ConnectionRef<'_>> {
-        doc.objects_graph()
-            .outgoing_edges_unordered(self)
-            .map(|(src, dest, edge)| ConnectionRef::new(src, dest, edge))
+    pub fn destinations_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
+        doc.objects_graph().outgoing_edges_unordered(self)
     }
 }
