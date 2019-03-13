@@ -116,8 +116,6 @@ impl ObjectsGraphBuilder {
         entries
             .iter()
             .map(|&edge_index| &self.edges[edge_index])
-            .find(|edge| {
-                edge.destination_id() == destination && edge.edge().label_sym() == label_sym
-            })
+            .find(|edge| edge.destination_id() == destination && edge.label_sym() == label_sym)
     }
 }

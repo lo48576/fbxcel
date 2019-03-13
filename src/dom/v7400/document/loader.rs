@@ -364,18 +364,17 @@ impl LoaderImpl {
             conn
         );
 
-        if let Some(old_conn) = self.objects_graph.connection(
-            conn.source_id(),
-            conn.destination_id(),
-            conn.edge().label_sym(),
-        ) {
+        if let Some(old_conn) =
+            self.objects_graph
+                .connection(conn.source_id(), conn.destination_id(), conn.label_sym())
+        {
             let err = format_err!(
                 "Duplicate connection between objects: \
-                 source={:?}, dest={:?}, edge={:?}, ignored={:?}",
+                 source={:?}, dest={:?}, preserved={:?}, ignored={:?}",
                 conn.source_id(),
                 conn.destination_id(),
                 old_conn,
-                conn.edge(),
+                conn,
             )
             .context(LoadErrorKind::Value);
             return self.err_if_strict(err, |e| {
