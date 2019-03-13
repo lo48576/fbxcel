@@ -8,10 +8,9 @@ use log::{debug, trace, warn};
 use crate::dom::error::{LoadError, LoadErrorKind, StructureError};
 use crate::dom::v7400::document::ParsedData;
 use crate::dom::v7400::object::connection::Connection;
-use crate::dom::v7400::object::scene::SceneNodeData;
-use crate::dom::v7400::object::{
-    ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraphBuilder, SceneNodeId,
-};
+use crate::dom::v7400::object::model::{ModelNodeData, ModelNodeId};
+use crate::dom::v7400::object::scene::{SceneNodeData, SceneNodeId};
+use crate::dom::v7400::object::{ObjectId, ObjectMeta, ObjectNodeId, ObjectsGraphBuilder};
 use crate::dom::v7400::{Core, Document, NodeId};
 use crate::pull_parser::v7400::Parser;
 use crate::pull_parser::ParserSource;
@@ -324,6 +323,30 @@ impl LoaderImpl {
                 self.parsed_node_data
                     .scenes_mut()
                     .entry(scene_node_id)
+                    .or_insert(data);
+            }
+            "Model" => {
+                let data = match ModelNodeData::load(node_id, &self.core) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        return self.err_if_strict(e, |e| {
+                            warn_ignored_error!(
+                                "Failed to load model object node data from `Model` node: {}",
+                                e
+                            );
+                            Ok(())
+                        });
+                    }
+                };
+                trace!(
+                    "Successfully interpreted `Model` node data: data={:?}",
+                    data
+                );
+
+                let model_node_id = ModelNodeId::new(node_id);
+                self.parsed_node_data
+                    .models_mut()
+                    .entry(model_node_id)
                     .or_insert(data);
             }
             node_name => {

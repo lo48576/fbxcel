@@ -9,10 +9,12 @@ use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
 use self::connection::Connection;
 pub(crate) use self::graph::{ObjectsGraph, ObjectsGraphBuilder};
+pub use self::model::ModelNodeId;
 pub use self::scene::SceneNodeId;
 
 pub mod connection;
 mod graph;
+pub mod model;
 pub mod scene;
 
 /// Metadata of object node.
