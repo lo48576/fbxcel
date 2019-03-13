@@ -181,59 +181,12 @@ impl LoaderImpl {
         );
 
         let document_sym = self.core.sym("Document");
-        let scene_sym = self.core.sym("Scene");
         let mut next_node_id = self.core.node(documents_node_id).first_child();
         while let Some(document_node_id) = next_node_id {
             if self.core.node(document_node_id).data().name_sym() == document_sym {
                 trace!("Found `Document` node: node_id={:?}", document_node_id);
 
                 self.add_object(document_node_id)?;
-
-                trace!("Interpreting document (scene) data");
-                let object_node_id = ObjectNodeId::new(document_node_id);
-                let node_meta = self
-                    .parsed_node_data
-                    .object_meta()
-                    .get(&object_node_id)
-                    .expect("Should never fail: `add_object()` should have added the entry");
-                if node_meta.subclass_sym() != scene_sym {
-                    let err = format_err!(
-                        "Unexpected object type for `Document` node: expected `Scene`, got {:?}",
-                        self.core.string(node_meta.subclass_sym()).expect(
-                            "Should never fail: subclass string should be \
-                             registered by `add_object()`"
-                        )
-                    )
-                    .context(LoadErrorKind::Value);
-                    return self.err_if_strict(err, |e| {
-                        warn_ignored_error!("{}", e);
-                        Ok(())
-                    });
-                }
-
-                // Add scene data to `parsed_node_data`.
-                let data = match SceneNodeData::load(object_node_id, &self.core) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        return self.err_if_strict(e, |e| {
-                            warn_ignored_error!(
-                                "Failed to load scene object node data from `Document` node: {}",
-                                e
-                            );
-                            Ok(())
-                        });
-                    }
-                };
-                trace!(
-                    "Successfully interpreted `Document` node as scene data: data={:?}",
-                    data
-                );
-
-                let scene_node_id = SceneNodeId::new(object_node_id);
-                self.parsed_node_data
-                    .scenes_mut()
-                    .entry(scene_node_id)
-                    .or_insert(data);
             }
             next_node_id = self.core.node(document_node_id).next_sibling();
         }
@@ -297,6 +250,89 @@ impl LoaderImpl {
 
         trace!(
             "Successfully loaded object: node_id={:?}, obj_id={:?}",
+            node_id,
+            obj_id
+        );
+
+        if let Err(e) = self.register_object_type_specific_data(node_id, obj_id) {
+            // Don't break earlily when error is ignored, because the object is
+            // already registered and state of `self` has been changed.
+            self.err_if_strict(e, |e| {
+                warn_ignored_error!("Object load error: {}", e);
+                Ok(())
+            })?;
+        }
+
+        Ok(())
+    }
+
+    /// Parse object-type-specific data and store them in `self`.
+    fn register_object_type_specific_data(
+        &mut self,
+        node_id: ObjectNodeId,
+        obj_id: ObjectId,
+    ) -> Result<(), LoadError> {
+        let node_name = node_id.node(&self.core).name(&self.core);
+        let meta = self
+            .parsed_node_data
+            .object_meta()
+            .get(&node_id)
+            .expect("Should never fail: object metadata should be registered");
+        let (class, subclass) = (meta.class(&self.core), meta.subclass(&self.core));
+        trace!(
+            "Start registering object-type-specific data: node_id={:?}, obj_id={:?}, \
+             node_name={:?}, class={:?}, subclass={:?}",
+            node_id,
+            obj_id,
+            node_name,
+            class,
+            subclass
+        );
+        // Load object-type-specific data and add it to `parsed_node_data`.
+        match node_name {
+            "Document" => {
+                if subclass != "Scene" {
+                    let err = format_err!(
+                        "Unexpected object type for `Document` node: expected `Scene`, got {:?}, context_node={}",
+                        subclass, self.core.path(node_id).debug_display()
+                    )
+                    .context(LoadErrorKind::Value);
+                    return self.err_if_strict(err, |e| {
+                        warn_ignored_error!("{}", e);
+                        Ok(())
+                    });
+                }
+
+                let data = match SceneNodeData::load(node_id, &self.core) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        return self.err_if_strict(e, |e| {
+                            warn_ignored_error!(
+                                "Failed to load scene object node data from `Document` node: {}",
+                                e
+                            );
+                            Ok(())
+                        });
+                    }
+                };
+                trace!(
+                    "Successfully interpreted `Document` node as scene data: data={:?}",
+                    data
+                );
+
+                let scene_node_id = SceneNodeId::new(node_id);
+                self.parsed_node_data
+                    .scenes_mut()
+                    .entry(scene_node_id)
+                    .or_insert(data);
+            }
+            node_name => {
+                warn!("Unsupported object type: node_name={:?}", node_name);
+            }
+        }
+
+        trace!(
+            "Successfully registered object-type-specific data: node_id={:?}, obj_id={:?}",
             node_id,
             obj_id
         );

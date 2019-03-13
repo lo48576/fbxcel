@@ -61,11 +61,6 @@ impl ObjectMeta {
             .expect("The `ObjectMeta` is not stored in the given document")
     }
 
-    /// Returns the string symbol of the subclass.
-    pub(crate) fn subclass_sym(&self) -> StrSym {
-        self.subclass
-    }
-
     /// Creates `ObjectMeta` from the given attributes.
     pub(crate) fn from_attributes(
         attrs: &[DirectAttributeValue],
