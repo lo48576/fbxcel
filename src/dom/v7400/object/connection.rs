@@ -17,11 +17,15 @@ pub enum ConnectedNodeType {
     Property,
 }
 
-/// Connection edge.
+/// Connection data (provided by `C` node).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ConnectionEdge {
+pub struct Connection {
+    /// Source object ID.
+    source_id: ObjectId,
     /// Source node type.
     source_type: ConnectedNodeType,
+    /// Destination object ID.
+    destination_id: ObjectId,
     /// Destination node type.
     destination_type: ConnectedNodeType,
     /// Label.
@@ -30,15 +34,30 @@ pub struct ConnectionEdge {
     index: usize,
 }
 
-impl ConnectionEdge {
+impl Connection {
+    /// Returns source ID.
+    pub fn source_id(&self) -> ObjectId {
+        self.source_id
+    }
+
     /// Returns source node type.
     pub fn source_type(&self) -> ConnectedNodeType {
         self.source_type
     }
 
+    /// Returns destination ID.
+    pub fn destination_id(&self) -> ObjectId {
+        self.destination_id
+    }
+
     /// Returns destination node type.
     pub fn destination_type(&self) -> ConnectedNodeType {
         self.destination_type
+    }
+
+    /// Returns label symbol.
+    pub(crate) fn label_sym(&self) -> Option<StrSym> {
+        self.label
     }
 
     /// Returns label.
@@ -53,34 +72,6 @@ impl ConnectionEdge {
     /// Connection node index.
     pub fn index(&self) -> usize {
         self.index
-    }
-}
-
-/// Connection data (provided by `C` node).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct Connection {
-    /// Edge data.
-    edge: ConnectionEdge,
-    /// Source object ID.
-    source_id: ObjectId,
-    /// Destination object ID.
-    destination_id: ObjectId,
-}
-
-impl Connection {
-    /// Returns source ID.
-    pub fn source_id(&self) -> ObjectId {
-        self.source_id
-    }
-
-    /// Returns destination ID.
-    pub fn destination_id(&self) -> ObjectId {
-        self.destination_id
-    }
-
-    /// Returns connection edge.
-    pub fn edge(&self) -> &ConnectionEdge {
-        &self.edge
     }
 
     /// Loads `Connection` from the given `C` node attributes.
@@ -159,14 +150,12 @@ impl Connection {
         trace!("Successfully loaded `C` node: conn_index={:?}", conn_index);
 
         Ok(Connection {
-            edge: ConnectionEdge {
-                source_type,
-                destination_type,
-                label,
-                index: conn_index,
-            },
             source_id,
+            source_type,
             destination_id,
+            destination_type,
+            label,
+            index: conn_index,
         })
     }
 }
@@ -194,46 +183,5 @@ fn get_object_id_from_attrs(
             warn!("Attribute[{}] not found for `C`: expected i64", index);
             Err(StructureError::attribute_not_found(Some(index)))
         }
-    }
-}
-
-/// Reference to connection data (provided by `C` node).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ConnectionRef<'a> {
-    /// Edge data.
-    edge: &'a ConnectionEdge,
-    /// Source object ID.
-    source_id: ObjectId,
-    /// Destination object ID.
-    destination_id: ObjectId,
-}
-
-impl<'a> ConnectionRef<'a> {
-    /// Creates a new `ConnectionRef`.
-    pub(crate) fn new(
-        source_id: ObjectId,
-        destination_id: ObjectId,
-        edge: &'a ConnectionEdge,
-    ) -> Self {
-        Self {
-            edge,
-            source_id,
-            destination_id,
-        }
-    }
-
-    /// Returns source ID.
-    pub fn source_id(&self) -> ObjectId {
-        self.source_id
-    }
-
-    /// Returns destination ID.
-    pub fn destination_id(&self) -> ObjectId {
-        self.destination_id
-    }
-
-    /// Returns connection edge.
-    pub fn edge(&self) -> &'a ConnectionEdge {
-        &self.edge
     }
 }

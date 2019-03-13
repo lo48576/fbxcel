@@ -1,133 +1,121 @@
 //! Objects graph.
 
-use petgraph::graph::DiGraph;
-use petgraph::Direction;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
-use crate::dom::v7400::object::connection::{Connection, ConnectionEdge};
+use crate::dom::v7400::object::connection::Connection;
 use crate::dom::v7400::object::ObjectId;
-
-/// Internal representation of graph node index type.
-type GraphNodeIndexInner = petgraph::graph::DefaultIx;
-
-/// Graph node index type.
-type GraphNodeIndex = petgraph::graph::NodeIndex<GraphNodeIndexInner>;
+use crate::dom::v7400::StrSym;
 
 /// Objects graph.
 #[derive(Default, Debug, Clone)]
 pub struct ObjectsGraph {
-    /// Graph structure.
-    graph: DiGraph<ObjectId, ConnectionEdge, GraphNodeIndexInner>,
-    /// Mapping from object ID to graph node index.
-    obj_id_to_graph_node_index: HashMap<ObjectId, GraphNodeIndex>,
+    /// Edges.
+    edges: Vec<Connection>,
+    /// Edge indices sorted by source object ID.
+    edge_indices_sorted_by_src: Vec<usize>,
+    /// Edge indices sorted by destination object ID.
+    edge_indices_sorted_by_dest: Vec<usize>,
 }
 
 impl ObjectsGraph {
-    /// Returns `GraphNodeIndex` corresponding to the given `ObjectId`.
-    fn graph_node_index(&self, obj_id: ObjectId) -> Option<GraphNodeIndex> {
-        self.obj_id_to_graph_node_index.get(&obj_id).cloned()
+    /// Returns the iterator of outgoing edges.
+    ///
+    /// Edges are iterated in same order as raw FBX structure.
+    pub(crate) fn outgoing_edges(&self, source: ObjectId) -> impl Iterator<Item = &Connection> {
+        assert_eq!(self.edges.len(), self.edge_indices_sorted_by_src.len());
+
+        let start = self
+            .edge_indices_sorted_by_src
+            .binary_search_by(|&idx| self.edges[idx].source_id().cmp(&source))
+            .unwrap_or_else(|_| self.edges.len());
+        self.edge_indices_sorted_by_src[start..]
+            .iter()
+            .map(move |&edge_index| &self.edges[edge_index])
+            .filter(move |edge| edge.source_id() == source)
+            .fuse()
     }
 
-    /// Creates a node if necessary and returns node index.
-    fn add_or_get_graph_node_index(&mut self, obj_id: ObjectId) -> GraphNodeIndex {
-        use std::collections::hash_map::Entry;
+    /// Returns the iterator of incoming edges.
+    ///
+    /// Edges are iterated in same order as raw FBX structure.
+    pub(crate) fn incoming_edges(
+        &self,
+        destination: ObjectId,
+    ) -> impl Iterator<Item = &Connection> {
+        assert_eq!(self.edges.len(), self.edge_indices_sorted_by_dest.len());
 
-        match self.obj_id_to_graph_node_index.entry(obj_id) {
-            Entry::Occupied(entry) => *entry.get(),
-            Entry::Vacant(entry) => *entry.insert(self.graph.add_node(obj_id)),
+        let start = self
+            .edge_indices_sorted_by_dest
+            .binary_search_by(|&idx| self.edges[idx].destination_id().cmp(&destination))
+            .unwrap_or_else(|_| self.edges.len());
+        self.edge_indices_sorted_by_src[start..]
+            .iter()
+            .map(move |&edge_index| &self.edges[edge_index])
+            .filter(move |edge| edge.destination_id() == destination)
+            .fuse()
+    }
+}
+
+/// Objects graph.
+#[derive(Default, Debug, Clone)]
+pub(crate) struct ObjectsGraphBuilder {
+    /// Edges.
+    edges: Vec<Connection>,
+    /// Edge indices sorted by source object ID.
+    edge_indices_sorted_by_src: BTreeMap<ObjectId, Vec<usize>>,
+    /// Edge indices sorted by destination object ID.
+    edge_indices_sorted_by_dest: BTreeMap<ObjectId, Vec<usize>>,
+}
+
+impl ObjectsGraphBuilder {
+    /// Builds an `ObjectsGraph`.
+    pub(crate) fn build(self) -> ObjectsGraph {
+        let edge_indices_sorted_by_src = self
+            .edge_indices_sorted_by_src
+            .into_iter()
+            .flat_map(|(_, v)| v)
+            .collect();
+        let edge_indices_sorted_by_dest = self
+            .edge_indices_sorted_by_dest
+            .into_iter()
+            .flat_map(|(_, v)| v)
+            .collect();
+        ObjectsGraph {
+            edges: self.edges,
+            edge_indices_sorted_by_src,
+            edge_indices_sorted_by_dest,
         }
-    }
-
-    /// Returns `GraphNodeIndex` corresponding to the given `ObjectId`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the object ID is not added to the graph.
-    fn object_id(&self, node_index: GraphNodeIndex) -> ObjectId {
-        self.graph
-            .node_weight(node_index)
-            .cloned()
-            .expect("The given object ID is not added to the graph")
     }
 
     /// Inserts or updates the given connection.
     ///
     /// This does not create duplicate edge.
     pub(crate) fn add_connection(&mut self, connection: Connection) {
-        let source = self.add_or_get_graph_node_index(connection.source_id());
-        let destination = self.add_or_get_graph_node_index(connection.destination_id());
-        self.graph
-            .update_edge(source, destination, *connection.edge());
+        let edge_index = self.edges.len();
+        let src = connection.source_id();
+        let dest = connection.destination_id();
+        self.edges.push(connection);
+        self.edge_indices_sorted_by_src
+            .entry(src)
+            .or_insert_with(Vec::new)
+            .push(edge_index);
+        self.edge_indices_sorted_by_dest
+            .entry(dest)
+            .or_insert_with(Vec::new)
+            .push(edge_index);
     }
 
-    /// Returns the weight of the edge if available.
-    pub(crate) fn edge_weight(
+    /// Returns the connection if available.
+    pub(crate) fn connection(
         &self,
         source: ObjectId,
         destination: ObjectId,
-    ) -> Option<&ConnectionEdge> {
-        let source = self.graph_node_index(source)?;
-        let destination = self.graph_node_index(destination)?;
-        self.graph
-            .find_edge(source, destination)
-            .and_then(|edge| self.graph.edge_weight(edge))
-    }
-
-    /// Returns the iterator of outgoing edges.
-    ///
-    /// Note that there are no guarantee about edges order.
-    // NOTE: `petgraph-0.4.13` guarantees that `Graph::neigbors_directed()` [1]
-    // sees edges in reverse order of edges addition.
-    // However, it is not explicitly specified that returned iterator from
-    // `Graph::edges_directed()` [2] has specific ordering.
-    //
-    // [1]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.neighbors_directed
-    // [2]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.edges_directed
-    pub(crate) fn outgoing_edges_unordered(
-        &self,
-        source: ObjectId,
-    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
-        use petgraph::visit::EdgeRef;
-
-        self.graph_node_index(source)
-            .into_iter()
-            .flat_map(move |source| {
-                self.graph
-                    .edges_directed(source, Direction::Outgoing)
-                    .map(move |edge| {
-                        let source = self.object_id(edge.source());
-                        let destination = self.object_id(edge.target());
-                        (source, destination, edge.weight())
-                    })
-            })
-    }
-
-    /// Returns the iterator of incoming edges.
-    ///
-    /// Note that there are no guarantee about edges order.
-    // NOTE: `petgraph-0.4.13` guarantees that `Graph::neigbors_directed()` [1]
-    // sees edges in reverse order of edges addition.
-    // However, it is not explicitly specified that returned iterator from
-    // `Graph::edges_directed()` [2] has specific ordering.
-    //
-    // [1]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.neighbors_directed
-    // [2]: https://docs.rs/petgraph/0.4.13/petgraph/graph/struct.Graph.html#method.edges_directed
-    pub(crate) fn incoming_edges_unordered(
-        &self,
-        destination: ObjectId,
-    ) -> impl Iterator<Item = (ObjectId, ObjectId, &ConnectionEdge)> {
-        use petgraph::visit::EdgeRef;
-
-        self.graph_node_index(destination)
-            .into_iter()
-            .flat_map(move |destination| {
-                self.graph
-                    .edges_directed(destination, Direction::Incoming)
-                    .map(move |edge| {
-                        let source = self.object_id(edge.source());
-                        let destination = self.object_id(edge.target());
-                        (source, destination, edge.weight())
-                    })
-            })
+        label_sym: Option<StrSym>,
+    ) -> Option<&Connection> {
+        let entries = self.edge_indices_sorted_by_src.get(&source)?;
+        entries
+            .iter()
+            .map(|&edge_index| &self.edges[edge_index])
+            .find(|edge| edge.destination_id() == destination && edge.label_sym() == label_sym)
     }
 }

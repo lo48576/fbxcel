@@ -6,6 +6,9 @@
     + Internal representation of `dom::error::LoadError` got hidden to reduce
       incompatibility due to internal changes.
     + New error handling is still not perfect, and might change in future.
+* DOM object connections handling are changed.
+    + This is mainly internal changes, but some of exposed APIs are changed.
+    + For example, connections are now iterable in same order as raw FBX data.
 
 ### Breaking changes
 * `dom::error::LoadError` is now `struct` and internal representation is hidden.
@@ -17,6 +20,14 @@
 * `dom::v7400::Core::load()` now uses dedicated error type.
   That is, it now returns `Result<Core, dom::v7400::error::CoreLoadError>`
   instead of `Result<Core, dom::error::LoadError>`.
+* `dom::v7400::object::connection::{ConnectionRef, ConnectionEdge}` is removed.
+    + Use `dom::v7400::object::connection::Connection` instead.
+    + Functions returning these types are renamed and have different return
+      types now.
+* `dom::v7400::object::ObjectId::{sources,destinations}_undirected` are replaced
+  by `ObjectId::{sources,destinations}`.
+    + Now connections iterated by the returned iterators have guaranteed orders.
+    + Now they return `impl Iterator<Item = &Connection>`.
 
 ### Added
 * `dom::v7400::error::CoreLoadError` type is added.
@@ -38,6 +49,11 @@
     + Previously, multiple nodes are created in internal graph for single
       objects, and this prevents objects connections from correctly being
       tracked.
+      Now this is fixed.
+    + Previously, multiple connections are considered same with same src/dest
+      pair and different label.
+      This prevented some (correct) connections from loaded.
+      Now this is fixed.
 
 ### Others
 * `dom` module has little more detailed logging (mainly `trace` level).
