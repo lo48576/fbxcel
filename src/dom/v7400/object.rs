@@ -165,24 +165,18 @@ impl ObjectNodeId {
             .expect("The object node with the `ObjectNodeId` is not stored in the given document")
     }
 
-    /// Returns an iterator of the connections with source objects and
-    /// properties.
+    /// Returns an iterator of the connections.
     ///
-    /// Note that this would not be ordered.
-    /// To access them in correct order, sort by return value of
-    /// [`ConnectionEdge::index()`].
-    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        self.meta(doc).id().sources_undirected(doc)
+    /// Edges are iterated in same order as raw FBX structure.
+    pub fn sources(self, doc: &Document) -> impl Iterator<Item = &Connection> {
+        self.meta(doc).id().sources(doc)
     }
 
-    /// Returns an iterator of the connections with destination objects and
-    /// properties.
+    /// Returns an iterator of the connections.
     ///
-    /// Note that this would not be ordered.
-    /// To access them in correct order, sort by return value of
-    /// [`ConnectionEdge::index()`].
-    pub fn destinations_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        self.meta(doc).id().destinations_undirected(doc)
+    /// Edges are iterated in same order as raw FBX structure.
+    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = &Connection> {
+        self.meta(doc).id().destinations(doc)
     }
 }
 
@@ -214,23 +208,17 @@ impl ObjectId {
         ObjectId(v)
     }
 
-    /// Returns an iterator of the connections with source objects and
-    /// properties.
+    /// Returns an iterator of the connections.
     ///
-    /// Note that this would not be ordered.
-    /// To access them in correct order, sort by return value of
-    /// [`ConnectionEdge::index()`].
-    pub fn sources_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        doc.objects_graph().incoming_edges_unordered(self)
+    /// Edges are iterated in same order as raw FBX structure.
+    pub fn sources(self, doc: &Document) -> impl Iterator<Item = &Connection> {
+        doc.objects_graph().incoming_edges(self)
     }
 
-    /// Returns an iterator of the connections with destination objects and
-    /// properties.
+    /// Returns an iterator of the connections.
     ///
-    /// Note that this would not be ordered.
-    /// To access them in correct order, sort by return value of
-    /// [`ConnectionEdge::index()`].
-    pub fn destinations_undirected(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        doc.objects_graph().outgoing_edges_unordered(self)
+    /// Edges are iterated in same order as raw FBX structure.
+    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = &Connection> {
+        doc.objects_graph().outgoing_edges(self)
     }
 }

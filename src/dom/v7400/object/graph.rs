@@ -20,11 +20,8 @@ pub struct ObjectsGraph {
 impl ObjectsGraph {
     /// Returns the iterator of outgoing edges.
     ///
-    /// Note that there are no guarantee about edges order.
-    pub(crate) fn outgoing_edges_unordered(
-        &self,
-        source: ObjectId,
-    ) -> impl Iterator<Item = &Connection> {
+    /// Edges are iterated in same order as raw FBX structure.
+    pub(crate) fn outgoing_edges(&self, source: ObjectId) -> impl Iterator<Item = &Connection> {
         assert_eq!(self.edges.len(), self.edge_indices_sorted_by_src.len());
 
         let start = self
@@ -40,8 +37,8 @@ impl ObjectsGraph {
 
     /// Returns the iterator of incoming edges.
     ///
-    /// Note that there are no guarantee about edges order.
-    pub(crate) fn incoming_edges_unordered(
+    /// Edges are iterated in same order as raw FBX structure.
+    pub(crate) fn incoming_edges(
         &self,
         destination: ObjectId,
     ) -> impl Iterator<Item = &Connection> {
