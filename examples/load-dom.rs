@@ -39,7 +39,6 @@ pub fn main() {
             });
             let dom_loader = dom::v7400::Loader::new();
             let dom = dom_loader
-                .strict(true)
                 .load_document(&mut parser)
                 .expect("Failed to load FBX DOM");
             println!("dom = {:#?}", dom);
