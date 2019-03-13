@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Non-strict DOM load support is removed.
 * DOM load error handling are changed.
     + Internal representation of `dom::error::LoadError` got hidden to reduce
       incompatibility due to internal changes.
@@ -13,6 +14,9 @@
     + `Model`, `Scene`.
 
 ### Breaking changes
+* Non-strict DOM load support is removed.
+  `dom::v7400::Loader::strict` is removed, and the loader will always interpret
+  data strictly.
 * `dom::error::LoadError` is now `struct` and internal representation is hidden.
   Users should not expect any guarantee except that it implements
   `std::error::Error` trait.
