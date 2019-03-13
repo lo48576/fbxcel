@@ -9,10 +9,12 @@ use crate::pull_parser::v7400::attribute::DirectAttributeValue;
 
 use self::connection::Connection;
 pub(crate) use self::graph::{ObjectsGraph, ObjectsGraphBuilder};
+pub use self::model::ModelNodeId;
 pub use self::scene::SceneNodeId;
 
 pub mod connection;
 mod graph;
+pub mod model;
 pub mod scene;
 
 /// Metadata of object node.
@@ -59,11 +61,6 @@ impl ObjectMeta {
         core.as_ref()
             .string(self.subclass)
             .expect("The `ObjectMeta` is not stored in the given document")
-    }
-
-    /// Returns the string symbol of the subclass.
-    pub(crate) fn subclass_sym(&self) -> StrSym {
-        self.subclass
     }
 
     /// Creates `ObjectMeta` from the given attributes.

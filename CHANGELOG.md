@@ -9,6 +9,8 @@
 * DOM object connections handling are changed.
     + This is mainly internal changes, but some of exposed APIs are changed.
     + For example, connections are now iterable in same order as raw FBX data.
+* New object node is supported:
+    + `Model`, `Scene`.
 
 ### Breaking changes
 * `dom::error::LoadError` is now `struct` and internal representation is hidden.
@@ -33,6 +35,7 @@
 * `dom::v7400::error::CoreLoadError` type is added.
 * `dom::v7400::object::scene` module and related types are added.
     + By these types, users can get scenes and their root object IDs.
+* `dom::v7400::object::model` module and related types are added.
 * DOM node ID types (such as `NodeId`, `ObjectNodeId`, `SceneNodeId`) now
   implements type conversion traits (`From`, `Into`, `DowncastId`, and `Deref`).
 * `pull_parser::v7400::attribute::DirectAttributeValue::get_{{types}}_or_type()`
