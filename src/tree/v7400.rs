@@ -4,8 +4,14 @@ use indextree::Arena;
 use string_interner::StringInterner;
 
 use self::node::{NodeData, NodeNameSym};
-pub use self::node::{NodeHandle, NodeId};
+pub use self::{
+    error::LoadError,
+    loader::Loader,
+    node::{NodeHandle, NodeId},
+};
 
+mod error;
+mod loader;
 mod node;
 
 /// FBX data tree.
@@ -23,6 +29,19 @@ impl Tree {
     /// Returns the root node.
     pub fn root(&self) -> NodeHandle<'_> {
         NodeHandle::new(&self, self.root_id)
+    }
+
+    /// Creates a new `Tree`.
+    fn new(
+        arena: Arena<NodeData>,
+        node_names: StringInterner<NodeNameSym>,
+        root_id: NodeId,
+    ) -> Self {
+        Self {
+            arena,
+            node_names,
+            root_id,
+        }
     }
 
     /// Returns internally managed node data.

@@ -24,4 +24,12 @@ impl NodeData {
     pub(crate) fn attributes(&self) -> &[DirectAttributeValue] {
         &self.attributes
     }
+
+    /// Creates a new `NodeData`.
+    pub(crate) fn new(name_sym: NodeNameSym, attributes: Vec<DirectAttributeValue>) -> Self {
+        Self {
+            name_sym,
+            attributes,
+        }
+    }
 }
