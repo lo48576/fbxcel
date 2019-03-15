@@ -12,3 +12,9 @@ pub struct Document {
     /// FBX data tree.
     tree: Tree,
 }
+
+impl AsRef<Tree> for Document {
+    fn as_ref(&self) -> &Tree {
+        &self.tree
+    }
+}
