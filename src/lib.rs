@@ -6,3 +6,5 @@
 pub mod dom;
 pub mod low;
 pub mod pull_parser;
+#[cfg(feature = "tree")]
+pub mod tree;
