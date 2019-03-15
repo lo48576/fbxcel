@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Add `tree` module.
+    + This can be enabled with `tree` feature.
 * Non-strict DOM load support is removed.
 * DOM load error handling are changed.
     + Internal representation of `dom::error::LoadError` got hidden to reduce
@@ -40,6 +42,10 @@
 * `dom::v7400::object::scene` module and related types are added.
     + By these types, users can get scenes and their root object IDs.
 * `dom::v7400::object::model` module and related types are added.
+* Add `tree` module.
+    + This can be enabled with `tree` feature.
+    + `tree::v7400::Tree` manages raw FBX tree data, but do not touch their
+      meanings.
 * DOM node ID types (such as `NodeId`, `ObjectNodeId`, `SceneNodeId`) now
   implements type conversion traits (`From`, `Into`, `DowncastId`, and `Deref`).
 * `pull_parser::v7400::attribute::DirectAttributeValue::get_{{types}}_or_type()`
