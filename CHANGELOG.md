@@ -41,7 +41,7 @@
     + Now they return `impl Iterator<Item = &Connection>`.
 
 ### Added
-* `domcast` module is adde.
+* `domcast` module is added.
     + This is a new DOM feature.
     + `dom` feature and module will be replaced with this.
 * `dom::v7400::error::CoreLoadError` type is added.
