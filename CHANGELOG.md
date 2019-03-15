@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* Add `domcast` module.
+    + This is a new DOM feature.
+    + This can be enabled with `domcast` feature.
 * Add `tree` module.
     + This can be enabled with `tree` feature.
 * Non-strict DOM load support is removed.
@@ -38,6 +41,9 @@
     + Now they return `impl Iterator<Item = &Connection>`.
 
 ### Added
+* `domcast` module is adde.
+    + This is a new DOM feature.
+    + `dom` feature and module will be replaced with this.
 * `dom::v7400::error::CoreLoadError` type is added.
 * `dom::v7400::object::scene` module and related types are added.
     + By these types, users can get scenes and their root object IDs.
