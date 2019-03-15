@@ -16,6 +16,7 @@ all-features = true
 default = []
 
 dom = ["failure", "indextree", "string-interner"]
+tree = ["indextree", "string-interner"]
 
 [dependencies]
 byteorder = "1"
@@ -38,3 +39,7 @@ name = "dump-pull-parser-events"
 [[example]]
 name = "load-dom"
 required-features = ["dom"]
+
+[[example]]
+name = "load-tree"
+required-features = ["tree"]
