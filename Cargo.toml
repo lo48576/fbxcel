@@ -16,6 +16,7 @@ all-features = true
 default = []
 
 dom = ["failure", "indextree", "string-interner"]
+domcast = ["tree"]
 tree = ["indextree", "string-interner"]
 
 [dependencies]
