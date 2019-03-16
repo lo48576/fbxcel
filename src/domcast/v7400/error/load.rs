@@ -6,11 +6,11 @@ use crate::tree::v7400::LoadError as TreeLoadError;
 
 /// FBX DOM load error.
 #[derive(Debug)]
-pub struct LoadError(LoadErrorImpl);
+pub struct LoadError(Box<dyn error::Error + Send + Sync + 'static>);
 
 impl LoadError {
     /// Creates a new `LoadError`.
-    fn new(e: impl Into<LoadErrorImpl>) -> Self {
+    pub(crate) fn new(e: impl Into<Box<dyn error::Error + Send + Sync + 'static>>) -> Self {
         Self(e.into())
     }
 }
@@ -23,9 +23,7 @@ impl fmt::Display for LoadError {
 
 impl error::Error for LoadError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        match self.0 {
-            LoadErrorImpl::Tree(ref e) => Some(e),
-        }
+        Some(&*self.0)
     }
 }
 
@@ -35,23 +33,30 @@ impl From<TreeLoadError> for LoadError {
     }
 }
 
-/// Internal implementation of `LoadError`.
+/// FBX DOM structure error.
 #[derive(Debug)]
-enum LoadErrorImpl {
-    /// Tree load error.
-    Tree(TreeLoadError),
+pub(crate) enum StructureError {
+    /// Toplevel `Documents` node not found.
+    MissingDocumentsNode,
+    /// Toplevel `Objects` node not found.
+    MissingObjectsNode,
 }
 
-impl fmt::Display for LoadErrorImpl {
+impl fmt::Display for StructureError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            LoadErrorImpl::Tree(e) => write!(f, "Tree load error: {}", e),
+            StructureError::MissingDocumentsNode => {
+                f.write_str("Toplevel `Documents` node not found")
+            }
+            StructureError::MissingObjectsNode => f.write_str("Toplevel `Objects` node not found"),
         }
     }
 }
 
-impl From<TreeLoadError> for LoadErrorImpl {
-    fn from(e: TreeLoadError) -> Self {
-        LoadErrorImpl::Tree(e)
+impl error::Error for StructureError {}
+
+impl From<StructureError> for LoadError {
+    fn from(e: StructureError) -> Self {
+        Self::new(e)
     }
 }

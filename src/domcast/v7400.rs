@@ -6,4 +6,5 @@ pub use self::{
 };
 
 mod document;
-mod error;
+pub(crate) mod error;
+pub mod object;

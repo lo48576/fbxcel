@@ -1,6 +1,6 @@
 //! FBX DOM.
 
-use crate::tree::v7400::Tree;
+use crate::{domcast::v7400::object::ObjectsCache, tree::v7400::Tree};
 
 pub use self::loader::Loader;
 
@@ -11,6 +11,8 @@ mod loader;
 pub struct Document {
     /// FBX data tree.
     tree: Tree,
+    /// Objects cache.
+    objects: ObjectsCache,
 }
 
 impl AsRef<Tree> for Document {
