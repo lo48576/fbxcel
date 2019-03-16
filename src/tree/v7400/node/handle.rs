@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// Node handle.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct NodeHandle<'a> {
     /// The tree the node belongs to.
     tree: &'a Tree,
