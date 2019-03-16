@@ -68,6 +68,11 @@ impl Tree {
             .unwrap_or_else(|| panic!("Unresolvable node name symbol: {:?}", sym))
     }
 
+    /// Returns node name symbol if available.
+    pub(crate) fn node_name_sym(&self, name: &str) -> Option<NodeNameSym> {
+        self.node_names.get(name)
+    }
+
     /// Checks whether or not the given node ID is used in the tree.
     pub(crate) fn contains_node(&self, node_id: NodeId) -> bool {
         self.arena.get(node_id.raw()).is_some()
