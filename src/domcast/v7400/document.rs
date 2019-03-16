@@ -15,6 +15,18 @@ pub struct Document {
     objects: ObjectsCache,
 }
 
+impl Document {
+    /// Returns a reference to the tree.
+    pub fn tree(&self) -> &Tree {
+        &self.tree
+    }
+
+    /// Returns a reference to the objects cache.
+    pub(crate) fn objects(&self) -> &ObjectsCache {
+        &self.objects
+    }
+}
+
 impl AsRef<Tree> for Document {
     fn as_ref(&self) -> &Tree {
         &self.tree

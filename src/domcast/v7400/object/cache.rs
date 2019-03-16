@@ -30,6 +30,16 @@ pub(crate) struct ObjectsCache {
 }
 
 impl ObjectsCache {
+    /// Returns object node ID corresponding to the given object ID.
+    pub(crate) fn node_id(&self, obj_id: ObjectId) -> Option<ObjectNodeId> {
+        self.obj_id_to_node_id.get(&obj_id).cloned()
+    }
+
+    /// Returns a reference to the object metadata.
+    pub(crate) fn meta_from_node_id(&self, node_id: ObjectNodeId) -> Option<&ObjectMeta> {
+        self.meta.get(&node_id)
+    }
+
     /// Creates a new `ObjectsCache` from the given FBX data tree.
     pub(crate) fn from_tree(tree: &Tree) -> Result<Self, LoadError> {
         debug!("Loading objects cache");
@@ -39,6 +49,17 @@ impl ObjectsCache {
             objects_cache.obj_id_to_node_id.len()
         );
         Ok(objects_cache)
+    }
+
+    /// Resolves object class and subclass to string.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given symbol is not registered in the internal table.
+    pub(crate) fn resolve_class_string(&self, sym: ObjectClassSym) -> &str {
+        self.class_strings
+            .resolve(sym)
+            .unwrap_or_else(|| panic!("Unresolvable class name symbol: sym={:?}", sym))
     }
 }
 

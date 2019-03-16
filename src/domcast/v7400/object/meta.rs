@@ -53,4 +53,24 @@ impl ObjectMeta {
             subclass,
         }
     }
+
+    /// Returns object ID.
+    pub(crate) fn object_id(&self) -> ObjectId {
+        self.id
+    }
+
+    /// Returns object name.
+    pub(crate) fn name(&self) -> Option<&str> {
+        self.name.as_ref().map(|s| s.as_str())
+    }
+
+    /// Returns object class symbol.
+    pub(crate) fn class_sym(&self) -> ObjectClassSym {
+        self.class
+    }
+
+    /// Returns object subclass symbol.
+    pub(crate) fn subclass_sym(&self) -> ObjectClassSym {
+        self.subclass
+    }
 }
