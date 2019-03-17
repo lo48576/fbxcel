@@ -6,7 +6,7 @@ use log::{debug, trace};
 use string_interner::StringInterner;
 
 use crate::{
-    domcast::v7400::{
+    dom::v7400::{
         error::{
             load::{LoadError, StructureError},
             object::ObjectMetaError,

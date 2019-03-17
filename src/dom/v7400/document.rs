@@ -1,7 +1,7 @@
 //! FBX DOM.
 
 use crate::{
-    domcast::v7400::{
+    dom::v7400::{
         connection::ConnectionsCache,
         object::{scene::SceneHandle, ObjectsCache},
     },

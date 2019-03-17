@@ -15,7 +15,7 @@ all-features = true
 [features]
 default = []
 
-domcast = ["failure", "tree"]
+dom = ["failure", "tree"]
 tree = ["indextree", "string-interner"]
 
 [dependencies]
@@ -37,8 +37,8 @@ travis-ci = { repository = "lo48576/fbxcel" }
 name = "dump-pull-parser-events"
 
 [[example]]
-name = "load-domcast-tree"
-required-features = ["domcast"]
+name = "load-dom"
+required-features = ["dom"]
 
 [[example]]
 name = "load-tree"

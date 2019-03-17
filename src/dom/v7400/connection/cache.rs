@@ -6,7 +6,7 @@ use log::trace;
 use string_interner::StringInterner;
 
 use crate::{
-    domcast::v7400::{
+    dom::v7400::{
         connection::{ConnectedNodeType, Connection, ConnectionIndex, ConnectionLabelSym},
         error::{
             connection::ConnectionError,

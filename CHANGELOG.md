@@ -2,20 +2,16 @@
 
 ## [Unreleased]
 
-* `dom` module is removed.
-* Add `domcast` module.
-    + This is a new DOM feature.
-    + This can be enabled with `domcast` feature.
+* `dom` module is completely rewritten.
+    + **No compatibility** with old (0.2.0) `dom` module.
 * Add `tree` module.
     + This can be enabled with `tree` feature.
 
 ### Breaking changes
-* `dom` module is removed.
+* `dom` module is completely rewritten.
+    + **No compatibility** with old (0.2.0) `dom` module.
 
 ### Added
-* `domcast` module is added.
-    + This is a new DOM feature.
-    + `dom` feature and module will be replaced with this.
 * Add `tree` module.
     + This can be enabled with `tree` feature.
     + `tree::v7400::Tree` manages raw FBX tree data, but do not touch their

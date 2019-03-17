@@ -1,6 +1,6 @@
 //! `Document` node.
 
-use crate::domcast::v7400::object::{ObjectHandle, ObjectId};
+use crate::dom::v7400::object::{ObjectHandle, ObjectId};
 
 use failure::{format_err, Error};
 

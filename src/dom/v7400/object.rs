@@ -1,7 +1,7 @@
 //! Objects-related stuff.
 
 use crate::{
-    domcast::v7400::{connection::Connection, Document},
+    dom::v7400::{connection::Connection, Document},
     tree::v7400::{NodeHandle, NodeId},
 };
 

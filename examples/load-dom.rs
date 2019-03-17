@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use fbxcel::{domcast, pull_parser};
+use fbxcel::{dom, pull_parser};
 
 pub fn main() {
     env_logger::init();
@@ -10,7 +10,7 @@ pub fn main() {
     let path = match std::env::args_os().nth(1) {
         Some(v) => PathBuf::from(v),
         None => {
-            eprintln!("Usage: load-domcast-tree <FBX_FILE>");
+            eprintln!("Usage: load-dom <FBX_FILE>");
             std::process::exit(1);
         }
     };
@@ -36,7 +36,7 @@ pub fn main() {
                 eprintln!("WARNING: {} (pos={:?})", w, pos);
                 Ok(())
             });
-            let doc = domcast::v7400::Loader::new()
+            let doc = dom::v7400::Loader::new()
                 .load_from_parser(&mut parser)
                 .expect("Failed to load FBX DOM");
             println!("Loaded FBX DOM successfully");

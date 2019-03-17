@@ -2,7 +2,7 @@
 
 use string_interner::{self, Sym};
 
-use crate::domcast::v7400::object::ObjectId;
+use crate::dom::v7400::object::ObjectId;
 
 /// Symbol for interned object class and subclass.
 // This is an opaque-typedef pattern.

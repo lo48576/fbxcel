@@ -3,7 +3,7 @@
 use std::{error, fmt};
 
 use crate::{
-    domcast::v7400::{object::ObjectId, LoadError},
+    dom::v7400::{object::ObjectId, LoadError},
     low::v7400::AttributeType,
     tree::v7400::NodeId,
 };

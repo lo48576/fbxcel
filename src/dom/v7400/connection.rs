@@ -2,7 +2,7 @@
 
 use string_interner::{self, Sym};
 
-use crate::domcast::v7400::object::ObjectId;
+use crate::dom::v7400::object::ObjectId;
 
 pub(crate) use self::cache::ConnectionsCache;
 

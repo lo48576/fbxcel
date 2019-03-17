@@ -3,7 +3,7 @@
 use log::trace;
 
 use crate::{
-    domcast::v7400::{connection::ConnectionsCache, object::ObjectsCache, Document, LoadError},
+    dom::v7400::{connection::ConnectionsCache, object::ObjectsCache, Document, LoadError},
     pull_parser::{v7400::Parser, ParserSource},
     tree::v7400::{Loader as TreeLoader, Tree},
 };
