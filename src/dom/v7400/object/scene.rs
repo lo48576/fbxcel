@@ -1,8 +1,8 @@
 //! `Document` node.
 
-use crate::dom::v7400::object::{ObjectHandle, ObjectId};
-
 use failure::{format_err, Error};
+
+use crate::dom::v7400::object::{ObjectHandle, ObjectId};
 
 /// `Document` node (`Scene` object) handle.
 ///

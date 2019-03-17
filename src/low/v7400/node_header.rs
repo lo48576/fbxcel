@@ -1,8 +1,9 @@
 //! Node header.
 
-use crate::pull_parser::v7400::{FromParser, Parser};
-use crate::pull_parser::Error as ParserError;
-use crate::pull_parser::ParserSource;
+use crate::pull_parser::{
+    v7400::{FromParser, Parser},
+    Error as ParserError, ParserSource,
+};
 
 /// Node header.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

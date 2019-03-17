@@ -2,9 +2,10 @@
 
 use std::io;
 
-use crate::pull_parser::v7400::attribute::visitor::VisitAttribute;
-use crate::pull_parser::v7400::attribute::Attributes;
-use crate::pull_parser::{ParserSource, Result};
+use crate::pull_parser::{
+    v7400::attribute::{visitor::VisitAttribute, Attributes},
+    ParserSource, Result,
+};
 
 /// Creates size hint from the given attributes and visitors.
 fn make_size_hint_for_attrs<R, V>(

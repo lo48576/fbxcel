@@ -1,10 +1,8 @@
 //! Invalid operation.
 
-use std::error;
-use std::fmt;
+use std::{error, fmt};
 
-use crate::low::FbxVersion;
-use crate::pull_parser::ParserVersion;
+use crate::{low::FbxVersion, pull_parser::ParserVersion};
 
 /// Invalid operation.
 #[derive(Debug)]

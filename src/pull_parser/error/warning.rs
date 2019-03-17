@@ -1,7 +1,6 @@
 //! Invalid operation.
 
-use std::error;
-use std::fmt;
+use std::{error, fmt};
 
 /// Warning.
 #[derive(Debug)]

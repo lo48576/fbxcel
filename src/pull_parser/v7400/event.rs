@@ -1,8 +1,12 @@
 //! Parser event.
 
-use crate::low::v7400::FbxFooter;
-use crate::pull_parser::v7400::{Attributes, Parser};
-use crate::pull_parser::{ParserSource, Result};
+use crate::{
+    low::v7400::FbxFooter,
+    pull_parser::{
+        v7400::{Attributes, Parser},
+        ParserSource, Result,
+    },
+};
 
 /// Parser event.
 #[derive(Debug)]

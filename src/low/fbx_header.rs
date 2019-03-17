@@ -1,14 +1,11 @@
 //! FBX binary header.
 
-use std::error;
-use std::fmt;
-use std::io;
+use std::{error, fmt, io};
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use log::info;
 
-use crate::low::FbxVersion;
-use crate::pull_parser::ParserVersion;
+use crate::{low::FbxVersion, pull_parser::ParserVersion};
 
 /// Magic binary length.
 const MAGIC_LEN: usize = 23;

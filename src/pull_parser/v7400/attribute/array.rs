@@ -1,14 +1,14 @@
 //! Array-type node attributes.
 
-use std::io;
-use std::marker::PhantomData;
+use std::{io, marker::PhantomData};
 
 use byteorder::LittleEndian;
 use libflate::zlib::Decoder as ZlibDecoder;
 
-use crate::low::v7400::ArrayAttributeEncoding;
-use crate::pull_parser::error::DataError;
-use crate::pull_parser::Result;
+use crate::{
+    low::v7400::ArrayAttributeEncoding,
+    pull_parser::{error::DataError, Result},
+};
 
 /// Attribute stream decoder.
 // `io::BufRead` is not implemented for `ZlibDecoder`.

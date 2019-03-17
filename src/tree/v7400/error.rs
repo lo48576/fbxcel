@@ -1,7 +1,6 @@
 //! Error types.
 
-use std::error;
-use std::fmt;
+use std::{error, fmt};
 
 use crate::pull_parser::Error as ParserError;
 

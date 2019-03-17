@@ -1,17 +1,21 @@
 //! Parser for FBX 7.4 or later.
 
-use std::fmt;
-use std::io;
+use std::{fmt, io};
 
 use log::debug;
 
-use crate::low::v7400::{FbxFooter, NodeHeader};
-use crate::low::{FbxHeader, FbxVersion};
-use crate::pull_parser::error::{DataError, OperationError};
-use crate::pull_parser::reader::{PlainSource, SeekableSource};
-use crate::pull_parser::v7400::{Event, FromParser, StartNode};
-use crate::pull_parser::SyntacticPosition;
-use crate::pull_parser::{Error, ParserSource, ParserVersion, Result, Warning};
+use crate::{
+    low::{
+        v7400::{FbxFooter, NodeHeader},
+        FbxHeader, FbxVersion,
+    },
+    pull_parser::{
+        error::{DataError, OperationError},
+        reader::{PlainSource, SeekableSource},
+        v7400::{Event, FromParser, StartNode},
+        Error, ParserSource, ParserVersion, Result, SyntacticPosition, Warning,
+    },
+};
 
 /// Warning handler type.
 type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;

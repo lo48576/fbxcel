@@ -2,9 +2,7 @@
 //!
 //! This is mainly syntax and low-level structure error.
 
-use std::error;
-use std::fmt;
-use std::string::FromUtf8Error;
+use std::{error, fmt, string::FromUtf8Error};
 
 /// Data error.
 #[derive(Debug)]

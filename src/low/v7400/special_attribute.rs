@@ -2,8 +2,7 @@
 
 use std::io;
 
-use crate::pull_parser::v7400::FromReader;
-use crate::pull_parser::Error as ParserError;
+use crate::pull_parser::{v7400::FromReader, Error as ParserError};
 
 /// A header type for array-type attributes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

@@ -3,11 +3,14 @@
 use byteorder::{ByteOrder, LittleEndian};
 use log::debug;
 
-use crate::low::FbxVersion;
-use crate::pull_parser::error::DataError;
-use crate::pull_parser::v7400::{FromParser, Parser};
-use crate::pull_parser::Error as ParserError;
-use crate::pull_parser::{ParserSource, SyntacticPosition, Warning};
+use crate::{
+    low::FbxVersion,
+    pull_parser::{
+        error::DataError,
+        v7400::{FromParser, Parser},
+        Error as ParserError, ParserSource, SyntacticPosition, Warning,
+    },
+};
 
 /// FBX 7.4 footer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

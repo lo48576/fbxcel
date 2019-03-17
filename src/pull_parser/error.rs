@@ -2,15 +2,15 @@
 //!
 //! Types in this module will be used among multiple versions of parsers.
 
-use std::error;
-use std::fmt;
-use std::io;
+use std::{error, fmt, io};
 
 use crate::pull_parser::SyntacticPosition;
 
-pub use self::data::{Compression, DataError};
-pub use self::operation::OperationError;
-pub use self::warning::Warning;
+pub use self::{
+    data::{Compression, DataError},
+    operation::OperationError,
+    warning::Warning,
+};
 
 mod data;
 mod operation;

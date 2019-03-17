@@ -2,9 +2,11 @@
 
 use std::io;
 
-use crate::pull_parser::error::{Compression, DataError};
-use crate::pull_parser::v7400::FromReader;
-use crate::pull_parser::Error as ParserError;
+use crate::pull_parser::{
+    error::{Compression, DataError},
+    v7400::FromReader,
+    Error as ParserError,
+};
 
 /// Array attribute encoding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
