@@ -2,8 +2,6 @@
 #![warn(missing_docs)]
 #![warn(clippy::missing_docs_in_private_items)]
 
-#[cfg(feature = "dom")]
-pub mod dom;
 #[cfg(feature = "domcast")]
 pub mod domcast;
 pub mod low;
