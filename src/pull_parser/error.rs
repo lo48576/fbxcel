@@ -62,7 +62,7 @@ impl Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.repr.error.fmt(f)
     }
 }
@@ -174,7 +174,7 @@ impl error::Error for ErrorContainer {
 }
 
 impl fmt::Display for ErrorContainer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ErrorContainer::Data(e) => write!(f, "Data error: {}", e),
             ErrorContainer::Io(e) => write!(f, "I/O error: {}", e),

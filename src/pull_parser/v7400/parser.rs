@@ -433,7 +433,7 @@ impl<R: ParserSource> Parser<R> {
 }
 
 impl<R: fmt::Debug> fmt::Debug for Parser<R> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Parser")
             .field("state", &self.state)
             .field("reader", &self.reader)

@@ -18,7 +18,7 @@ pub enum LoadError {
 }
 
 impl fmt::Display for LoadError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LoadError::BadParser => f.write_str("Attempt to use a bad parser"),
             LoadError::Parser(e) => write!(f, "Parser error: {}", e),

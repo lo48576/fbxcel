@@ -18,7 +18,7 @@ pub enum OperationError {
 impl error::Error for OperationError {}
 
 impl fmt::Display for OperationError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             OperationError::AlreadyAborted => {
                 write!(f, "Attempt to parse more data while the parsing is aborted")

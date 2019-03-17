@@ -16,7 +16,7 @@ impl LoadError {
 }
 
 impl fmt::Display for LoadError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
     }
 }
@@ -46,7 +46,7 @@ pub(crate) enum StructureError {
 }
 
 impl fmt::Display for StructureError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             StructureError::MissingConnectionsNode => {
                 f.write_str("Toplevel `Connections` node not found")

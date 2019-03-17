@@ -22,7 +22,7 @@ pub enum HeaderError {
 impl error::Error for HeaderError {}
 
 impl fmt::Display for HeaderError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             HeaderError::Io(e) => e.fmt(f),
             HeaderError::MagicNotDetected => f.write_str("FBX magic binary is not detected"),

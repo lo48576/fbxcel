@@ -40,7 +40,7 @@ pub(crate) enum ConnectionError {
 }
 
 impl fmt::Display for ConnectionError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ConnectionError::DuplicateConnection(
                 source,

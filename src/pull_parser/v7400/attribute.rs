@@ -21,7 +21,7 @@ pub mod visitor;
 
 /// Node attributes reader.
 #[derive(Debug)]
-pub struct Attributes<'a, R: 'a> {
+pub struct Attributes<'a, R> {
     /// Total number of attributes of the current node.
     total_count: u64,
     /// Rest number of attributes of the current node.

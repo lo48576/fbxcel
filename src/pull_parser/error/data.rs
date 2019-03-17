@@ -56,7 +56,7 @@ impl error::Error for DataError {
 }
 
 impl fmt::Display for DataError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DataError::BrokenFbxFooter => write!(f, "FBX footer is broken"),
             DataError::BrokenCompression(codec, e) => write!(

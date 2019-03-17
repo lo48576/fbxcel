@@ -28,7 +28,7 @@ pub(crate) enum ObjectMetaError {
 }
 
 impl fmt::Display for ObjectMetaError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ObjectMetaError::DuplicateObjectId(obj, node1, node2) => write!(
                 f,

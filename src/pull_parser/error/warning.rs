@@ -24,7 +24,7 @@ pub enum Warning {
 impl error::Error for Warning {}
 
 impl fmt::Display for Warning {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Warning::EmptyNodeName => write!(f, "Node name is empty"),
             Warning::IncorrectBooleanRepresentation => {
