@@ -43,7 +43,7 @@ impl ObjectId {
     }
 
     /// Creates a new `ObjectHandle`.
-    pub fn to_object_handle(self, doc: &Document) -> ObjectHandle<'_> {
+    pub fn to_object_handle(self, doc: &Document) -> Option<ObjectHandle<'_>> {
         ObjectHandle::from_object_id(self, doc)
     }
 }
@@ -80,25 +80,19 @@ impl<'a> ObjectHandle<'a> {
 
     /// Creates a new `ObjectHandle` from the given object node ID.
     ///
-    /// # Panics
-    ///
-    /// This may panic if the object node with the given ID does not exist in
-    /// the given document.
-    fn from_object_id(obj_id: ObjectId, doc: &'a Document) -> Self {
-        let node_id = doc
-            .objects()
-            .node_id(obj_id)
-            .unwrap_or_else(|| panic!("No corresponding object node: object_id={:?}", obj_id));
+    /// Returns `None` if the given object ID has no corresponding FBX node.
+    fn from_object_id(obj_id: ObjectId, doc: &'a Document) -> Option<Self> {
+        let node_id = doc.objects().node_id(obj_id)?;
         let object_meta = doc
             .objects()
             .meta_from_node_id(node_id)
             .expect("Should never fail: object cache should be consistent");
         assert_eq!(obj_id, object_meta.object_id(), "Object ID mismatch");
-        Self {
+        Some(Self {
             node_id,
             object_meta,
             doc,
-        }
+        })
     }
 
     /// Returns object node ID.
