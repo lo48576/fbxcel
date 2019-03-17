@@ -1,44 +1,67 @@
-//! FBX v7400 DOM load error.
+//! FBX DOM load error.
 
-use std::error;
-use std::fmt;
+use std::{error, fmt};
 
-use crate::pull_parser::Error as ParserError;
+use crate::tree::v7400::LoadError as TreeLoadError;
 
-/// Error on DOM core load.
+/// FBX DOM load error.
 #[derive(Debug)]
-pub enum CoreLoadError {
-    /// Bad parser.
-    ///
-    /// This error will be mainly caused by user logic error.
-    BadParser,
-    /// Parser error.
-    Parser(ParserError),
-    #[doc(hidden)]
-    __Nonexhaustive,
+pub struct LoadError(Box<dyn error::Error + Send + Sync + 'static>);
+
+impl LoadError {
+    /// Creates a new `LoadError`.
+    pub(crate) fn new(e: impl Into<Box<dyn error::Error + Send + Sync + 'static>>) -> Self {
+        Self(e.into())
+    }
 }
 
-impl fmt::Display for CoreLoadError {
+impl fmt::Display for LoadError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl error::Error for LoadError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        Some(&*self.0)
+    }
+}
+
+impl From<TreeLoadError> for LoadError {
+    fn from(e: TreeLoadError) -> Self {
+        Self::new(e)
+    }
+}
+
+/// FBX DOM structure error.
+#[derive(Debug)]
+pub(crate) enum StructureError {
+    /// Toplevel `Connections` node not found.
+    MissingConnectionsNode,
+    /// Toplevel `Documents` node not found.
+    MissingDocumentsNode,
+    /// Toplevel `Objects` node not found.
+    MissingObjectsNode,
+}
+
+impl fmt::Display for StructureError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            CoreLoadError::BadParser => f.write_str("Bad parser is given"),
-            CoreLoadError::Parser(e) => write!(f, "Parser error: {}", e),
-            CoreLoadError::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
+            StructureError::MissingConnectionsNode => {
+                f.write_str("Toplevel `Connections` node not found")
+            }
+            StructureError::MissingDocumentsNode => {
+                f.write_str("Toplevel `Documents` node not found")
+            }
+            StructureError::MissingObjectsNode => f.write_str("Toplevel `Objects` node not found"),
         }
     }
 }
 
-impl error::Error for CoreLoadError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        match self {
-            CoreLoadError::Parser(e) => Some(e),
-            _ => None,
-        }
-    }
-}
+impl error::Error for StructureError {}
 
-impl From<ParserError> for CoreLoadError {
-    fn from(e: ParserError) -> Self {
-        CoreLoadError::Parser(e)
+impl From<StructureError> for LoadError {
+    fn from(e: StructureError) -> Self {
+        Self::new(e)
     }
 }

@@ -1,221 +1,209 @@
-//! Object.
+//! Objects-related stuff.
 
-use log::trace;
-use string_interner::StringInterner;
+use crate::{
+    dom::v7400::{connection::Connection, Document},
+    tree::v7400::{NodeHandle, NodeId},
+};
 
-use crate::dom::error::StructureError;
-use crate::dom::v7400::{Core, Document, DowncastId, NodeId, StrSym, ValidateId};
-use crate::pull_parser::v7400::attribute::DirectAttributeValue;
+pub(crate) use self::{
+    cache::ObjectsCache,
+    meta::{ObjectClassSym, ObjectMeta},
+};
 
-use self::connection::Connection;
-pub(crate) use self::graph::{ObjectsGraph, ObjectsGraphBuilder};
-pub use self::model::ModelNodeId;
-pub use self::scene::SceneNodeId;
-
-pub mod connection;
-mod graph;
-pub mod model;
+mod cache;
+mod meta;
 pub mod scene;
 
-/// Metadata of object node.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ObjectMeta {
-    /// Object ID.
-    id: ObjectId,
-    /// Name (if exists).
-    name: Option<String>,
-    /// Class.
-    class: StrSym,
-    /// Subclass.
-    subclass: StrSym,
-}
-
-impl ObjectMeta {
-    /// Returns ID.
-    pub fn id(&self) -> ObjectId {
-        self.id
-    }
-
-    /// Returns object name.
-    pub fn name(&self) -> Option<&str> {
-        self.name.as_ref().map(|v| v.as_ref())
-    }
-
-    /// Returns object class.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the data is stored in the given document.
-    pub fn class<'a>(&self, core: &'a impl AsRef<Core>) -> &'a str {
-        core.as_ref()
-            .string(self.class)
-            .expect("The `ObjectMeta` is not stored in the given document")
-    }
-
-    /// Returns object subclass.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the data is stored in the given document.
-    pub fn subclass<'a>(&self, core: &'a impl AsRef<Core>) -> &'a str {
-        core.as_ref()
-            .string(self.subclass)
-            .expect("The `ObjectMeta` is not stored in the given document")
-    }
-
-    /// Creates `ObjectMeta` from the given attributes.
-    pub(crate) fn from_attributes(
-        attrs: &[DirectAttributeValue],
-        strings: &mut StringInterner<StrSym>,
-    ) -> Result<Self, StructureError> {
-        trace!("Loading object metadata");
-
-        // Get ID.
-        let id = match attrs.get(0) {
-            Some(DirectAttributeValue::I64(v)) => ObjectId::new(*v),
-            Some(v) => {
-                return Err(StructureError::unexpected_attribute_type(
-                    Some(0),
-                    "`i64`",
-                    format!("{:?}", v.type_()),
-                ));
-            }
-            None => return Err(StructureError::attribute_not_found(Some(0))),
-        };
-        trace!("Got object id: {:?}", id);
-
-        // Get name and class.
-        let (name, class) = match attrs.get(1) {
-            Some(DirectAttributeValue::String(name_class)) => {
-                name_class.find("\u{0}\u{1}").map_or_else(
-                    || (None, ""),
-                    |sep_pos| {
-                        (
-                            Some(name_class[0..sep_pos].to_owned()),
-                            &name_class[sep_pos + 2..],
-                        )
-                    },
-                )
-            }
-            Some(v) => {
-                return Err(StructureError::unexpected_attribute_type(
-                    Some(1),
-                    "string",
-                    format!("{:?}", v.type_()),
-                ));
-            }
-            None => return Err(StructureError::attribute_not_found(Some(1))),
-        };
-        trace!("Got name and class: name={:?}, class={:?}", name, class);
-        let class = strings.get_or_intern(class);
-
-        // Get subclass.
-        let subclass = match attrs.get(2) {
-            Some(DirectAttributeValue::String(v)) => {
-                trace!("Got subclass: {:?}", v);
-                strings.get_or_intern(v.as_ref())
-            }
-            Some(v) => {
-                return Err(StructureError::unexpected_attribute_type(
-                    Some(2),
-                    "string",
-                    format!("{:?}", v.type_()),
-                ));
-            }
-            None => return Err(StructureError::attribute_not_found(Some(2))),
-        };
-
-        trace!("Successfully loaded object metadata");
-
-        Ok(Self {
-            id,
-            name,
-            class,
-            subclass,
-        })
-    }
-}
-
-define_node_id_type! {
-    /// Object node ID.
-    ObjectNodeId {
-        ancestors { NodeId }
-    }
-}
-
-impl ValidateId for ObjectNodeId {
-    fn validate_id(self, doc: &Document) -> bool {
-        doc.parsed_node_data().object_meta().contains_key(&self)
-    }
-}
+/// Node ID of a object node.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ObjectNodeId(NodeId);
 
 impl ObjectNodeId {
-    /// Returns the object meta data.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the object node with the ID is stored in the given document.
-    pub fn meta<'a>(&self, doc: &'a Document) -> &'a ObjectMeta {
-        doc.parsed_node_data()
-            .object_meta()
-            .get(self)
-            .expect("The object node with the `ObjectNodeId` is not stored in the given document")
+    /// Creates a new `ObjectNodeId`.
+    pub(crate) fn new(node_id: NodeId) -> Self {
+        Self(node_id)
     }
 
-    /// Returns an iterator of the connections.
-    ///
-    /// Edges are iterated in same order as raw FBX structure.
-    pub fn sources(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        self.meta(doc).id().sources(doc)
+    /// Creates a new `ObjectHandle`.
+    pub fn to_object_handle(self, doc: &Document) -> ObjectHandle<'_> {
+        ObjectHandle::from_object_node_id(self, doc)
     }
 
-    /// Returns an iterator of the connections.
-    ///
-    /// Edges are iterated in same order as raw FBX structure.
-    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        self.meta(doc).id().destinations(doc)
-    }
+    //pub fn source_objects(self, doc: &Document) -> impl Iterator<Item = ConnectedObject<'_>>
 }
 
-impl DowncastId<ObjectNodeId> for ObjectId {
-    fn downcast(self, doc: &Document) -> Option<ObjectNodeId> {
-        trace!("Trying to downcast {:?} to `ObjectNodeId`", self);
-
-        let result = doc.object_id_to_object_node_id(self);
-        match result {
-            Some(id) => trace!("Successfully downcasted {:?} to {:?}", self, id),
-            None => trace!(
-                "Downcast failed: {:?} is not convertible to `ObjectNodeId`",
-                self
-            ),
-        }
-        result
+impl From<ObjectNodeId> for NodeId {
+    fn from(v: ObjectNodeId) -> Self {
+        v.0
     }
 }
 
 /// Object ID.
-///
-/// This is not object node ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ObjectId(i64);
 
 impl ObjectId {
     /// Creates a new `ObjectId`.
-    pub(crate) fn new(v: i64) -> Self {
-        ObjectId(v)
+    pub(crate) fn new(id: i64) -> Self {
+        Self(id)
     }
 
-    /// Returns an iterator of the connections.
-    ///
-    /// Edges are iterated in same order as raw FBX structure.
-    pub fn sources(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        doc.objects_graph().incoming_edges(self)
+    /// Creates a new `ObjectHandle`.
+    pub fn to_object_handle(self, doc: &Document) -> Option<ObjectHandle<'_>> {
+        ObjectHandle::from_object_id(self, doc)
     }
 
-    /// Returns an iterator of the connections.
+    /// Returns an iterator of destination objects and connection labels.
+    pub fn destination_objects(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = ConnectedObjectHandle<'_>> {
+        doc.connections()
+            .outgoing_connections(self)
+            .map(move |conn| ConnectedObjectHandle::new(conn.destination_id(), conn, doc))
+    }
+
+    /// Returns an iterator of source objects and connection labels.
+    pub fn source_objects(self, doc: &Document) -> impl Iterator<Item = ConnectedObjectHandle<'_>> {
+        doc.connections()
+            .incoming_connections(self)
+            .map(move |conn| ConnectedObjectHandle::new(conn.source_id(), conn, doc))
+    }
+}
+
+/// Object handle.
+#[derive(Debug, Clone, Copy)]
+pub struct ObjectHandle<'a> {
+    /// Node ID.
+    node_id: ObjectNodeId,
+    /// Object metadata.
+    object_meta: &'a ObjectMeta,
+    /// Document.
+    doc: &'a Document,
+}
+
+impl<'a> ObjectHandle<'a> {
+    /// Creates a new `ObjectHandle` from the given object node ID.
     ///
-    /// Edges are iterated in same order as raw FBX structure.
-    pub fn destinations(self, doc: &Document) -> impl Iterator<Item = &Connection> {
-        doc.objects_graph().outgoing_edges(self)
+    /// # Panics
+    ///
+    /// This may panic if the object node with the given ID does not exist in
+    /// the given document.
+    fn from_object_node_id(node_id: ObjectNodeId, doc: &'a Document) -> Self {
+        let object_meta = doc
+            .objects()
+            .meta_from_node_id(node_id)
+            .unwrap_or_else(|| panic!("No corresponding object metadata: node_id={:?}", node_id));
+        Self {
+            node_id,
+            object_meta,
+            doc,
+        }
+    }
+
+    /// Creates a new `ObjectHandle` from the given object node ID.
+    ///
+    /// Returns `None` if the given object ID has no corresponding FBX node.
+    fn from_object_id(obj_id: ObjectId, doc: &'a Document) -> Option<Self> {
+        let node_id = doc.objects().node_id(obj_id)?;
+        let object_meta = doc
+            .objects()
+            .meta_from_node_id(node_id)
+            .expect("Should never fail: object cache should be consistent");
+        assert_eq!(obj_id, object_meta.object_id(), "Object ID mismatch");
+        Some(Self {
+            node_id,
+            object_meta,
+            doc,
+        })
+    }
+
+    /// Returns object node ID.
+    pub fn object_node_id(&self) -> ObjectNodeId {
+        self.node_id
+    }
+
+    /// Returns object ID.
+    pub fn object_id(&self) -> ObjectId {
+        self.object_meta.object_id()
+    }
+
+    /// Returns a reference to the document.
+    pub fn document(&self) -> &'a Document {
+        self.doc
+    }
+
+    /// Returns the node handle.
+    pub fn node(&self) -> NodeHandle<'a> {
+        let node_id: NodeId = self.node_id.into();
+        node_id.to_handle(self.doc.tree())
+    }
+
+    /// Returns object name.
+    pub fn name(&self) -> Option<&'a str> {
+        self.object_meta.name()
+    }
+
+    /// Returns object class.
+    pub fn class(&self) -> &'a str {
+        self.doc
+            .objects()
+            .resolve_class_string(self.object_meta.class_sym())
+    }
+
+    /// Returns object subclass.
+    pub fn subclass(&self) -> &'a str {
+        self.doc
+            .objects()
+            .resolve_class_string(self.object_meta.subclass_sym())
+    }
+
+    /// Returns an iterator of destination objects and connection labels.
+    pub fn destination_objects(&self) -> impl Iterator<Item = ConnectedObjectHandle<'a>> {
+        self.object_id().destination_objects(self.doc)
+    }
+
+    /// Returns an iterator of source objects and connection labels.
+    pub fn source_objects(&self) -> impl Iterator<Item = ConnectedObjectHandle<'a>> {
+        self.object_id().source_objects(self.doc)
+    }
+}
+
+/// Object handle (or ID) for connected object.
+#[derive(Debug, Clone, Copy)]
+pub struct ConnectedObjectHandle<'a> {
+    /// Connected object.
+    object_id: ObjectId,
+    /// Connection.
+    connection: &'a Connection,
+    /// Document.
+    doc: &'a Document,
+}
+
+impl<'a> ConnectedObjectHandle<'a> {
+    /// Creates a new `ConnectedObjectHandle`.
+    fn new(object_id: ObjectId, connection: &'a Connection, doc: &'a Document) -> Self {
+        Self {
+            object_id,
+            connection,
+            doc,
+        }
+    }
+
+    /// Returns object ID.
+    pub fn object_id(&self) -> ObjectId {
+        self.object_id
+    }
+
+    /// Returns object handle if corresponding object node is available.
+    pub fn object_handle(&self) -> Option<ObjectHandle<'a>> {
+        self.object_id.to_object_handle(self.doc)
+    }
+
+    /// Returns connection label if available.
+    pub fn label(&self) -> Option<&'a str> {
+        self.connection
+            .label_sym()
+            .map(|sym| self.doc.connections().resolve_label(sym))
     }
 }

@@ -1,69 +1,72 @@
-//! Scene node.
+//! `Document` node.
 
-use log::trace;
+use crate::dom::v7400::object::{ObjectHandle, ObjectId};
 
-use crate::dom::error::{LoadError, StructureError};
-use crate::dom::v7400::object::{ObjectId, ObjectNodeId};
-use crate::dom::v7400::{Core, Document, NodeId, ValidateId};
+use failure::{format_err, Error};
 
-define_node_id_type! {
-    /// Scene node ID.
-    SceneNodeId {
-        ancestors { ObjectNodeId, NodeId }
+/// `Document` node (`Scene` object) handle.
+///
+/// `Document` node (`Scene` object) contains root object ID of a scene.
+#[derive(Debug, Clone, Copy)]
+pub struct SceneHandle<'a> {
+    /// Object handle.
+    object: ObjectHandle<'a>,
+}
+
+impl<'a> SceneHandle<'a> {
+    /// Creates a new `SceneHandle` if the given object is `Document` node.
+    pub(crate) fn new(object: ObjectHandle<'a>) -> Option<Self> {
+        let is_document_node = object
+            .document()
+            .objects()
+            .document_nodes()
+            .contains(&object.object_node_id());
+        if !is_document_node {
+            return None;
+        }
+        Some(Self { object })
     }
-}
 
-impl ValidateId for SceneNodeId {
-    fn validate_id(self, doc: &Document) -> bool {
-        doc.parsed_node_data().scenes().contains_key(&self)
-    }
-}
-
-/// Scene node data.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct SceneNodeData {
-    /// Root object ID.
-    root_object: ObjectId,
-}
-
-impl SceneNodeData {
-    /// Loads the scene node data.
-    ///
-    /// This should be called for `Scene` node.
-    pub(crate) fn load(obj_node_id: ObjectNodeId, core: &Core) -> Result<Self, LoadError> {
-        trace!("Loading scene node data from object node {:?}", obj_node_id);
-
-        let child_root_node_id = NodeId::from(obj_node_id)
-            .children_by_name(core, "RootNode")
+    /// Returns the root object ID of the scene.
+    pub fn root_object_id(&self) -> Result<ObjectId, Error> {
+        self.object
+            .node()
+            .children_by_name("RootNode")
             .next()
-            .ok_or_else(|| {
-                StructureError::node_not_found("`RootNode`").with_context_node((core, obj_node_id))
-            })?;
-        trace!("Found child node `RootNode`: node={:?}", child_root_node_id);
-
-        let root_object = child_root_node_id
-            .node(core)
+            .ok_or_else(|| format_err!("`RootNode` not found for scene object node"))?
             .attributes()
             .get(0)
-            .ok_or_else(|| {
-                StructureError::attribute_not_found(Some(0))
-                    .with_context_node((core, child_root_node_id))
-            })?
+            .ok_or_else(|| format_err!("Attributes not found for `RootNode`"))?
             .get_i64_or_type()
             .map(ObjectId::new)
             .map_err(|ty| {
-                StructureError::unexpected_attribute_type(Some(0), "`i64`", format!("{:?}", ty))
-                    .with_context_node((core, child_root_node_id))
-            })?;
-        trace!("Got root object id: obj_id={:?}", root_object);
-
-        trace!("Successfully loaded scene node data from {:?}", obj_node_id);
-
-        Ok(Self { root_object })
+                format_err!(
+                    "Unexpected attribute type for `RootNode`: expected `i64` but got {:?}",
+                    ty
+                )
+            })
     }
 
-    /// Returns root object ID.
-    pub fn root(&self) -> ObjectId {
-        self.root_object
+    /// Returns the root object of the scene.
+    ///
+    /// Note that this returns `Err(_)` if the object has no corresponding node.
+    /// This can happen for valid FBX data.
+    pub fn root_object(&self) -> Result<ObjectHandle<'_>, Error> {
+        self.root_object_id()?
+            .to_object_handle(self.object.document())
+            .ok_or_else(|| {
+                format_err!(
+                    "Root object of the scene has no corresponding node: object_id={:?}",
+                    self.object.object_id()
+                )
+            })
+    }
+}
+
+impl<'a> std::ops::Deref for SceneHandle<'a> {
+    type Target = ObjectHandle<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.object
     }
 }

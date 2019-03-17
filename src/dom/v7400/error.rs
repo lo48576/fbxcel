@@ -1,5 +1,7 @@
-//! FBX v7400 DOM error.
+//! FBX DOM errors.
 
-pub use self::load::CoreLoadError;
+pub use self::load::LoadError;
 
-mod load;
+pub(crate) mod connection;
+pub(crate) mod load;
+pub(crate) mod object;

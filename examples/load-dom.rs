@@ -2,8 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use fbxcel::dom;
-use fbxcel::pull_parser;
+use fbxcel::{dom, pull_parser};
 
 pub fn main() {
     env_logger::init();
@@ -11,7 +10,7 @@ pub fn main() {
     let path = match std::env::args_os().nth(1) {
         Some(v) => PathBuf::from(v),
         None => {
-            eprintln!("Usage: load-dom-v7400 <FBX_FILE>");
+            eprintln!("Usage: load-dom <FBX_FILE>");
             std::process::exit(1);
         }
     };
@@ -37,11 +36,17 @@ pub fn main() {
                 eprintln!("WARNING: {} (pos={:?})", w, pos);
                 Ok(())
             });
-            let dom_loader = dom::v7400::Loader::new();
-            let dom = dom_loader
-                .load_document(&mut parser)
+            let doc = dom::v7400::Loader::new()
+                .load_from_parser(&mut parser)
                 .expect("Failed to load FBX DOM");
-            println!("dom = {:#?}", dom);
+            println!("Loaded FBX DOM successfully");
+            for scene in doc.scenes() {
+                println!("Scene object: object_id={:?}", scene.object_id());
+                let root_id = scene
+                    .root_object_id()
+                    .expect("Failed to get root object ID");
+                println!("\tRoot object ID: {:?}", root_id);
+            }
         }
     }
 }

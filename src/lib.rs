@@ -4,8 +4,6 @@
 
 #[cfg(feature = "dom")]
 pub mod dom;
-#[cfg(feature = "domcast")]
-pub mod domcast;
 pub mod low;
 pub mod pull_parser;
 #[cfg(feature = "tree")]

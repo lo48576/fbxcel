@@ -1,69 +1,55 @@
-//! FBX DOM document.
+//! FBX DOM.
 
-use std::collections::HashMap;
-
-use crate::dom::v7400::object::{ObjectId, ObjectNodeId, ObjectsGraph};
-use crate::dom::v7400::{Core, NodeId, ParsedData};
+use crate::{
+    dom::v7400::{
+        connection::ConnectionsCache,
+        object::{scene::SceneHandle, ObjectsCache},
+    },
+    tree::v7400::Tree,
+};
 
 pub use self::loader::Loader;
 
 mod loader;
 
-/// FBX DOM document.
-///
-/// This manages not only tree structure, but also interpreted high-level
-/// structures.
+/// FBX DOM.
 #[derive(Debug, Clone)]
 pub struct Document {
-    /// DOM core.
-    core: Core,
-    /// Map from object ID to node ID.
-    object_ids: HashMap<ObjectId, ObjectNodeId>,
-    /// Parsed node data.
-    parsed_node_data: ParsedData,
-    /// Objects graph.
-    objects_graph: ObjectsGraph,
+    /// FBX data tree.
+    tree: Tree,
+    /// Objects cache.
+    objects: ObjectsCache,
+    /// Objects connection cache.
+    connections: ConnectionsCache,
 }
 
 impl Document {
-    /// Creates a new `Document`.
-    pub(crate) fn new(
-        core: Core,
-        object_ids: HashMap<ObjectId, ObjectNodeId>,
-        parsed_node_data: ParsedData,
-        objects_graph: ObjectsGraph,
-    ) -> Self {
-        Self {
-            core,
-            object_ids,
-            parsed_node_data,
-            objects_graph,
-        }
+    /// Returns a reference to the tree.
+    pub fn tree(&self) -> &Tree {
+        &self.tree
     }
 
-    /// Returns the root node ID.
-    pub fn root(&self) -> NodeId {
-        self.core.root()
+    /// Returns a reference to the objects cache.
+    pub(crate) fn objects(&self) -> &ObjectsCache {
+        &self.objects
     }
 
-    /// Returns the object node ID corresponding to the given object ID.
-    pub(crate) fn object_id_to_object_node_id(&self, id: ObjectId) -> Option<ObjectNodeId> {
-        self.object_ids.get(&id).cloned()
+    /// Returns a reference to the connections cache.
+    pub(crate) fn connections(&self) -> &ConnectionsCache {
+        &self.connections
     }
 
-    /// Returns the reference to the parsed node data.
-    pub fn parsed_node_data(&self) -> &ParsedData {
-        &self.parsed_node_data
-    }
-
-    /// Returns the reference to the objects graph.
-    pub(crate) fn objects_graph(&self) -> &ObjectsGraph {
-        &self.objects_graph
+    /// Returns `Document` object nodes, which have root object ID of scenes.
+    pub fn scenes(&self) -> impl Iterator<Item = SceneHandle<'_>> {
+        self.objects.document_nodes().iter().map(move |obj_id| {
+            SceneHandle::new(obj_id.to_object_handle(self))
+                .expect("Should never fail: Actually using `Document` objects")
+        })
     }
 }
 
-impl AsRef<Core> for Document {
-    fn as_ref(&self) -> &Core {
-        &self.core
+impl AsRef<Tree> for Document {
+    fn as_ref(&self) -> &Tree {
+        &self.tree
     }
 }
