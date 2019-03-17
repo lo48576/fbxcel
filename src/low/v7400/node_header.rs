@@ -7,20 +7,20 @@ use crate::pull_parser::{
 
 /// Node header.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct NodeHeader {
+pub(crate) struct NodeHeader {
     /// End offset of the node.
-    pub end_offset: u64,
+    pub(crate) end_offset: u64,
     /// The number of the node attributes.
-    pub num_attributes: u64,
+    pub(crate) num_attributes: u64,
     /// Length of the node attributes in bytes.
-    pub bytelen_attributes: u64,
+    pub(crate) bytelen_attributes: u64,
     /// Length of the node name in bytes.
-    pub bytelen_name: u8,
+    pub(crate) bytelen_name: u8,
 }
 
 impl NodeHeader {
     /// Checks whether the entry indicates end of a node.
-    pub fn is_node_end(&self) -> bool {
+    pub(crate) fn is_node_end(&self) -> bool {
         self.end_offset == 0
             && self.num_attributes == 0
             && self.bytelen_attributes == 0
