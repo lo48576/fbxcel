@@ -30,6 +30,11 @@ impl Document {
     pub(crate) fn objects(&self) -> &ObjectsCache {
         &self.objects
     }
+
+    /// Returns a reference to the connections cache.
+    pub(crate) fn connections(&self) -> &ConnectionsCache {
+        &self.connections
+    }
 }
 
 impl AsRef<Tree> for Document {

@@ -1,6 +1,9 @@
 //! Objects-related stuff.
 
-use crate::{domcast::v7400::Document, tree::v7400::NodeId};
+use crate::{
+    domcast::v7400::{connection::Connection, Document},
+    tree::v7400::NodeId,
+};
 
 pub(crate) use self::{
     cache::ObjectsCache,
@@ -24,6 +27,8 @@ impl ObjectNodeId {
     pub fn to_object_handle(self, doc: &Document) -> ObjectHandle<'_> {
         ObjectHandle::from_object_node_id(self, doc)
     }
+
+    //pub fn source_objects(self, doc: &Document) -> impl Iterator<Item = ConnectedObject<'_>>
 }
 
 impl From<ObjectNodeId> for NodeId {
@@ -45,6 +50,23 @@ impl ObjectId {
     /// Creates a new `ObjectHandle`.
     pub fn to_object_handle(self, doc: &Document) -> Option<ObjectHandle<'_>> {
         ObjectHandle::from_object_id(self, doc)
+    }
+
+    /// Returns an iterator of destination objects and connection labels.
+    pub fn destination_objects(
+        self,
+        doc: &Document,
+    ) -> impl Iterator<Item = ConnectedObjectHandle<'_>> {
+        doc.connections()
+            .outgoing_connections(self)
+            .map(move |conn| ConnectedObjectHandle::new(conn.destination_id(), conn, doc))
+    }
+
+    /// Returns an iterator of source objects and connection labels.
+    pub fn source_objects(self, doc: &Document) -> impl Iterator<Item = ConnectedObjectHandle<'_>> {
+        doc.connections()
+            .incoming_connections(self)
+            .map(move |conn| ConnectedObjectHandle::new(conn.source_id(), conn, doc))
     }
 }
 
@@ -122,5 +144,54 @@ impl<'a> ObjectHandle<'a> {
         self.doc
             .objects()
             .resolve_class_string(self.object_meta.subclass_sym())
+    }
+
+    /// Returns an iterator of destination objects and connection labels.
+    pub fn destination_objects(&self) -> impl Iterator<Item = ConnectedObjectHandle<'a>> {
+        self.object_id().destination_objects(self.doc)
+    }
+
+    /// Returns an iterator of source objects and connection labels.
+    pub fn source_objects(&self) -> impl Iterator<Item = ConnectedObjectHandle<'a>> {
+        self.object_id().source_objects(self.doc)
+    }
+}
+
+/// Object handle (or ID) for connected object.
+#[derive(Debug, Clone, Copy)]
+pub struct ConnectedObjectHandle<'a> {
+    /// Connected object.
+    object_id: ObjectId,
+    /// Connection.
+    connection: &'a Connection,
+    /// Document.
+    doc: &'a Document,
+}
+
+impl<'a> ConnectedObjectHandle<'a> {
+    /// Creates a new `ConnectedObjectHandle`.
+    fn new(object_id: ObjectId, connection: &'a Connection, doc: &'a Document) -> Self {
+        Self {
+            object_id,
+            connection,
+            doc,
+        }
+    }
+
+    /// Returns object ID.
+    pub fn object_id(&self) -> ObjectId {
+        self.object_id
+    }
+
+    /// Returns object handle if corresponding object node is available.
+    pub fn object_handle(&self) -> Option<ObjectHandle<'a>> {
+        self.object_id.to_object_handle(self.doc)
+    }
+
+    /// Returns connection label if available.
+    pub fn label(&self) -> Option<&'a str> {
+        self.connection
+            .label_sym()
+            .map(|sym| self.doc.connections().resolve_label(sym))
     }
 }

@@ -35,6 +35,52 @@ impl ConnectionsCache {
     pub(crate) fn from_tree(tree: &Tree) -> Result<Self, LoadError> {
         ConnectionsCacheBuilder::default().load(tree)
     }
+
+    /// Returns corresponding label.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given symbol is not registered.
+    pub(crate) fn resolve_label(&self, sym: ConnectionLabelSym) -> &str {
+        self.labels.resolve(sym).unwrap_or_else(|| {
+            panic!(
+                "The given connection label symbol is not registered: sym={:?}",
+                sym
+            )
+        })
+    }
+
+    /// Returns an iterator of outgoing connections.
+    pub(crate) fn outgoing_connections(
+        &self,
+        source: ObjectId,
+    ) -> impl Iterator<Item = &Connection> {
+        let start = self
+            .conn_indices_sorted_by_src
+            .binary_search_by(|idx| self.connections[idx.value()].source_id().cmp(&source))
+            .unwrap_or_else(|_| self.connections.len());
+        self.conn_indices_sorted_by_src[start..]
+            .iter()
+            .map(move |conn_index| &self.connections[conn_index.value()])
+            .filter(move |conn| conn.source_id() == source)
+            .fuse()
+    }
+
+    /// Returns an iterator of incoming connections.
+    pub(crate) fn incoming_connections(
+        &self,
+        destination: ObjectId,
+    ) -> impl Iterator<Item = &Connection> {
+        let start = self
+            .conn_indices_sorted_by_dest
+            .binary_search_by(|idx| self.connections[idx.value()].source_id().cmp(&destination))
+            .unwrap_or_else(|_| self.connections.len());
+        self.conn_indices_sorted_by_dest[start..]
+            .iter()
+            .map(move |conn_index| &self.connections[conn_index.value()])
+            .filter(move |conn| conn.destination_id() == destination)
+            .fuse()
+    }
 }
 
 /// Connections cache.
