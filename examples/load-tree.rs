@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use fbxcel::{dom, pull_parser};
+use fbxcel::{pull_parser, tree};
 
 pub fn main() {
     env_logger::init();
@@ -8,7 +8,7 @@ pub fn main() {
     let path = match std::env::args_os().nth(1) {
         Some(v) => PathBuf::from(v),
         None => {
-            eprintln!("Usage: load-dom <FBX_FILE>");
+            eprintln!("Usage: load-tree <FBX_FILE>");
             std::process::exit(1);
         }
     };
@@ -34,17 +34,12 @@ pub fn main() {
                 eprintln!("WARNING: {} (pos={:?})", w, pos);
                 Ok(())
             });
-            let doc = dom::v7400::Loader::new()
-                .load_from_parser(&mut parser)
-                .expect("Failed to load FBX DOM");
-            println!("Loaded FBX DOM successfully");
-            for scene in doc.scenes() {
-                println!("Scene object: object_id={:?}", scene.object_id());
-                let root_id = scene
-                    .root_object_id()
-                    .expect("Failed to get root object ID");
-                println!("\tRoot object ID: {:?}", root_id);
-            }
+            let tree_loader = tree::v7400::Loader::new();
+            let (tree, footer) = tree_loader
+                .load(&mut parser)
+                .expect("Failed to load FBX data tree");
+            println!("tree = {:#?}", tree);
+            println!("footer = {:#?}", footer);
         }
     }
 }

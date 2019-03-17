@@ -1,19 +1,19 @@
 //! Array-type node attributes.
 
-use std::io;
-use std::marker::PhantomData;
+use std::{io, marker::PhantomData};
 
 use byteorder::LittleEndian;
 use libflate::zlib::Decoder as ZlibDecoder;
 
-use crate::low::v7400::ArrayAttributeEncoding;
-use crate::pull_parser::error::DataError;
-use crate::pull_parser::Result;
+use crate::{
+    low::v7400::ArrayAttributeEncoding,
+    pull_parser::{error::DataError, Result},
+};
 
 /// Attribute stream decoder.
 // `io::BufRead` is not implemented for `ZlibDecoder`.
 #[derive(Debug)]
-pub enum AttributeStreamDecoder<R> {
+pub(crate) enum AttributeStreamDecoder<R> {
     /// Direct stream.
     Direct(R),
     /// Zlib-decoded stream.
@@ -22,7 +22,7 @@ pub enum AttributeStreamDecoder<R> {
 
 impl<R: io::Read> AttributeStreamDecoder<R> {
     /// Creates a new decoded reader.
-    pub fn create(encoding: ArrayAttributeEncoding, reader: R) -> Result<Self> {
+    pub(crate) fn create(encoding: ArrayAttributeEncoding, reader: R) -> Result<Self> {
         match encoding {
             ArrayAttributeEncoding::Direct => Ok(AttributeStreamDecoder::Direct(reader)),
             ArrayAttributeEncoding::Zlib => Ok(AttributeStreamDecoder::Zlib(
@@ -44,7 +44,7 @@ impl<R: io::Read> io::Read for AttributeStreamDecoder<R> {
 
 /// Array attribute values iterator for `{i,f}{32,64}` array.
 #[derive(Debug, Clone, Copy)]
-pub struct ArrayAttributeValues<R, E> {
+pub(crate) struct ArrayAttributeValues<R, E> {
     /// Decoded reader.
     reader: R,
     /// Number of total elements.
@@ -118,7 +118,7 @@ impl_array_attr_values! { f64, read_f64 }
 
 /// Array attribute values iterator for `bool` array.
 #[derive(Debug, Clone, Copy)]
-pub struct BooleanArrayAttributeValues<R> {
+pub(crate) struct BooleanArrayAttributeValues<R> {
     /// Decoded reader.
     reader: R,
     /// Number of total elements.

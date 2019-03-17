@@ -2,15 +2,15 @@
 //!
 //! Types in this module will be used among multiple versions of parsers.
 
-use std::error;
-use std::fmt;
-use std::io;
+use std::{error, fmt, io};
 
 use crate::pull_parser::SyntacticPosition;
 
-pub use self::data::{Compression, DataError};
-pub use self::operation::OperationError;
-pub use self::warning::Warning;
+pub use self::{
+    data::{Compression, DataError},
+    operation::OperationError,
+    warning::Warning,
+};
 
 mod data;
 mod operation;
@@ -62,7 +62,7 @@ impl Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.repr.error.fmt(f)
     }
 }
@@ -174,7 +174,7 @@ impl error::Error for ErrorContainer {
 }
 
 impl fmt::Display for ErrorContainer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ErrorContainer::Data(e) => write!(f, "Data error: {}", e),
             ErrorContainer::Io(e) => write!(f, "I/O error: {}", e),

@@ -1,7 +1,6 @@
 //! Reader with position cache.
 
-use std::io;
-use std::io::SeekFrom;
+use std::io::{self, SeekFrom};
 
 use crate::pull_parser::ParserSource;
 

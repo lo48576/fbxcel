@@ -1,14 +1,14 @@
 //! Node attribute visitors.
 
-use std::fmt;
-use std::io;
+use std::{fmt, io};
 
-use crate::pull_parser::error::DataError;
-use crate::pull_parser::Result;
+use crate::pull_parser::{error::DataError, Result};
 
-pub use self::direct::DirectVisitor;
-pub use self::single::{ArrayVisitor, BinaryVisitor, PrimitiveVisitor, StringVisitor};
-pub use self::type_::TypeVisitor;
+pub use self::{
+    direct::DirectVisitor,
+    single::{ArrayVisitor, BinaryVisitor, PrimitiveVisitor, StringVisitor},
+    type_::TypeVisitor,
+};
 
 mod direct;
 mod single;

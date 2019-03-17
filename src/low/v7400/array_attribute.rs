@@ -2,9 +2,11 @@
 
 use std::io;
 
-use crate::pull_parser::error::{Compression, DataError};
-use crate::pull_parser::v7400::FromReader;
-use crate::pull_parser::Error as ParserError;
+use crate::pull_parser::{
+    error::{Compression, DataError},
+    v7400::FromReader,
+    Error as ParserError,
+};
 
 /// Array attribute encoding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -51,13 +53,13 @@ impl FromReader for ArrayAttributeEncoding {
 
 /// A header type for array-type attributes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ArrayAttributeHeader {
+pub(crate) struct ArrayAttributeHeader {
     /// Number of elements.
-    pub elements_count: u32,
+    pub(crate) elements_count: u32,
     /// Encoding.
-    pub encoding: ArrayAttributeEncoding,
+    pub(crate) encoding: ArrayAttributeEncoding,
     /// Elements length in bytes.
-    pub bytelen: u32,
+    pub(crate) bytelen: u32,
 }
 
 impl FromReader for ArrayAttributeHeader {

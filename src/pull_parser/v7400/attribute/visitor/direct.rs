@@ -2,9 +2,10 @@
 
 use std::io;
 
-use crate::pull_parser::v7400::attribute::DirectAttributeValue;
-use crate::pull_parser::v7400::VisitAttribute;
-use crate::pull_parser::Result;
+use crate::pull_parser::{
+    v7400::{attribute::DirectAttributeValue, VisitAttribute},
+    Result,
+};
 
 /// Visitor for direct attribute value.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
