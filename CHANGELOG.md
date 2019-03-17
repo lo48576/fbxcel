@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.0]
+
 * `dom` module is completely rewritten.
     + **No compatibility** with old (0.2.0) `dom` module.
 * Add `tree` module.
@@ -59,6 +61,7 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.2.0...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.3.0...develop>
+[0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.3.0>
 [0.2.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.2.0>
 [0.1.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.1.0>
