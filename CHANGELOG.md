@@ -6,7 +6,7 @@
 
 * `dom` module is completely rewritten.
     + **No compatibility** with old (0.2.0) `dom` module.
-* Add `tree` module.
+* `tree` module is added.
     + This can be enabled with `tree` feature.
 
 ### Breaking changes
@@ -14,7 +14,7 @@
     + **No compatibility** with old (0.2.0) `dom` module.
 
 ### Added
-* Add `tree` module.
+* `tree` module is added.
     + This can be enabled with `tree` feature.
     + `tree::v7400::Tree` manages raw FBX tree data, but do not touch their
       meanings.
