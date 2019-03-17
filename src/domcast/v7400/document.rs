@@ -1,7 +1,10 @@
 //! FBX DOM.
 
 use crate::{
-    domcast::v7400::{connection::ConnectionsCache, object::ObjectsCache},
+    domcast::v7400::{
+        connection::ConnectionsCache,
+        object::{scene::SceneHandle, ObjectsCache},
+    },
     tree::v7400::Tree,
 };
 
@@ -34,6 +37,14 @@ impl Document {
     /// Returns a reference to the connections cache.
     pub(crate) fn connections(&self) -> &ConnectionsCache {
         &self.connections
+    }
+
+    /// Returns `Document` object nodes, which have root object ID of scenes.
+    pub fn scenes(&self) -> impl Iterator<Item = SceneHandle<'_>> {
+        self.objects.document_nodes().iter().map(move |obj_id| {
+            SceneHandle::new(obj_id.to_object_handle(self))
+                .expect("Should never fail: Actually using `Document` objects")
+        })
     }
 }
 

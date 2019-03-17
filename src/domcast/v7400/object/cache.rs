@@ -61,6 +61,11 @@ impl ObjectsCache {
             .resolve(sym)
             .unwrap_or_else(|| panic!("Unresolvable class name symbol: sym={:?}", sym))
     }
+
+    /// Returns document node IDs.
+    pub(crate) fn document_nodes(&self) -> &[ObjectNodeId] {
+        &self.document_nodes
+    }
 }
 
 /// Objects cache builder.

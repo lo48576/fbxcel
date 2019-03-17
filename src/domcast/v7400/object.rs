@@ -2,7 +2,7 @@
 
 use crate::{
     domcast::v7400::{connection::Connection, Document},
-    tree::v7400::NodeId,
+    tree::v7400::{NodeHandle, NodeId},
 };
 
 pub(crate) use self::{
@@ -12,6 +12,7 @@ pub(crate) use self::{
 
 mod cache;
 mod meta;
+pub mod scene;
 
 /// Node ID of a object node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -125,6 +126,17 @@ impl<'a> ObjectHandle<'a> {
     /// Returns object ID.
     pub fn object_id(&self) -> ObjectId {
         self.object_meta.object_id()
+    }
+
+    /// Returns a reference to the document.
+    pub fn document(&self) -> &'a Document {
+        self.doc
+    }
+
+    /// Returns the node handle.
+    pub fn node(&self) -> NodeHandle<'a> {
+        let node_id: NodeId = self.node_id.into();
+        node_id.to_handle(self.doc.tree())
     }
 
     /// Returns object name.
