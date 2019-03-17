@@ -1,6 +1,4 @@
-use std::fs::File;
-use std::io::BufReader;
-use std::path::PathBuf;
+use std::{fs::File, io::BufReader, path::PathBuf};
 
 use fbxcel::pull_parser;
 
@@ -104,7 +102,7 @@ fn dump_fbx_7400<R: pull_parser::ParserSource>(
 
 fn dump_v7400_attributes_length<R>(
     depth: usize,
-    mut attrs: pull_parser::v7400::Attributes<R>,
+    mut attrs: pull_parser::v7400::Attributes<'_, R>,
 ) -> pull_parser::Result<()>
 where
     R: pull_parser::ParserSource,
@@ -150,7 +148,7 @@ where
 
 fn dump_v7400_attributes_type<R>(
     depth: usize,
-    mut attrs: pull_parser::v7400::Attributes<R>,
+    mut attrs: pull_parser::v7400::Attributes<'_, R>,
 ) -> pull_parser::Result<()>
 where
     R: pull_parser::ParserSource,
@@ -167,7 +165,7 @@ where
 
 fn dump_v7400_attributes_full<R>(
     depth: usize,
-    mut attrs: pull_parser::v7400::Attributes<R>,
+    mut attrs: pull_parser::v7400::Attributes<'_, R>,
 ) -> pull_parser::Result<()>
 where
     R: pull_parser::ParserSource,

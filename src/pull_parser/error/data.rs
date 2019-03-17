@@ -2,9 +2,7 @@
 //!
 //! This is mainly syntax and low-level structure error.
 
-use std::error;
-use std::fmt;
-use std::string::FromUtf8Error;
+use std::{error, fmt, string::FromUtf8Error};
 
 /// Data error.
 #[derive(Debug)]
@@ -58,7 +56,7 @@ impl error::Error for DataError {
 }
 
 impl fmt::Display for DataError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DataError::BrokenFbxFooter => write!(f, "FBX footer is broken"),
             DataError::BrokenCompression(codec, e) => write!(

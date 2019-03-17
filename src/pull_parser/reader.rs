@@ -2,8 +2,10 @@
 
 use std::io;
 
-pub use self::position_cache::PositionCacheReader;
-pub use self::source::{PlainSource, SeekableSource};
+pub use self::{
+    position_cache::PositionCacheReader,
+    source::{PlainSource, SeekableSource},
+};
 
 mod position_cache;
 mod source;

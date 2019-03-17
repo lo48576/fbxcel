@@ -16,7 +16,7 @@ impl LoadError {
 }
 
 impl fmt::Display for LoadError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
     }
 }
@@ -35,6 +35,7 @@ impl From<TreeLoadError> for LoadError {
 
 /// FBX DOM structure error.
 #[derive(Debug)]
+#[allow(clippy::enum_variant_names)]
 pub(crate) enum StructureError {
     /// Toplevel `Connections` node not found.
     MissingConnectionsNode,
@@ -45,7 +46,7 @@ pub(crate) enum StructureError {
 }
 
 impl fmt::Display for StructureError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             StructureError::MissingConnectionsNode => {
                 f.write_str("Toplevel `Connections` node not found")

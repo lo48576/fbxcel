@@ -2,14 +2,17 @@
 
 use std::io;
 
-use crate::low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader};
-use crate::pull_parser::error::DataError;
-use crate::pull_parser::v7400::{FromReader, Parser};
-use crate::pull_parser::{ParserSource, Result, SyntacticPosition, Warning};
+use crate::{
+    low::v7400::{ArrayAttributeHeader, AttributeType, SpecialAttributeHeader},
+    pull_parser::{
+        error::DataError,
+        v7400::{FromReader, Parser},
+        ParserSource, Result, SyntacticPosition, Warning,
+    },
+};
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
-pub use self::direct::DirectAttributeValue;
-pub use self::visitor::VisitAttribute;
+pub use self::{direct::DirectAttributeValue, visitor::VisitAttribute};
 
 mod array;
 mod direct;
@@ -18,7 +21,7 @@ pub mod visitor;
 
 /// Node attributes reader.
 #[derive(Debug)]
-pub struct Attributes<'a, R: 'a> {
+pub struct Attributes<'a, R> {
     /// Total number of attributes of the current node.
     total_count: u64,
     /// Rest number of attributes of the current node.

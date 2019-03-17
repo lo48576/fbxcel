@@ -1,10 +1,8 @@
 //! Invalid operation.
 
-use std::error;
-use std::fmt;
+use std::{error, fmt};
 
-use crate::low::FbxVersion;
-use crate::pull_parser::ParserVersion;
+use crate::{low::FbxVersion, pull_parser::ParserVersion};
 
 /// Invalid operation.
 #[derive(Debug)]
@@ -20,7 +18,7 @@ pub enum OperationError {
 impl error::Error for OperationError {}
 
 impl fmt::Display for OperationError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             OperationError::AlreadyAborted => {
                 write!(f, "Attempt to parse more data while the parsing is aborted")

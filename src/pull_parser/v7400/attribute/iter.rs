@@ -2,13 +2,14 @@
 
 use std::io;
 
-use crate::pull_parser::v7400::attribute::visitor::VisitAttribute;
-use crate::pull_parser::v7400::attribute::Attributes;
-use crate::pull_parser::{ParserSource, Result};
+use crate::pull_parser::{
+    v7400::attribute::{visitor::VisitAttribute, Attributes},
+    ParserSource, Result,
+};
 
 /// Creates size hint from the given attributes and visitors.
 fn make_size_hint_for_attrs<R, V>(
-    attributes: &Attributes<R>,
+    attributes: &Attributes<'_, R>,
     visitors: &impl Iterator<Item = V>,
 ) -> (usize, Option<usize>)
 where
@@ -25,7 +26,7 @@ where
 
 /// Visits the next attrbute.
 fn visit_next<R, V>(
-    attributes: &mut Attributes<R>,
+    attributes: &mut Attributes<'_, R>,
     visitors: &mut impl Iterator<Item = V>,
 ) -> Option<Result<V::Output>>
 where
@@ -45,7 +46,7 @@ where
 
 /// Visits the next attrbute with buffered I/O.
 fn visit_next_buffered<R, V>(
-    attributes: &mut Attributes<R>,
+    attributes: &mut Attributes<'_, R>,
     visitors: &mut impl Iterator<Item = V>,
 ) -> Option<Result<V::Output>>
 where
