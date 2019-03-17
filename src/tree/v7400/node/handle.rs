@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// Node handle.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct NodeHandle<'a> {
     /// The tree the node belongs to.
     tree: &'a Tree,
@@ -62,6 +62,31 @@ impl<'a> NodeHandle<'a> {
     /// Returns the node attributes.
     pub fn attributes(&self) -> &[DirectAttributeValue] {
         self.node().data.attributes()
+    }
+
+    /// Returns an iterator of children with the given name.
+    pub(crate) fn children(&self) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
+        let tree = self.tree;
+        self.node_id
+            .raw()
+            .children(&tree.arena)
+            .map(move |child_id| NodeId::new(child_id).to_handle(tree))
+    }
+
+    /// Returns an iterator of children with the given name.
+    pub(crate) fn children_by_name<'b>(
+        &'b self,
+        name: &str,
+    ) -> impl Iterator<Item = NodeHandle<'a>> + 'b {
+        // Using `flat_map` first, the iterator can return `None` before
+        // traversing the tree if `target_name` is not registered.
+        self.tree
+            .node_name_sym(name)
+            .into_iter()
+            .flat_map(move |target_name| {
+                self.children()
+                    .filter(move |child| child.name_sym() == target_name)
+            })
     }
 }
 

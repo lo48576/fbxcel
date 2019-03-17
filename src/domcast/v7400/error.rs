@@ -2,4 +2,6 @@
 
 pub use self::load::LoadError;
 
-mod load;
+pub(crate) mod connection;
+pub(crate) mod load;
+pub(crate) mod object;

@@ -3,7 +3,7 @@
 use log::trace;
 
 use crate::{
-    domcast::v7400::{Document, LoadError},
+    domcast::v7400::{connection::ConnectionsCache, object::ObjectsCache, Document, LoadError},
     pull_parser::{v7400::Parser, ParserSource},
     tree::v7400::{Loader as TreeLoader, Tree},
 };
@@ -31,7 +31,13 @@ impl Loader {
     /// Loads a document from the given FBX data tree.
     pub fn load_from_tree(self, tree: Tree) -> Result<Document, LoadError> {
         trace!("Loading FBX DOM from an FBX data tree");
+        let objects = ObjectsCache::from_tree(&tree)?;
+        let connections = ConnectionsCache::from_tree(&tree)?;
         trace!("Loaded FBX DOM successfully");
-        Ok(Document { tree })
+        Ok(Document {
+            tree,
+            objects,
+            connections,
+        })
     }
 }

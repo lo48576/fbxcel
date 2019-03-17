@@ -59,7 +59,7 @@ impl NodeId {
         core.as_ref().node(self)
     }
 
-    /// Returns an iterator of childrens with the given name.
+    /// Returns an iterator of children with the given name.
     pub fn children_by_name<'a>(
         self,
         core: &'a impl AsRef<Core>,
