@@ -1,6 +1,9 @@
 //! FBX DOM.
 
-use crate::{domcast::v7400::object::ObjectsCache, tree::v7400::Tree};
+use crate::{
+    domcast::v7400::{connection::ConnectionsCache, object::ObjectsCache},
+    tree::v7400::Tree,
+};
 
 pub use self::loader::Loader;
 
@@ -13,6 +16,8 @@ pub struct Document {
     tree: Tree,
     /// Objects cache.
     objects: ObjectsCache,
+    /// Objects connection cache.
+    connections: ConnectionsCache,
 }
 
 impl Document {

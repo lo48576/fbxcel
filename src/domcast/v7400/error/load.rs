@@ -36,6 +36,8 @@ impl From<TreeLoadError> for LoadError {
 /// FBX DOM structure error.
 #[derive(Debug)]
 pub(crate) enum StructureError {
+    /// Toplevel `Connections` node not found.
+    MissingConnectionsNode,
     /// Toplevel `Documents` node not found.
     MissingDocumentsNode,
     /// Toplevel `Objects` node not found.
@@ -45,6 +47,9 @@ pub(crate) enum StructureError {
 impl fmt::Display for StructureError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            StructureError::MissingConnectionsNode => {
+                f.write_str("Toplevel `Connections` node not found")
+            }
             StructureError::MissingDocumentsNode => {
                 f.write_str("Toplevel `Documents` node not found")
             }

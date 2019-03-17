@@ -33,12 +33,12 @@ impl From<ObjectNodeId> for NodeId {
 }
 
 /// Object ID.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ObjectId(i64);
 
 impl ObjectId {
     /// Creates a new `ObjectId`.
-    fn new(id: i64) -> Self {
+    pub(crate) fn new(id: i64) -> Self {
         Self(id)
     }
 

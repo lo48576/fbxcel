@@ -5,6 +5,7 @@ pub use self::{
     error::LoadError,
 };
 
+pub(crate) mod connection;
 mod document;
 pub(crate) mod error;
 pub mod object;
