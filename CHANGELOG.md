@@ -2,9 +2,11 @@
 
 ## [Unreleased]
 
+## [0.3.0]
+
 * `dom` module is completely rewritten.
     + **No compatibility** with old (0.2.0) `dom` module.
-* Add `tree` module.
+* `tree` module is added.
     + This can be enabled with `tree` feature.
 
 ### Breaking changes
@@ -12,7 +14,7 @@
     + **No compatibility** with old (0.2.0) `dom` module.
 
 ### Added
-* Add `tree` module.
+* `tree` module is added.
     + This can be enabled with `tree` feature.
     + `tree::v7400::Tree` manages raw FBX tree data, but do not touch their
       meanings.
@@ -59,6 +61,7 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.2.0...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.3.0...develop>
+[0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.3.0>
 [0.2.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.2.0>
 [0.1.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.1.0>
