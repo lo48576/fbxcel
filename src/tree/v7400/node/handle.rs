@@ -65,7 +65,7 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns an iterator of children with the given name.
-    pub(crate) fn children(&self) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
+    pub fn children(&self) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
         let tree = self.tree;
         self.node_id
             .raw()
@@ -74,10 +74,7 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns an iterator of children with the given name.
-    pub(crate) fn children_by_name<'b>(
-        &'b self,
-        name: &str,
-    ) -> impl Iterator<Item = NodeHandle<'a>> + 'b {
+    pub fn children_by_name<'b>(&'b self, name: &str) -> impl Iterator<Item = NodeHandle<'a>> + 'b {
         // Using `flat_map` first, the iterator can return `None` before
         // traversing the tree if `target_name` is not registered.
         self.tree
