@@ -35,6 +35,7 @@ impl From<TreeLoadError> for LoadError {
 
 /// FBX DOM structure error.
 #[derive(Debug)]
+#[allow(clippy::enum_variant_names)]
 pub(crate) enum StructureError {
     /// Toplevel `Connections` node not found.
     MissingConnectionsNode,
