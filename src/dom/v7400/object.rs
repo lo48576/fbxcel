@@ -28,8 +28,6 @@ impl ObjectNodeId {
     pub fn to_object_handle(self, doc: &Document) -> ObjectHandle<'_> {
         ObjectHandle::from_object_node_id(self, doc)
     }
-
-    //pub fn source_objects(self, doc: &Document) -> impl Iterator<Item = ConnectedObject<'_>>
 }
 
 impl From<ObjectNodeId> for NodeId {
