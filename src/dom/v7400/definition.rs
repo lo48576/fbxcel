@@ -6,8 +6,8 @@ use failure::{format_err, Error};
 use log::warn;
 
 use crate::{
-    dom::v7400::LoadError,
-    tree::v7400::{NodeHandle, NodeId, Tree},
+    dom::v7400::{object::property::PropertiesNodeId, LoadError},
+    tree::v7400::{NodeHandle, Tree},
 };
 
 /// Object template definitions cache.
@@ -17,7 +17,7 @@ pub(crate) struct DefinitionsCache {
     ///
     /// Inner key is (maybe) the native node type in FBX SDK, such as
     /// `FbxCamera`, `FbxMesh`, and `FbxSurfacePhong`.
-    templates: HashMap<String, HashMap<String, NodeId>>,
+    templates: HashMap<String, HashMap<String, PropertiesNodeId>>,
 }
 
 impl DefinitionsCache {
@@ -93,7 +93,10 @@ impl DefinitionsCache {
         self.templates
             .entry(obj_type.into())
             .or_insert_with(Default::default)
-            .insert(native_type.into(), properties_node.node_id());
+            .insert(
+                native_type.into(),
+                PropertiesNodeId::new(properties_node.node_id()),
+            );
         Ok(())
     }
 }

@@ -12,6 +12,7 @@ pub(crate) use self::{
 
 mod cache;
 mod meta;
+pub mod property;
 pub mod scene;
 
 /// Node ID of a object node.
