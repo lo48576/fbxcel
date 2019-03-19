@@ -1,6 +1,15 @@
 //! Properties set object.
 
-use crate::tree::v7400::NodeId;
+use failure::format_err;
+use log::warn;
+
+use crate::{
+    dom::v7400::{
+        object::property::{PropertyHandle, PropertyNodeId},
+        Document,
+    },
+    tree::v7400::{NodeHandle, NodeId},
+};
 
 /// Node ID of a `Properties70` node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -24,5 +33,57 @@ impl std::ops::Deref for PropertiesNodeId {
 impl From<PropertiesNodeId> for NodeId {
     fn from(v: PropertiesNodeId) -> Self {
         v.0
+    }
+}
+
+/// Node handle of a `Properties70` node.
+#[derive(Debug, Clone, Copy)]
+pub struct PropertiesHandle<'a> {
+    /// Node ID.
+    node_id: PropertiesNodeId,
+    /// Document.
+    doc: &'a Document,
+}
+
+impl<'a> PropertiesHandle<'a> {
+    /// Creates a new `PropertiesNodeId`.
+    pub(crate) fn new(node_id: PropertiesNodeId, doc: &'a Document) -> Self {
+        Self { node_id, doc }
+    }
+
+    /// Returns a node handle for the properties node.
+    pub(crate) fn node(&self) -> NodeHandle<'a> {
+        self.node_id.to_handle(self.doc.tree())
+    }
+
+    /// Returns a node handle of the property node with the given name.
+    pub fn get_property(&self, name: &str) -> Option<PropertyHandle<'a>> {
+        self.node()
+            .children_by_name("P")
+            .map(|node| {
+                node.attributes()
+                    .get(0)
+                    .ok_or_else(|| format_err!("No attributes found"))?
+                    .get_string_or_type()
+                    .map_err(|ty| {
+                        format_err!(
+                            "Expected string as property name (first attribute), but got {:?}",
+                            ty
+                        )
+                    })
+                    .map(|attr| (PropertyNodeId::new(node.node_id()), attr))
+            })
+            .filter_map(|res| match res {
+                Ok((node, attr)) => Some((node, attr)),
+                Err(e) => {
+                    warn!(
+                        "Ignoring error for `P` node (node_id={:?}): {}",
+                        self.node_id, e
+                    );
+                    None
+                }
+            })
+            .find(move |&(_node, v)| v == name)
+            .map(|(node_id, _v)| PropertyHandle::new(node_id, self.doc))
     }
 }
