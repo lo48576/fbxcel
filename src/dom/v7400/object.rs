@@ -142,8 +142,7 @@ impl<'a> ObjectHandle<'a> {
 
     /// Returns the node handle.
     pub fn node(&self) -> NodeHandle<'a> {
-        let node_id: NodeId = self.node_id.into();
-        node_id.to_handle(self.doc.tree())
+        self.node_id.to_handle(self.doc.tree())
     }
 
     /// Returns object name.
