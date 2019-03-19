@@ -21,6 +21,15 @@ pub(crate) struct DefinitionsCache {
 }
 
 impl DefinitionsCache {
+    /// Returns the properties node ID if available.
+    pub(crate) fn properties_node_id(
+        &self,
+        obj_node_name: &str,
+        native_type: &str,
+    ) -> Option<PropertiesNodeId> {
+        self.templates.get(obj_node_name)?.get(native_type).cloned()
+    }
+
     /// Creates a new `DefinitionsCache` from the given FBX data tree.
     pub(crate) fn from_tree(tree: &Tree) -> Result<Self, LoadError> {
         let mut this = Self::default();

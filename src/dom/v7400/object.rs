@@ -8,6 +8,7 @@ use crate::{
 pub(crate) use self::{
     cache::ObjectsCache,
     meta::{ObjectClassSym, ObjectMeta},
+    property::ObjectProperties,
 };
 
 mod cache;
