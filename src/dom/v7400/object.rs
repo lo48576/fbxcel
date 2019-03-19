@@ -5,7 +5,7 @@ use crate::{
     tree::v7400::{NodeHandle, NodeId},
 };
 
-use self::property::PropertiesHandle;
+use self::property::{ObjectProperties, PropertiesHandle};
 pub(crate) use self::{
     cache::ObjectsCache,
     meta::{ObjectClassSym, ObjectMeta},
@@ -178,6 +178,14 @@ impl<'a> ObjectHandle<'a> {
     /// Returns a handle of the directly associated properties node.
     pub fn direct_properties(&self) -> Option<PropertiesHandle<'a>> {
         PropertiesHandle::from_object(self)
+    }
+
+    /// Returns a proxy to object properties using the given native typename.
+    ///
+    /// `native_typename` should be the value of the first attribute of
+    /// the `PropertyTemplate` node to be used.
+    pub fn properties_by_native_typename(&self, native_typename: &str) -> ObjectProperties<'a> {
+        ObjectProperties::from_object(self, native_typename)
     }
 }
 

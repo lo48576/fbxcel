@@ -22,7 +22,6 @@ pub struct ObjectProperties<'a> {
 impl<'a> ObjectProperties<'a> {
     /// Creates a new `ObjectProperties` for the given object node and native
     /// type name.
-    #[allow(dead_code)] // FIXME: Remove this `allow` when this is used somewhere.
     pub(crate) fn from_object(object: &ObjectHandle<'a>, native_type: &str) -> Self {
         let direct_props = object
             .node()
