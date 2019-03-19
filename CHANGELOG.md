@@ -14,8 +14,10 @@
         * By this method, users can access object properties.
 
 ### Non-breaking change
-* Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have same lifetime as the tree.
-    + The lifetime was mistakenly set too short in previous implementation, but this is now fixed.
+* Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have
+  same lifetime as the tree.
+    + The lifetime was mistakenly set too short in previous implementation, but
+      this is now fixed.
 
 ## [0.3.0]
 
