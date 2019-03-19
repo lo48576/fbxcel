@@ -60,7 +60,7 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns the node attributes.
-    pub fn attributes(&self) -> &[DirectAttributeValue] {
+    pub fn attributes(&self) -> &'a [DirectAttributeValue] {
         self.node().data.attributes()
     }
 
