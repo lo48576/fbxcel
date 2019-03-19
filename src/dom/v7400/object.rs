@@ -30,6 +30,14 @@ impl ObjectNodeId {
     }
 }
 
+impl std::ops::Deref for ObjectNodeId {
+    type Target = NodeId;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl From<ObjectNodeId> for NodeId {
     fn from(v: ObjectNodeId) -> Self {
         v.0
