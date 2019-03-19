@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+* `dom::v7400::ObjectNodeId` now implements `Deref<Target=tree::v7400::NodeId>`.
+
 ### Non-breaking change
 * Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have same lifetime as the tree.
     + The lifetime was mistakenly set too short in previous implementation, but this is now fixed.
