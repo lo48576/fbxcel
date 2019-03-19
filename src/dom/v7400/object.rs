@@ -5,6 +5,7 @@ use crate::{
     tree::v7400::{NodeHandle, NodeId},
 };
 
+use self::property::{ObjectProperties, PropertiesHandle};
 pub(crate) use self::{
     cache::ObjectsCache,
     meta::{ObjectClassSym, ObjectMeta},
@@ -12,6 +13,7 @@ pub(crate) use self::{
 
 mod cache;
 mod meta;
+pub mod property;
 pub mod scene;
 
 /// Node ID of a object node.
@@ -141,8 +143,7 @@ impl<'a> ObjectHandle<'a> {
 
     /// Returns the node handle.
     pub fn node(&self) -> NodeHandle<'a> {
-        let node_id: NodeId = self.node_id.into();
-        node_id.to_handle(self.doc.tree())
+        self.node_id.to_handle(self.doc.tree())
     }
 
     /// Returns object name.
@@ -172,6 +173,19 @@ impl<'a> ObjectHandle<'a> {
     /// Returns an iterator of source objects and connection labels.
     pub fn source_objects(&self) -> impl Iterator<Item = ConnectedObjectHandle<'a>> + 'a {
         self.object_id().source_objects(self.doc)
+    }
+
+    /// Returns a handle of the directly associated properties node.
+    pub fn direct_properties(&self) -> Option<PropertiesHandle<'a>> {
+        PropertiesHandle::from_object(self)
+    }
+
+    /// Returns a proxy to object properties using the given native typename.
+    ///
+    /// `native_typename` should be the value of the first attribute of
+    /// the `PropertyTemplate` node to be used.
+    pub fn properties_by_native_typename(&self, native_typename: &str) -> ObjectProperties<'a> {
+        ObjectProperties::from_object(self, native_typename)
     }
 }
 

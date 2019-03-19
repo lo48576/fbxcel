@@ -1,9 +1,17 @@
 # Change Log
 
 ## [Unreleased]
+* Object properties are supported.
+    + Very basic support, but would be useful.
 
 ### Added
 * `dom::v7400::ObjectNodeId` now implements `Deref<Target=tree::v7400::NodeId>`.
+* `dom::v7400::object::property` module and related features are added.
+    + This module contains things related to object properties.
+    + `dom::v7400::ObjectHandle::direct_properties()` is added.
+        * By this method, users can access object properties.
+    + `dom::v7400::ObjectHandle::properties_by_native_typename()` is added.
+        * By this method, users can access object properties.
 
 ### Non-breaking change
 * Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have same lifetime as the tree.

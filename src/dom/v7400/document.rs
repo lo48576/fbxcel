@@ -3,6 +3,7 @@
 use crate::{
     dom::v7400::{
         connection::ConnectionsCache,
+        definition::DefinitionsCache,
         object::{scene::SceneHandle, ObjectsCache},
     },
     tree::v7400::Tree,
@@ -21,6 +22,8 @@ pub struct Document {
     objects: ObjectsCache,
     /// Objects connection cache.
     connections: ConnectionsCache,
+    /// Object template definitions.
+    definitions: DefinitionsCache,
 }
 
 impl Document {
@@ -37,6 +40,11 @@ impl Document {
     /// Returns a reference to the connections cache.
     pub(crate) fn connections(&self) -> &ConnectionsCache {
         &self.connections
+    }
+
+    /// Returns a reference to the object template definitions.
+    pub(crate) fn definitions(&self) -> &DefinitionsCache {
+        &self.definitions
     }
 
     /// Returns `Document` object nodes, which have root object ID of scenes.
