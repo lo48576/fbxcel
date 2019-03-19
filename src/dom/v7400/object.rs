@@ -5,6 +5,7 @@ use crate::{
     tree::v7400::{NodeHandle, NodeId},
 };
 
+use self::property::PropertiesHandle;
 pub(crate) use self::{
     cache::ObjectsCache,
     meta::{ObjectClassSym, ObjectMeta},
@@ -172,6 +173,11 @@ impl<'a> ObjectHandle<'a> {
     /// Returns an iterator of source objects and connection labels.
     pub fn source_objects(&self) -> impl Iterator<Item = ConnectedObjectHandle<'a>> + 'a {
         self.object_id().source_objects(self.doc)
+    }
+
+    /// Returns a handle of the directly associated properties node.
+    pub fn direct_properties(&self) -> Option<PropertiesHandle<'a>> {
+        PropertiesHandle::from_object(self)
     }
 }
 

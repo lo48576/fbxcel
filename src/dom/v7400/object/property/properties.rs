@@ -5,7 +5,10 @@ use log::warn;
 
 use crate::{
     dom::v7400::{
-        object::property::{PropertyHandle, PropertyNodeId},
+        object::{
+            property::{PropertyHandle, PropertyNodeId},
+            ObjectHandle,
+        },
         Document,
     },
     tree::v7400::{NodeHandle, NodeId},
@@ -49,6 +52,21 @@ impl<'a> PropertiesHandle<'a> {
     /// Creates a new `PropertiesNodeId`.
     pub(crate) fn new(node_id: PropertiesNodeId, doc: &'a Document) -> Self {
         Self { node_id, doc }
+    }
+
+    /// Creates a new `ObjectProperties` for the given object node and native
+    /// type name.
+    pub(crate) fn from_object(object: &ObjectHandle<'a>) -> Option<Self> {
+        let node_id = object
+            .node()
+            .children_by_name("Properties70")
+            .map(|node| PropertiesNodeId::new(node.node_id()))
+            .next()?
+            .into();
+        Some(Self {
+            node_id: PropertiesNodeId::new(node_id),
+            doc: object.document(),
+        })
     }
 
     /// Returns a node handle for the properties node.
