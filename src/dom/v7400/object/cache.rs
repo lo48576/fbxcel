@@ -86,7 +86,6 @@ impl ObjectsCacheBuilder {
     fn load(mut self, tree: &Tree) -> Result<ObjectsCache, LoadError> {
         self.load_objects(tree)?;
         self.load_documents(tree)?;
-        // TODO: Cache `Properties70` nodes?
         Ok(self.build())
     }
 
