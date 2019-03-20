@@ -30,7 +30,7 @@ impl<'a> ObjectProperties<'a> {
             .next();
         let default_props = object
             .document()
-            .definitions()
+            .definitions_cache()
             .properties_node_id(object.node().name(), native_type);
 
         Self {

@@ -18,7 +18,7 @@ impl<'a> SceneHandle<'a> {
     pub(crate) fn new(object: ObjectHandle<'a>) -> Option<Self> {
         let is_document_node = object
             .document()
-            .objects()
+            .objects_cache()
             .document_nodes()
             .contains(&object.object_node_id());
         if !is_document_node {

@@ -33,17 +33,17 @@ impl Document {
     }
 
     /// Returns a reference to the objects cache.
-    pub(crate) fn objects(&self) -> &ObjectsCache {
+    pub(crate) fn objects_cache(&self) -> &ObjectsCache {
         &self.objects
     }
 
     /// Returns a reference to the connections cache.
-    pub(crate) fn connections(&self) -> &ConnectionsCache {
+    pub(crate) fn connections_cache(&self) -> &ConnectionsCache {
         &self.connections
     }
 
     /// Returns a reference to the object template definitions.
-    pub(crate) fn definitions(&self) -> &DefinitionsCache {
+    pub(crate) fn definitions_cache(&self) -> &DefinitionsCache {
         &self.definitions
     }
 
