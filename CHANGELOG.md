@@ -5,6 +5,7 @@
     + Very basic support, but would be useful.
 
 ### Added
+* `dom::v7400::Document::objects()` is added.
 * `dom::v7400::ObjectNodeId` now implements `Deref<Target=tree::v7400::NodeId>`.
 * `dom::v7400::object::property` module and related features are added.
     + This module contains things related to object properties.

@@ -66,14 +66,14 @@ impl ObjectId {
         self,
         doc: &Document,
     ) -> impl Iterator<Item = ConnectedObjectHandle<'_>> {
-        doc.connections()
+        doc.connections_cache()
             .outgoing_connections(self)
             .map(move |conn| ConnectedObjectHandle::new(conn.destination_id(), conn, doc))
     }
 
     /// Returns an iterator of source objects and connection labels.
     pub fn source_objects(self, doc: &Document) -> impl Iterator<Item = ConnectedObjectHandle<'_>> {
-        doc.connections()
+        doc.connections_cache()
             .incoming_connections(self)
             .map(move |conn| ConnectedObjectHandle::new(conn.source_id(), conn, doc))
     }
@@ -99,7 +99,7 @@ impl<'a> ObjectHandle<'a> {
     /// the given document.
     fn from_object_node_id(node_id: ObjectNodeId, doc: &'a Document) -> Self {
         let object_meta = doc
-            .objects()
+            .objects_cache()
             .meta_from_node_id(node_id)
             .unwrap_or_else(|| panic!("No corresponding object metadata: node_id={:?}", node_id));
         Self {
@@ -113,9 +113,9 @@ impl<'a> ObjectHandle<'a> {
     ///
     /// Returns `None` if the given object ID has no corresponding FBX node.
     fn from_object_id(obj_id: ObjectId, doc: &'a Document) -> Option<Self> {
-        let node_id = doc.objects().node_id(obj_id)?;
+        let node_id = doc.objects_cache().node_id(obj_id)?;
         let object_meta = doc
-            .objects()
+            .objects_cache()
             .meta_from_node_id(node_id)
             .expect("Should never fail: object cache should be consistent");
         assert_eq!(obj_id, object_meta.object_id(), "Object ID mismatch");
@@ -154,14 +154,14 @@ impl<'a> ObjectHandle<'a> {
     /// Returns object class.
     pub fn class(&self) -> &'a str {
         self.doc
-            .objects()
+            .objects_cache()
             .resolve_class_string(self.object_meta.class_sym())
     }
 
     /// Returns object subclass.
     pub fn subclass(&self) -> &'a str {
         self.doc
-            .objects()
+            .objects_cache()
             .resolve_class_string(self.object_meta.subclass_sym())
     }
 
@@ -224,6 +224,6 @@ impl<'a> ConnectedObjectHandle<'a> {
     pub fn label(&self) -> Option<&'a str> {
         self.connection
             .label_sym()
-            .map(|sym| self.doc.connections().resolve_label(sym))
+            .map(|sym| self.doc.connections_cache().resolve_label(sym))
     }
 }
