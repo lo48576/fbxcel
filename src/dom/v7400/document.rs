@@ -4,7 +4,7 @@ use crate::{
     dom::v7400::{
         connection::ConnectionsCache,
         definition::DefinitionsCache,
-        object::{scene::SceneHandle, ObjectsCache},
+        object::{scene::SceneHandle, ObjectHandle, ObjectsCache},
     },
     tree::v7400::Tree,
 };
@@ -45,6 +45,13 @@ impl Document {
     /// Returns a reference to the object template definitions.
     pub(crate) fn definitions_cache(&self) -> &DefinitionsCache {
         &self.definitions
+    }
+
+    /// Returns an iterator of all object nodes.
+    pub fn objects(&self) -> impl Iterator<Item = ObjectHandle<'_>> {
+        self.objects
+            .object_node_ids()
+            .map(move |id| id.to_object_handle(self))
     }
 
     /// Returns `Document` object nodes, which have root object ID of scenes.
