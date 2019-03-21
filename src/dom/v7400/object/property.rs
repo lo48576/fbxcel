@@ -7,6 +7,7 @@ pub use self::{
     value::LoadPropertyValue,
 };
 
+pub mod loaders;
 mod node;
 mod object_props;
 mod properties;
