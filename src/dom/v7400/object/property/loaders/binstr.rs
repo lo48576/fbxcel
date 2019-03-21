@@ -2,9 +2,7 @@
 
 use failure::format_err;
 
-use crate::dom::v7400::object::property::{
-    loaders::check_attrs_len, LoadPropertyValue, PropertyHandle,
-};
+use crate::dom::v7400::object::property::{loaders::check_attrs_len, LoadProperty, PropertyHandle};
 
 /// Binary property loader that loads owned data.
 ///
@@ -33,7 +31,7 @@ macro_rules! impl_owned_loader {
             }
         }
 
-        impl LoadPropertyValue<'_> for $ty_loader {
+        impl LoadProperty<'_> for $ty_loader {
             type Value = $ty_target;
             type Error = failure::Error;
 
@@ -82,7 +80,7 @@ macro_rules! impl_borrowed_loader {
             }
         }
 
-        impl<'a> LoadPropertyValue<'a> for $ty_loader {
+        impl<'a> LoadProperty<'a> for $ty_loader {
             type Value = &'a $ty_target;
             type Error = failure::Error;
 

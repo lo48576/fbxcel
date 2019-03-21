@@ -2,9 +2,7 @@
 
 use failure::format_err;
 
-use crate::dom::v7400::object::property::{
-    loaders::check_attrs_len, LoadPropertyValue, PropertyHandle,
-};
+use crate::dom::v7400::object::property::{loaders::check_attrs_len, LoadProperty, PropertyHandle};
 
 /// Strict `f32` property loader.
 ///
@@ -35,7 +33,7 @@ macro_rules! impl_strict_float_loader {
             }
         }
 
-        impl LoadPropertyValue<'_> for $ty_loader {
+        impl LoadProperty<'_> for $ty_loader {
             type Value = $ty_target;
             type Error = failure::Error;
 

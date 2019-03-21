@@ -2,9 +2,7 @@
 
 use failure::format_err;
 
-use crate::dom::v7400::object::property::{
-    loaders::check_attrs_len, LoadPropertyValue, PropertyHandle,
-};
+use crate::dom::v7400::object::property::{loaders::check_attrs_len, LoadProperty, PropertyHandle};
 
 macro_rules! impl_basic_methods {
     ($ty_loader:ty) => {
@@ -69,7 +67,7 @@ macro_rules! impl_f64_arr_loader {
     ($ty_loader:ty, $len:tt) => {
         impl_basic_methods! { $ty_loader }
 
-        impl LoadPropertyValue<'_> for $ty_loader {
+        impl LoadProperty<'_> for $ty_loader {
             type Value = [f64; $len];
             type Error = failure::Error;
 

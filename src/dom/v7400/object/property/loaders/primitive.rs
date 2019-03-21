@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use failure::format_err;
 
 use crate::{
-    dom::v7400::object::property::{loaders::check_attrs_len, LoadPropertyValue, PropertyHandle},
+    dom::v7400::object::property::{loaders::check_attrs_len, LoadProperty, PropertyHandle},
     pull_parser::v7400::attribute::DirectAttributeValue,
 };
 
@@ -44,7 +44,7 @@ impl<T> Clone for PrimitiveLoader<T> {
 
 impl<T> Copy for PrimitiveLoader<T> {}
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<bool> {
+impl LoadProperty<'_> for PrimitiveLoader<bool> {
     type Value = bool;
     type Error = failure::Error;
 
@@ -64,7 +64,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<bool> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<i16> {
+impl LoadProperty<'_> for PrimitiveLoader<i16> {
     type Value = i16;
     type Error = failure::Error;
 
@@ -80,7 +80,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<i16> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<u16> {
+impl LoadProperty<'_> for PrimitiveLoader<u16> {
     type Value = u16;
     type Error = failure::Error;
 
@@ -97,7 +97,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<u16> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<i32> {
+impl LoadProperty<'_> for PrimitiveLoader<i32> {
     type Value = i32;
     type Error = failure::Error;
 
@@ -115,7 +115,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<i32> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<u32> {
+impl LoadProperty<'_> for PrimitiveLoader<u32> {
     type Value = u32;
     type Error = failure::Error;
 
@@ -133,7 +133,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<u32> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<i64> {
+impl LoadProperty<'_> for PrimitiveLoader<i64> {
     type Value = i64;
     type Error = failure::Error;
 
@@ -152,7 +152,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<i64> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<u64> {
+impl LoadProperty<'_> for PrimitiveLoader<u64> {
     type Value = u64;
     type Error = failure::Error;
 
@@ -171,7 +171,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<u64> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<f32> {
+impl LoadProperty<'_> for PrimitiveLoader<f32> {
     type Value = f32;
     type Error = failure::Error;
 
@@ -189,7 +189,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<f32> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<f64> {
+impl LoadProperty<'_> for PrimitiveLoader<f64> {
     type Value = f64;
     type Error = failure::Error;
 

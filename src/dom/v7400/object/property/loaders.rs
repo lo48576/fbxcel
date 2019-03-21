@@ -1,4 +1,4 @@
-//! Property values loaders.
+//! Property loaders.
 
 use failure::bail;
 
