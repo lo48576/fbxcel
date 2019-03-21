@@ -12,12 +12,19 @@ use crate::{
 };
 
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
-pub use self::{direct::DirectAttributeValue, visitor::VisitAttribute};
+pub use self::loader::LoadAttribute;
+
+/// Use `low::v7400::AttributeValue` instead.
+#[deprecated(
+    since = "0.4.0",
+    note = "`DirectAttributeValue` is moved to `low::v7400::AttributeValue`"
+)]
+pub type DirectAttributeValue = crate::low::v7400::AttributeValue;
 
 mod array;
-mod direct;
 pub mod iter;
-pub mod visitor;
+mod loader;
+pub mod loaders;
 
 /// Node attributes reader.
 #[derive(Debug)]
@@ -110,50 +117,50 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         Ok(Some(attr_type))
     }
 
-    /// Let visitor visit the next node attribute.
-    pub fn visit_next<V>(&mut self, visitor: V) -> Result<Option<V::Output>>
+    /// Let loader load the next node attribute.
+    pub fn load_next<V>(&mut self, loader: V) -> Result<Option<V::Output>>
     where
-        V: VisitAttribute,
+        V: LoadAttribute,
     {
         self.do_with_health_check(|this, start_pos, attr_index| {
             let attr_type = match this.read_next_attr_type()? {
                 Some(v) => v,
                 None => return Ok(None),
             };
-            this.visit_next_impl(attr_type, visitor, start_pos, attr_index)
+            this.load_next_impl(attr_type, loader, start_pos, attr_index)
                 .map(Some)
         })
     }
 
-    /// Let visitor visit the next node attribute.
+    /// Let loader load the next node attribute.
     ///
-    /// This method prefers `V::visit_{binary,string}_buffered` to
-    /// `V::visit_{binary,string}`.
-    pub fn visit_next_buffered<V>(&mut self, visitor: V) -> Result<Option<V::Output>>
+    /// This method prefers `V::load_{binary,string}_buffered` to
+    /// `V::load_{binary,string}`.
+    pub fn load_next_buffered<V>(&mut self, loader: V) -> Result<Option<V::Output>>
     where
         R: io::BufRead,
-        V: VisitAttribute,
+        V: LoadAttribute,
     {
         self.do_with_health_check(|this, start_pos, attr_index| {
             let attr_type = match this.read_next_attr_type()? {
                 Some(v) => v,
                 None => return Ok(None),
             };
-            this.visit_next_buffered_impl(attr_type, visitor, start_pos, attr_index)
+            this.load_next_buffered_impl(attr_type, loader, start_pos, attr_index)
                 .map(Some)
         })
     }
 
-    /// Internal implementation of `visit_next`.
-    fn visit_next_impl<V>(
+    /// Internal implementation of `load_next`.
+    fn load_next_impl<V>(
         &mut self,
         attr_type: AttributeType,
-        visitor: V,
+        loader: V,
         start_pos: u64,
         attr_index: usize,
     ) -> Result<V::Output>
     where
-        V: VisitAttribute,
+        V: LoadAttribute,
     {
         match attr_type {
             AttributeType::Bool => {
@@ -166,32 +173,32 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                         self.position(start_pos, attr_index),
                     )?;
                 }
-                visitor.visit_bool(value)
+                loader.load_bool(value)
             }
             AttributeType::I16 => {
                 let value = self.parser.parse::<i16>()?;
                 self.update_next_attr_start_offset(0);
-                visitor.visit_i16(value)
+                loader.load_i16(value)
             }
             AttributeType::I32 => {
                 let value = self.parser.parse::<i32>()?;
                 self.update_next_attr_start_offset(0);
-                visitor.visit_i32(value)
+                loader.load_i32(value)
             }
             AttributeType::I64 => {
                 let value = self.parser.parse::<i64>()?;
                 self.update_next_attr_start_offset(0);
-                visitor.visit_i64(value)
+                loader.load_i64(value)
             }
             AttributeType::F32 => {
                 let value = self.parser.parse::<f32>()?;
                 self.update_next_attr_start_offset(0);
-                visitor.visit_f32(value)
+                loader.load_f32(value)
             }
             AttributeType::F64 => {
                 let value = self.parser.parse::<f64>()?;
                 self.update_next_attr_start_offset(0);
-                visitor.visit_f64(value)
+                loader.load_f64(value)
             }
             AttributeType::ArrBool => {
                 let header = ArrayAttributeHeader::from_reader(self.parser.reader())?;
@@ -199,7 +206,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
                 let count = header.elements_count;
                 let mut iter = BooleanArrayAttributeValues::new(reader, count);
-                let res = visitor.visit_seq_bool(&mut iter, count as usize)?;
+                let res = loader.load_seq_bool(&mut iter, count as usize)?;
                 // Save `has_error` to make `iter` discardable before
                 // `self.parser.warn()` call.
                 let has_error = iter.has_error();
@@ -220,7 +227,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
                 let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, i32>::new(reader, count);
-                let res = visitor.visit_seq_i32(&mut iter, count as usize)?;
+                let res = loader.load_seq_i32(&mut iter, count as usize)?;
                 if iter.has_error() {
                     return Err(DataError::NodeAttributeError.into());
                 }
@@ -232,7 +239,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
                 let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, i64>::new(reader, count);
-                let res = visitor.visit_seq_i64(&mut iter, count as usize)?;
+                let res = loader.load_seq_i64(&mut iter, count as usize)?;
                 if iter.has_error() {
                     return Err(DataError::NodeAttributeError.into());
                 }
@@ -244,7 +251,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
                 let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, f32>::new(reader, count);
-                let res = visitor.visit_seq_f32(&mut iter, count as usize)?;
+                let res = loader.load_seq_f32(&mut iter, count as usize)?;
                 if iter.has_error() {
                     return Err(DataError::NodeAttributeError.into());
                 }
@@ -256,7 +263,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 let reader = AttributeStreamDecoder::create(header.encoding, self.parser.reader())?;
                 let count = header.elements_count;
                 let mut iter = ArrayAttributeValues::<_, f64>::new(reader, count);
-                let res = visitor.visit_seq_f64(&mut iter, count as usize)?;
+                let res = loader.load_seq_f64(&mut iter, count as usize)?;
                 if iter.has_error() {
                     return Err(DataError::NodeAttributeError.into());
                 }
@@ -269,7 +276,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
                 let reader = io::Read::take(self.parser.reader(), bytelen);
-                visitor.visit_binary(reader, bytelen)
+                loader.load_binary(reader, bytelen)
             }
             AttributeType::String => {
                 let header = self.parser.parse::<SpecialAttributeHeader>()?;
@@ -278,22 +285,22 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
                 let reader = io::Read::take(self.parser.reader(), bytelen);
-                visitor.visit_string(reader, bytelen)
+                loader.load_string(reader, bytelen)
             }
         }
     }
 
-    /// Internal implementation of `visit_next_buffered`.
-    fn visit_next_buffered_impl<V>(
+    /// Internal implementation of `load_next_buffered`.
+    fn load_next_buffered_impl<V>(
         &mut self,
         attr_type: AttributeType,
-        visitor: V,
+        loader: V,
         start_pos: u64,
         attr_index: usize,
     ) -> Result<V::Output>
     where
         R: io::BufRead,
-        V: VisitAttribute,
+        V: LoadAttribute,
     {
         match attr_type {
             AttributeType::Binary => {
@@ -303,7 +310,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
                 let reader = io::Read::take(self.parser.reader(), bytelen);
-                visitor.visit_binary_buffered(reader, bytelen)
+                loader.load_binary_buffered(reader, bytelen)
             }
             AttributeType::String => {
                 let header = self.parser.parse::<SpecialAttributeHeader>()?;
@@ -312,9 +319,9 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
                 // `self.parser.reader().by_ref().take(bytelen)` is rejected by
                 // borrowck (of rustc 1.31.0-beta.15 (4b3a1d911 2018-11-20)).
                 let reader = io::Read::take(self.parser.reader(), bytelen);
-                visitor.visit_string_buffered(reader, bytelen)
+                loader.load_string_buffered(reader, bytelen)
             }
-            _ => self.visit_next_impl(attr_type, visitor, start_pos, attr_index),
+            _ => self.load_next_impl(attr_type, loader, start_pos, attr_index),
         }
     }
 
@@ -328,46 +335,43 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     }
 
     /// Creates an iterator emitting attribute values.
-    pub fn iter<V, I>(&mut self, visitors: I) -> iter::BorrowedIter<'_, 'a, R, I::IntoIter>
+    pub fn iter<V, I>(&mut self, loaders: I) -> iter::BorrowedIter<'_, 'a, R, I::IntoIter>
     where
-        V: VisitAttribute,
+        V: LoadAttribute,
         I: IntoIterator<Item = V>,
     {
-        iter::BorrowedIter::new(self, visitors.into_iter())
+        iter::BorrowedIter::new(self, loaders.into_iter())
     }
 
     /// Creates an iterator emitting attribute values with buffered I/O.
     pub fn iter_buffered<V, I>(
         &mut self,
-        visitors: I,
+        loaders: I,
     ) -> iter::BorrowedIterBuffered<'_, 'a, R, I::IntoIter>
     where
         R: io::BufRead,
-        V: VisitAttribute,
+        V: LoadAttribute,
         I: IntoIterator<Item = V>,
     {
-        iter::BorrowedIterBuffered::new(self, visitors.into_iter())
+        iter::BorrowedIterBuffered::new(self, loaders.into_iter())
     }
 
     /// Creates an iterator emitting attribute values.
-    pub fn into_iter<V, I>(self, visitors: I) -> iter::OwnedIter<'a, R, I::IntoIter>
+    pub fn into_iter<V, I>(self, loaders: I) -> iter::OwnedIter<'a, R, I::IntoIter>
     where
-        V: VisitAttribute,
+        V: LoadAttribute,
         I: IntoIterator<Item = V>,
     {
-        iter::OwnedIter::new(self, visitors.into_iter())
+        iter::OwnedIter::new(self, loaders.into_iter())
     }
 
     /// Creates an iterator emitting attribute values with buffered I/O.
-    pub fn into_iter_buffered<V, I>(
-        self,
-        visitors: I,
-    ) -> iter::OwnedIterBuffered<'a, R, I::IntoIter>
+    pub fn into_iter_buffered<V, I>(self, loaders: I) -> iter::OwnedIterBuffered<'a, R, I::IntoIter>
     where
         R: io::BufRead,
-        V: VisitAttribute,
+        V: LoadAttribute,
         I: IntoIterator<Item = V>,
     {
-        iter::OwnedIterBuffered::new(self, visitors.into_iter())
+        iter::OwnedIterBuffered::new(self, loaders.into_iter())
     }
 }

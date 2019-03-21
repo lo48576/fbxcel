@@ -3,6 +3,16 @@
 ## [Unreleased]
 * Object properties are supported.
     + Very basic support, but would be useful.
+* Huge refactoring around attribute values.
+    + Many types, modules, and functions are renamed and moved.
+
+### Breaking change
+#### Prefer "load" to "visit" for node attributes
+* `pull_parser::v7400::attribute::VisitAttribute` is changed to
+  `pull_parser::v7400::attribute::LoadAttribute`.
+    + `VisitAttributeValue::visit_*` is renamed to `LoadAttribute::load_*`.
+* `pull_parser::v7400::attribute::Attributes::visit_*` is renamed to
+  `Attributes::load_*`.
 
 ### Added
 * `dom::v7400::Document::objects()` is added.
@@ -19,6 +29,14 @@
   same lifetime as the tree.
     + The lifetime was mistakenly set too short in previous implementation, but
       this is now fixed.
+
+#### Deprecation
+* `pull_parser::v7400::attribute:DirectAttributeValue` is now deprecated.
+    + It is moved to `low::v7400::AttributeValue`.
+    + Now `DirectAttributeValue` is a type alias to
+      `low::v7400::AttributeValue`.
+    + The type alias will exists for a while, but will be removed in future
+      version.
 
 ## [0.3.0]
 

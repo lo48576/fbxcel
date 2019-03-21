@@ -7,9 +7,7 @@ use std::marker::PhantomData;
 use failure::format_err;
 use mint;
 
-use crate::dom::v7400::object::property::{
-    loaders::check_attrs_len, LoadPropertyValue, PropertyHandle,
-};
+use crate::dom::v7400::object::property::{loaders::check_attrs_len, LoadProperty, PropertyHandle};
 
 /// Mint type loader.
 ///
@@ -151,7 +149,7 @@ macro_rules! impl_loader {
         }
     };
     (@impl, $ty_elem:ty, $getter:ident, $kind:tt, $base:ident, $len:tt, $target_name:expr) => {
-        impl LoadPropertyValue<'_> for MintLoader<mint::$base<$ty_elem>> {
+        impl LoadProperty<'_> for MintLoader<mint::$base<$ty_elem>> {
             type Value = mint::$base<$ty_elem>;
             type Error = failure::Error;
 

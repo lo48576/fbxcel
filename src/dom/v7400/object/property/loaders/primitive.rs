@@ -5,8 +5,8 @@ use std::marker::PhantomData;
 use failure::format_err;
 
 use crate::{
-    dom::v7400::object::property::{loaders::check_attrs_len, LoadPropertyValue, PropertyHandle},
-    pull_parser::v7400::attribute::DirectAttributeValue,
+    dom::v7400::object::property::{loaders::check_attrs_len, LoadProperty, PropertyHandle},
+    low::v7400::AttributeValue,
 };
 
 /// Primitive type value loader.
@@ -44,7 +44,7 @@ impl<T> Clone for PrimitiveLoader<T> {
 
 impl<T> Copy for PrimitiveLoader<T> {}
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<bool> {
+impl LoadProperty<'_> for PrimitiveLoader<bool> {
     type Value = bool;
     type Error = failure::Error;
 
@@ -55,16 +55,16 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<bool> {
     fn load(self, node: &PropertyHandle<'_>) -> Result<Self::Value, Self::Error> {
         let value_part = check_attrs_len(node, 1, "boolean")?;
         match value_part[0] {
-            DirectAttributeValue::Bool(v) => Ok(v),
-            DirectAttributeValue::I16(v) => Ok(v != 0),
-            DirectAttributeValue::I32(v) => Ok(v != 0),
-            DirectAttributeValue::I64(v) => Ok(v != 0),
+            AttributeValue::Bool(v) => Ok(v),
+            AttributeValue::I16(v) => Ok(v != 0),
+            AttributeValue::I32(v) => Ok(v != 0),
+            AttributeValue::I64(v) => Ok(v != 0),
             ref v => Err(prop_type_err!("boolean", v.type_(), node)),
         }
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<i16> {
+impl LoadProperty<'_> for PrimitiveLoader<i16> {
     type Value = i16;
     type Error = failure::Error;
 
@@ -80,7 +80,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<i16> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<u16> {
+impl LoadProperty<'_> for PrimitiveLoader<u16> {
     type Value = u16;
     type Error = failure::Error;
 
@@ -97,7 +97,7 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<u16> {
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<i32> {
+impl LoadProperty<'_> for PrimitiveLoader<i32> {
     type Value = i32;
     type Error = failure::Error;
 
@@ -108,14 +108,14 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<i32> {
     fn load(self, node: &PropertyHandle<'_>) -> Result<Self::Value, Self::Error> {
         let value_part = check_attrs_len(node, 1, "`i32`")?;
         match value_part[0] {
-            DirectAttributeValue::I16(v) => Ok(i32::from(v)),
-            DirectAttributeValue::I32(v) => Ok(v),
+            AttributeValue::I16(v) => Ok(i32::from(v)),
+            AttributeValue::I32(v) => Ok(v),
             ref v => Err(prop_type_err!("i32", v.type_(), node)),
         }
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<u32> {
+impl LoadProperty<'_> for PrimitiveLoader<u32> {
     type Value = u32;
     type Error = failure::Error;
 
@@ -126,14 +126,14 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<u32> {
     fn load(self, node: &PropertyHandle<'_>) -> Result<Self::Value, Self::Error> {
         let value_part = check_attrs_len(node, 1, "`u32`")?;
         match value_part[0] {
-            DirectAttributeValue::I16(v) => Ok(i32::from(v) as u32),
-            DirectAttributeValue::I32(v) => Ok(v as u32),
+            AttributeValue::I16(v) => Ok(i32::from(v) as u32),
+            AttributeValue::I32(v) => Ok(v as u32),
             ref v => Err(prop_type_err!("u32", v.type_(), node)),
         }
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<i64> {
+impl LoadProperty<'_> for PrimitiveLoader<i64> {
     type Value = i64;
     type Error = failure::Error;
 
@@ -144,15 +144,15 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<i64> {
     fn load(self, node: &PropertyHandle<'_>) -> Result<Self::Value, Self::Error> {
         let value_part = check_attrs_len(node, 1, "`i64`")?;
         match value_part[0] {
-            DirectAttributeValue::I16(v) => Ok(i64::from(v)),
-            DirectAttributeValue::I32(v) => Ok(i64::from(v)),
-            DirectAttributeValue::I64(v) => Ok(v),
+            AttributeValue::I16(v) => Ok(i64::from(v)),
+            AttributeValue::I32(v) => Ok(i64::from(v)),
+            AttributeValue::I64(v) => Ok(v),
             ref v => Err(prop_type_err!("i64", v.type_(), node)),
         }
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<u64> {
+impl LoadProperty<'_> for PrimitiveLoader<u64> {
     type Value = u64;
     type Error = failure::Error;
 
@@ -163,15 +163,15 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<u64> {
     fn load(self, node: &PropertyHandle<'_>) -> Result<Self::Value, Self::Error> {
         let value_part = check_attrs_len(node, 1, "`u64`")?;
         match value_part[0] {
-            DirectAttributeValue::I16(v) => Ok(i64::from(v) as u64),
-            DirectAttributeValue::I32(v) => Ok(i64::from(v) as u64),
-            DirectAttributeValue::I64(v) => Ok(v as u64),
+            AttributeValue::I16(v) => Ok(i64::from(v) as u64),
+            AttributeValue::I32(v) => Ok(i64::from(v) as u64),
+            AttributeValue::I64(v) => Ok(v as u64),
             ref v => Err(prop_type_err!("u64", v.type_(), node)),
         }
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<f32> {
+impl LoadProperty<'_> for PrimitiveLoader<f32> {
     type Value = f32;
     type Error = failure::Error;
 
@@ -182,14 +182,14 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<f32> {
     fn load(self, node: &PropertyHandle<'_>) -> Result<Self::Value, Self::Error> {
         let value_part = check_attrs_len(node, 1, "`f32`")?;
         match value_part[0] {
-            DirectAttributeValue::F32(v) => Ok(v),
-            DirectAttributeValue::F64(v) => Ok(v as f32),
+            AttributeValue::F32(v) => Ok(v),
+            AttributeValue::F64(v) => Ok(v as f32),
             ref v => Err(prop_type_err!("i64", v.type_(), node)),
         }
     }
 }
 
-impl LoadPropertyValue<'_> for PrimitiveLoader<f64> {
+impl LoadProperty<'_> for PrimitiveLoader<f64> {
     type Value = f64;
     type Error = failure::Error;
 
@@ -200,8 +200,8 @@ impl LoadPropertyValue<'_> for PrimitiveLoader<f64> {
     fn load(self, node: &PropertyHandle<'_>) -> Result<Self::Value, Self::Error> {
         let value_part = check_attrs_len(node, 1, "`f64`")?;
         match value_part[0] {
-            DirectAttributeValue::F32(v) => Ok(f64::from(v)),
-            DirectAttributeValue::F64(v) => Ok(v),
+            AttributeValue::F32(v) => Ok(f64::from(v)),
+            AttributeValue::F64(v) => Ok(v),
             ref v => Err(prop_type_err!("i64", v.type_(), node)),
         }
     }

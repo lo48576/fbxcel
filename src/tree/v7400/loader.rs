@@ -7,7 +7,7 @@ use string_interner::StringInterner;
 use crate::{
     low::v7400::FbxFooter,
     pull_parser::{
-        v7400::{attribute::visitor::DirectVisitor, Event, Parser, StartNode},
+        v7400::{attribute::loaders::DirectLoader, Event, Parser, StartNode},
         Error as ParserError, ParserSource,
     },
     tree::v7400::{LoadError, NodeData, NodeId, NodeNameSym, Tree},
@@ -111,7 +111,7 @@ impl Loader {
             let name_sym = self.node_names.get_or_intern(start.name());
             let attributes = start
                 .attributes()
-                .into_iter(std::iter::repeat(DirectVisitor))
+                .into_iter(std::iter::repeat(DirectLoader))
                 .collect::<Result<Vec<_>, _>>()?;
 
             NodeId::new(self.arena.new_node(NodeData::new(name_sym, attributes)))

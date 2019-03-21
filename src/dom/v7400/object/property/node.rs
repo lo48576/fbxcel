@@ -4,8 +4,8 @@ use failure::{format_err, Error};
 use log::warn;
 
 use crate::{
-    dom::v7400::{object::property::LoadPropertyValue, Document},
-    pull_parser::v7400::attribute::DirectAttributeValue,
+    dom::v7400::{object::property::LoadProperty, Document},
+    low::v7400::AttributeValue,
     tree::v7400::{NodeHandle, NodeId},
 };
 
@@ -34,7 +34,7 @@ impl From<PropertyNodeId> for NodeId {
     }
 }
 
-/// Node handle of a `Properties70` node.
+/// Node handle of a `P` node under `Properties70` node.
 #[derive(Debug, Clone, Copy)]
 pub struct PropertyHandle<'a> {
     /// Node ID.
@@ -65,7 +65,7 @@ impl<'a> PropertyHandle<'a> {
     }
 
     /// Reads a value from the property handle if possible.
-    pub fn load_value<V: LoadPropertyValue<'a>>(&self, loader: V) -> Result<V::Value, V::Error> {
+    pub fn load_value<V: LoadProperty<'a>>(&self, loader: V) -> Result<V::Value, V::Error> {
         loader.load(self)
     }
 
@@ -88,7 +88,7 @@ impl<'a> PropertyHandle<'a> {
     }
 
     /// Returns property value part of node attributes.
-    pub fn value_part(&self) -> &'a [DirectAttributeValue] {
+    pub fn value_part(&self) -> &'a [AttributeValue] {
         self.node().attributes().get(4..).unwrap_or_else(|| {
             warn!(
                 "Ignoring error: Not enough node attribute for proprerty node: \

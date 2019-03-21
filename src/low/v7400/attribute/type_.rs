@@ -1,4 +1,4 @@
-//! Attribute type.
+//! Node attribute type.
 
 use std::io;
 
