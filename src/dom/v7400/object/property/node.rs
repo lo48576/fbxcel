@@ -34,7 +34,7 @@ impl From<PropertyNodeId> for NodeId {
     }
 }
 
-/// Node handle of a `Properties70` node.
+/// Node handle of a `P` node under `Properties70` node.
 #[derive(Debug, Clone, Copy)]
 pub struct PropertyHandle<'a> {
     /// Node ID.
