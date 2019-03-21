@@ -1,10 +1,10 @@
-//! Direct attribute value type.
+//! Node attribute value.
 
 use crate::low::v7400::AttributeType;
 
-/// Direct attribute value type.
+/// Node attribute value type.
 #[derive(Debug, Clone, PartialEq)]
-pub enum DirectAttributeValue {
+pub enum AttributeValue {
     /// Single `bool`.
     Bool(bool),
     /// Single `i16`.
@@ -38,7 +38,7 @@ macro_rules! impl_val_getter {
         #[doc = $opt_doc]
         pub fn $opt_getter(&self) -> Option<$ty_ret> {
             match self {
-                DirectAttributeValue::$variant(v) => Some(*v),
+                AttributeValue::$variant(v) => Some(*v),
                 _ => None,
             }
         }
@@ -46,7 +46,7 @@ macro_rules! impl_val_getter {
         #[doc = $res_doc]
         pub fn $res_getter(&self) -> Result<$ty_ret, AttributeType> {
             match self {
-                DirectAttributeValue::$variant(v) => Ok(*v),
+                AttributeValue::$variant(v) => Ok(*v),
                 _ => Err(self.type_()),
             }
         }
@@ -58,7 +58,7 @@ macro_rules! impl_ref_getter {
         #[doc = $opt_doc]
         pub fn $opt_getter(&self) -> Option<&$ty_ret> {
             match self {
-                DirectAttributeValue::$variant(v) => Some(v),
+                AttributeValue::$variant(v) => Some(v),
                 _ => None,
             }
         }
@@ -66,30 +66,30 @@ macro_rules! impl_ref_getter {
         #[doc = $res_doc]
         pub fn $res_getter(&self) -> Result<&$ty_ret, AttributeType> {
             match self {
-                DirectAttributeValue::$variant(v) => Ok(v),
+                AttributeValue::$variant(v) => Ok(v),
                 _ => Err(self.type_()),
             }
         }
     }
 }
 
-impl DirectAttributeValue {
+impl AttributeValue {
     /// Returns the value type.
     pub fn type_(&self) -> AttributeType {
         match self {
-            DirectAttributeValue::Bool(_) => AttributeType::Bool,
-            DirectAttributeValue::I16(_) => AttributeType::I16,
-            DirectAttributeValue::I32(_) => AttributeType::I32,
-            DirectAttributeValue::I64(_) => AttributeType::I64,
-            DirectAttributeValue::F32(_) => AttributeType::F32,
-            DirectAttributeValue::F64(_) => AttributeType::F64,
-            DirectAttributeValue::ArrBool(_) => AttributeType::ArrBool,
-            DirectAttributeValue::ArrI32(_) => AttributeType::ArrI32,
-            DirectAttributeValue::ArrI64(_) => AttributeType::ArrI64,
-            DirectAttributeValue::ArrF32(_) => AttributeType::ArrF32,
-            DirectAttributeValue::ArrF64(_) => AttributeType::ArrF64,
-            DirectAttributeValue::String(_) => AttributeType::String,
-            DirectAttributeValue::Binary(_) => AttributeType::Binary,
+            AttributeValue::Bool(_) => AttributeType::Bool,
+            AttributeValue::I16(_) => AttributeType::I16,
+            AttributeValue::I32(_) => AttributeType::I32,
+            AttributeValue::I64(_) => AttributeType::I64,
+            AttributeValue::F32(_) => AttributeType::F32,
+            AttributeValue::F64(_) => AttributeType::F64,
+            AttributeValue::ArrBool(_) => AttributeType::ArrBool,
+            AttributeValue::ArrI32(_) => AttributeType::ArrI32,
+            AttributeValue::ArrI64(_) => AttributeType::ArrI64,
+            AttributeValue::ArrF32(_) => AttributeType::ArrF32,
+            AttributeValue::ArrF64(_) => AttributeType::ArrF64,
+            AttributeValue::String(_) => AttributeType::String,
+            AttributeValue::Binary(_) => AttributeType::Binary,
         }
     }
 

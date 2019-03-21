@@ -1,7 +1,7 @@
 //! Node handle.
 
 use crate::{
-    pull_parser::v7400::attribute::DirectAttributeValue,
+    low::v7400::AttributeValue,
     tree::v7400::{NodeData, NodeId, NodeNameSym, Tree},
 };
 
@@ -60,7 +60,7 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns the node attributes.
-    pub fn attributes(&self) -> &'a [DirectAttributeValue] {
+    pub fn attributes(&self) -> &'a [AttributeValue] {
         self.node().data.attributes()
     }
 

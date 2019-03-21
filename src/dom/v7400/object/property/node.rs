@@ -5,7 +5,7 @@ use log::warn;
 
 use crate::{
     dom::v7400::{object::property::LoadProperty, Document},
-    pull_parser::v7400::attribute::DirectAttributeValue,
+    low::v7400::AttributeValue,
     tree::v7400::{NodeHandle, NodeId},
 };
 
@@ -88,7 +88,7 @@ impl<'a> PropertyHandle<'a> {
     }
 
     /// Returns property value part of node attributes.
-    pub fn value_part(&self) -> &'a [DirectAttributeValue] {
+    pub fn value_part(&self) -> &'a [AttributeValue] {
         self.node().attributes().get(4..).unwrap_or_else(|| {
             warn!(
                 "Ignoring error: Not enough node attribute for proprerty node: \

@@ -107,39 +107,27 @@ fn dump_v7400_attributes_length<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::{loaders::DirectLoader, DirectAttributeValue};
+    use fbxcel::{
+        low::v7400::AttributeValue, pull_parser::v7400::attribute::loaders::DirectLoader,
+    };
 
     while let Some(attr) = attrs.load_next(DirectLoader)? {
         let type_ = attr.type_();
         indent(depth);
         match attr {
-            DirectAttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I16(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::ArrBool(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrI32(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrI64(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrF32(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrF64(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::Binary(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::String(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
+            AttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I16(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::ArrBool(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrI32(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrI64(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrF32(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrF64(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::Binary(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::String(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
         }
     }
 
@@ -170,55 +158,57 @@ fn dump_v7400_attributes_full<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::{loaders::DirectLoader, DirectAttributeValue};
+    use fbxcel::{
+        low::v7400::AttributeValue, pull_parser::v7400::attribute::loaders::DirectLoader,
+    };
 
     while let Some(attr) = attrs.load_next(DirectLoader)? {
         let type_ = attr.type_();
         indent(depth);
         match attr {
-            DirectAttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I16(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::ArrBool(v) => println!(
+            AttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I16(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::ArrBool(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrI32(v) => println!(
+            AttributeValue::ArrI32(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrI64(v) => println!(
+            AttributeValue::ArrI64(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrF32(v) => println!(
+            AttributeValue::ArrF32(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrF64(v) => println!(
+            AttributeValue::ArrF64(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::Binary(v) => println!(
+            AttributeValue::Binary(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::String(v) => println!(
+            AttributeValue::String(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),

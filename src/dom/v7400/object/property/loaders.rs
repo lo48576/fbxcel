@@ -2,10 +2,7 @@
 
 use failure::bail;
 
-use crate::{
-    dom::v7400::object::property::PropertyHandle,
-    pull_parser::v7400::attribute::DirectAttributeValue,
-};
+use crate::{dom::v7400::object::property::PropertyHandle, low::v7400::AttributeValue};
 
 #[cfg(feature = "mint")]
 pub use self::mint::MintLoader;
@@ -40,7 +37,7 @@ fn check_attrs_len<'a>(
     node: &PropertyHandle<'a>,
     expected_len: usize,
     target_name: &str,
-) -> Result<&'a [DirectAttributeValue], failure::Error> {
+) -> Result<&'a [AttributeValue], failure::Error> {
     let value_part = node.value_part();
     let len = value_part.len();
     if len < expected_len {
