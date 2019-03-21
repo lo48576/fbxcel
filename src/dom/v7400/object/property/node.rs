@@ -4,7 +4,7 @@ use failure::{format_err, Error};
 use log::warn;
 
 use crate::{
-    dom::v7400::Document,
+    dom::v7400::{object::property::LoadPropertyValue, Document},
     pull_parser::v7400::attribute::DirectAttributeValue,
     tree::v7400::{NodeHandle, NodeId},
 };
@@ -62,6 +62,11 @@ impl<'a> PropertyHandle<'a> {
     /// Returns a reference to the document.
     pub fn document(&self) -> &'a Document {
         self.doc
+    }
+
+    /// Reads a value from the property handle if possible.
+    pub fn load_value<V: LoadPropertyValue<'a>>(&self, loader: V) -> Result<V::Value, V::Error> {
+        loader.load(self)
     }
 
     /// Returns proprety name.
