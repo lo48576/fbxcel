@@ -107,9 +107,9 @@ fn dump_v7400_attributes_length<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::{visitor::DirectVisitor, DirectAttributeValue};
+    use self::pull_parser::v7400::attribute::{loaders::DirectLoader, DirectAttributeValue};
 
-    while let Some(attr) = attrs.visit_next(DirectVisitor)? {
+    while let Some(attr) = attrs.load_next(DirectLoader)? {
         let type_ = attr.type_();
         indent(depth);
         match attr {
@@ -153,9 +153,9 @@ fn dump_v7400_attributes_type<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::visitor::TypeVisitor;
+    use self::pull_parser::v7400::attribute::loaders::TypeLoader;
 
-    while let Some(type_) = attrs.visit_next(TypeVisitor).unwrap() {
+    while let Some(type_) = attrs.load_next(TypeLoader).unwrap() {
         indent(depth);
         println!("Attribute: {:?}", type_);
     }
@@ -170,9 +170,9 @@ fn dump_v7400_attributes_full<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::{visitor::DirectVisitor, DirectAttributeValue};
+    use self::pull_parser::v7400::attribute::{loaders::DirectLoader, DirectAttributeValue};
 
-    while let Some(attr) = attrs.visit_next(DirectVisitor)? {
+    while let Some(attr) = attrs.load_next(DirectLoader)? {
         let type_ = attr.type_();
         indent(depth);
         match attr {

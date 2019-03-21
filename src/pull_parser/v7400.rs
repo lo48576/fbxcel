@@ -2,7 +2,7 @@
 
 pub(crate) use self::read::{FromParser, FromReader};
 pub use self::{
-    attribute::{Attributes, VisitAttribute},
+    attribute::{Attributes, LoadAttribute},
     event::{Event, StartNode},
     parser::{from_reader, from_seekable_reader, Parser},
 };
