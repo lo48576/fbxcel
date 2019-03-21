@@ -7,6 +7,8 @@ use crate::{
     pull_parser::v7400::attribute::DirectAttributeValue,
 };
 
+#[cfg(feature = "mint")]
+pub use self::mint::MintLoader;
 pub use self::{
     array::{F64Arr16Loader, F64Arr2Loader, F64Arr3Loader, F64Arr4Loader},
     binstr::{BorrowedBinaryLoader, BorrowedStringLoader, OwnedBinaryLoader, OwnedStringLoader},
@@ -28,6 +30,8 @@ macro_rules! prop_type_err {
 
 mod array;
 mod binstr;
+#[cfg(feature = "mint")]
+mod mint;
 mod primitive;
 mod strict_primitive;
 
