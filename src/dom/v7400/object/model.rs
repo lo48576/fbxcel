@@ -39,24 +39,7 @@ impl<'a> std::ops::Deref for TypedModelHandle<'a> {
     }
 }
 
-/// `Model` node handle.
-#[derive(Debug, Clone, Copy)]
-pub struct ModelHandle<'a> {
-    /// Object handle.
-    object: ObjectHandle<'a>,
-}
-
-impl<'a> ModelHandle<'a> {
-    /// Creates a new handle.
-    pub(crate) fn new(object: ObjectHandle<'a>) -> Self {
-        Self { object }
-    }
-}
-
-impl<'a> std::ops::Deref for ModelHandle<'a> {
-    type Target = ObjectHandle<'a>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.object
-    }
+define_object_subtype! {
+    /// `Model` node handle.
+    ModelHandle: ObjectHandle
 }
