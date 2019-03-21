@@ -16,6 +16,7 @@ pub(crate) use self::{
 mod macros;
 
 mod cache;
+pub mod geometry;
 mod meta;
 pub mod model;
 pub mod property;
