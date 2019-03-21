@@ -12,6 +12,9 @@ pub(crate) use self::{
     meta::{ObjectClassSym, ObjectMeta},
 };
 
+#[macro_use]
+mod macros;
+
 mod cache;
 mod meta;
 pub mod model;
