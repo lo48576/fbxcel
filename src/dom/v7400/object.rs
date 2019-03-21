@@ -14,6 +14,7 @@ pub(crate) use self::{
 
 mod cache;
 mod meta;
+pub mod model;
 pub mod property;
 pub mod scene;
 mod typed;
