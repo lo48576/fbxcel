@@ -1,10 +1,14 @@
 //! Node types.
 
-use crate::dom::v7400::object::{geometry, material, model, texture, video, ObjectHandle};
+use crate::dom::v7400::object::{
+    deformer, geometry, material, model, texture, video, ObjectHandle,
+};
 
 /// Typed object handle.
 #[derive(Debug, Clone, Copy)]
 pub enum TypedObjectHandle<'a> {
+    /// Deformer.
+    Deformer(deformer::TypedDeformerHandle<'a>),
     /// Geometry.
     Geometry(geometry::TypedGeometryHandle<'a>),
     /// Material.
@@ -25,6 +29,9 @@ impl<'a> TypedObjectHandle<'a> {
     /// Creates a new handle from the given object handle.
     pub(crate) fn new(obj: ObjectHandle<'a>) -> Self {
         match obj.node().name() {
+            "Deformer" => TypedObjectHandle::Deformer(deformer::TypedDeformerHandle::new(
+                deformer::DeformerHandle::new(obj),
+            )),
             "Geometry" => TypedObjectHandle::Geometry(geometry::TypedGeometryHandle::new(
                 geometry::GeometryHandle::new(obj),
             )),
@@ -46,6 +53,7 @@ impl<'a> std::ops::Deref for TypedObjectHandle<'a> {
 
     fn deref(&self) -> &Self::Target {
         match self {
+            TypedObjectHandle::Deformer(o) => &**o,
             TypedObjectHandle::Geometry(o) => &**o,
             TypedObjectHandle::Material(o) => &**o,
             TypedObjectHandle::Model(o) => &**o,
