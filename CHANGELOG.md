@@ -23,6 +23,17 @@
         * By this method, users can access object properties.
     + `dom::v7400::ObjectHandle::properties_by_native_typename()` is added.
         * By this method, users can access object properties.
+* Object-node-type-specific handle types are added.
+    + Modules corresponding to node name are added under `dom::v7400::object`.
+        * `deformer`: `Deformer` and `SubDeformer` node.
+        * `geometry`: `Geometry` node.
+        * `material`: `Material` node.
+        * `model`: `Model` node.
+        * `texture`: `Texture` node.
+        * `video`: `Video` node.
+        * Some new types of them have the same name (for example
+          `model::MeshHandle` and `geometry::MeshHandle`).
+          Use with care.
 
 ### Non-breaking change
 * Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have
