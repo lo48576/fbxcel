@@ -17,6 +17,7 @@ mod macros;
 
 mod cache;
 pub mod geometry;
+pub mod material;
 mod meta;
 pub mod model;
 pub mod property;
