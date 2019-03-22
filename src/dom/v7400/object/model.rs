@@ -1,6 +1,6 @@
 //! `Model` object.
 
-use crate::dom::v7400::object::ObjectHandle;
+use crate::dom::v7400::object::{ObjectHandle, TypedObjectHandle};
 
 pub use self::{
     camera::CameraHandle, light::LightHandle, limbnode::LimbNodeHandle, mesh::MeshHandle,
@@ -32,4 +32,29 @@ define_typed_handle! {
 define_object_subtype! {
     /// `Model` node handle.
     ModelHandle: ObjectHandle
+}
+
+impl<'a> ModelHandle<'a> {
+    /// Returns the parent model if available.
+    pub fn parent_model(&self) -> Option<TypedModelHandle<'a>> {
+        self.source_objects()
+            .filter(|obj| obj.label().is_none())
+            .filter_map(|obj| obj.object_handle())
+            .filter_map(|obj| match obj.get_typed() {
+                TypedObjectHandle::Model(o) => Some(o),
+                _ => None,
+            })
+            .next()
+    }
+
+    /// Returns an iterator of the child models.
+    pub fn child_models(&self) -> impl Iterator<Item = TypedModelHandle<'a>> + 'a {
+        self.source_objects()
+            .filter(|obj| obj.label().is_none())
+            .filter_map(|obj| obj.object_handle())
+            .filter_map(|obj| match obj.get_typed() {
+                TypedObjectHandle::Model(o) => Some(o),
+                _ => None,
+            })
+    }
 }
