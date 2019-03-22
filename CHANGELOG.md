@@ -29,6 +29,7 @@
         * `geometry`: `Geometry` node.
         * `material`: `Material` node.
         * `model`: `Model` node.
+        * `nodeattribute`: `NodeAttribute` node.
         * `texture`: `Texture` node.
         * `video`: `Video` node.
         * Some new types of them have the same name (for example
