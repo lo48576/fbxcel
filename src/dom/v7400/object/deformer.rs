@@ -1,10 +1,15 @@
-//! `Deformer` object.
+//! `Deformer` and `SubDeformer` object.
 
 use crate::dom::v7400::object::ObjectHandle;
 
-pub use self::{blendshape::BlendShapeHandle, skin::SkinHandle};
+pub use self::{
+    blendshape::BlendShapeHandle, blendshapechannel::BlendShapeChannelHandle,
+    cluster::ClusterHandle, skin::SkinHandle,
+};
 
 mod blendshape;
+mod blendshapechannel;
+mod cluster;
 mod skin;
 
 define_typed_handle! {
@@ -20,4 +25,19 @@ define_typed_handle! {
 define_object_subtype! {
     /// `Deformer` node handle.
     DeformerHandle: ObjectHandle
+}
+
+define_typed_handle! {
+    /// Typed subdeformer handle.
+    TypedSubDeformerHandle(SubDeformerHandle) {
+        /// BlendShapeChannel.
+        ("SubDeformer", "BlendShapeChannel") => BlendShapeChannel(BlendShapeChannelHandle),
+        /// Cluster.
+        ("SubDeformer", "Cluster") => Handle(ClusterHandle),
+    }
+}
+
+define_object_subtype! {
+    /// `SubDeformer` node handle.
+    SubDeformerHandle: ObjectHandle
 }

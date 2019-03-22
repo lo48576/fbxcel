@@ -15,6 +15,8 @@ pub enum TypedObjectHandle<'a> {
     Material(material::MaterialHandle<'a>),
     /// Model.
     Model(model::TypedModelHandle<'a>),
+    /// SubDeformer.
+    SubDeformer(deformer::TypedSubDeformerHandle<'a>),
     /// Texture.
     Texture(texture::TextureHandle<'a>),
     /// Model.
@@ -29,9 +31,15 @@ impl<'a> TypedObjectHandle<'a> {
     /// Creates a new handle from the given object handle.
     pub(crate) fn new(obj: ObjectHandle<'a>) -> Self {
         match obj.node().name() {
-            "Deformer" => TypedObjectHandle::Deformer(deformer::TypedDeformerHandle::new(
-                deformer::DeformerHandle::new(obj),
-            )),
+            "Deformer" => match obj.class() {
+                "Deformer" => TypedObjectHandle::Deformer(deformer::TypedDeformerHandle::new(
+                    deformer::DeformerHandle::new(obj),
+                )),
+                "SubDeformer" => TypedObjectHandle::SubDeformer(
+                    deformer::TypedSubDeformerHandle::new(deformer::SubDeformerHandle::new(obj)),
+                ),
+                _ => TypedObjectHandle::Unknown(obj),
+            },
             "Geometry" => TypedObjectHandle::Geometry(geometry::TypedGeometryHandle::new(
                 geometry::GeometryHandle::new(obj),
             )),
@@ -57,6 +65,7 @@ impl<'a> std::ops::Deref for TypedObjectHandle<'a> {
             TypedObjectHandle::Geometry(o) => &**o,
             TypedObjectHandle::Material(o) => &**o,
             TypedObjectHandle::Model(o) => &**o,
+            TypedObjectHandle::SubDeformer(o) => &**o,
             TypedObjectHandle::Texture(o) => &**o,
             TypedObjectHandle::Video(o) => &**o,
             TypedObjectHandle::Unknown(o) => o,
