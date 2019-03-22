@@ -6,15 +6,26 @@ use crate::{
 };
 
 use self::property::{ObjectProperties, PropertiesHandle};
+pub use self::typed::TypedObjectHandle;
 pub(crate) use self::{
     cache::ObjectsCache,
     meta::{ObjectClassSym, ObjectMeta},
 };
 
+#[macro_use]
+mod macros;
+
 mod cache;
+pub mod deformer;
+pub mod geometry;
+pub mod material;
 mod meta;
+pub mod model;
 pub mod property;
 pub mod scene;
+pub mod texture;
+mod typed;
+pub mod video;
 
 /// Node ID of a object node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -144,6 +155,11 @@ impl<'a> ObjectHandle<'a> {
     /// Returns the node handle.
     pub fn node(&self) -> NodeHandle<'a> {
         self.node_id.to_handle(self.doc.tree())
+    }
+
+    /// Returns the object type.
+    pub fn get_typed(&self) -> TypedObjectHandle<'a> {
+        TypedObjectHandle::new(*self)
     }
 
     /// Returns object name.
