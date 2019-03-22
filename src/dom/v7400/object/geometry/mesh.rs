@@ -29,4 +29,17 @@ impl<'a> MeshHandle<'a> {
                 _ => None,
             })
     }
+
+    /// Returns a child deformer blendshapes if available.
+    pub fn blendshapes(&self) -> impl Iterator<Item = deformer::BlendShapeHandle<'a>> {
+        self.destination_objects()
+            .filter(|obj| obj.label().is_none())
+            .filter_map(|obj| obj.object_handle())
+            .filter_map(|obj| match obj.get_typed() {
+                TypedObjectHandle::Deformer(deformer::TypedDeformerHandle::BlendShape(o)) => {
+                    Some(o)
+                }
+                _ => None,
+            })
+    }
 }
