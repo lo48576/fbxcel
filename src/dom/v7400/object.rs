@@ -22,6 +22,7 @@ mod meta;
 pub mod model;
 pub mod property;
 pub mod scene;
+pub mod texture;
 mod typed;
 pub mod video;
 
