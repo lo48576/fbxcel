@@ -9,7 +9,7 @@ pub enum TypedObjectHandle<'a> {
     Geometry(geometry::TypedGeometryHandle<'a>),
     /// Model.
     Model(model::TypedModelHandle<'a>),
-    /// Unoknwn.
+    /// Unknown.
     Unknown(ObjectHandle<'a>),
     #[doc(hidden)]
     __Nonexhaustive,
