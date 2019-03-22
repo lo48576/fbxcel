@@ -40,6 +40,12 @@
   same lifetime as the tree.
     + The lifetime was mistakenly set too short in previous implementation, but
       this is now fixed.
+* Debug (`{:?}`) formatting for `dom::v7400::object::ObjectHandle` became much
+  simpler and "usable".
+    + Previously it uses default format and dumps contents of `Document` data,
+      which can be very large and not so much useful.
+    + Now it simply dumps object node ID and object metadata.
+      Simple, small, and human-readable.
 
 #### Deprecation
 * `pull_parser::v7400::attribute:DirectAttributeValue` is now deprecated.
