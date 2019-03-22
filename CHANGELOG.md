@@ -34,6 +34,9 @@
         * Some new types of them have the same name (for example
           `model::MeshHandle` and `geometry::MeshHandle`).
           Use with care.
+    + Meaningful objects traversing is partially supported, but they are
+      unstable and subject to change.
+      Be careful.
 
 ### Non-breaking change
 * Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have

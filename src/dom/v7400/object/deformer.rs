@@ -33,7 +33,7 @@ define_typed_handle! {
         /// BlendShapeChannel.
         ("SubDeformer", "BlendShapeChannel") => BlendShapeChannel(BlendShapeChannelHandle),
         /// Cluster.
-        ("SubDeformer", "Cluster") => Handle(ClusterHandle),
+        ("SubDeformer", "Cluster") => Cluster(ClusterHandle),
     }
 }
 
