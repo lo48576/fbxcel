@@ -1,6 +1,6 @@
 //! Node types.
 
-use crate::dom::v7400::object::{geometry, material, model, ObjectHandle};
+use crate::dom::v7400::object::{geometry, material, model, video, ObjectHandle};
 
 /// Typed object handle.
 #[derive(Debug, Clone, Copy)]
@@ -11,6 +11,8 @@ pub enum TypedObjectHandle<'a> {
     Material(material::MaterialHandle<'a>),
     /// Model.
     Model(model::TypedModelHandle<'a>),
+    /// Model.
+    Video(video::TypedVideoHandle<'a>),
     /// Unknown.
     Unknown(ObjectHandle<'a>),
     #[doc(hidden)]
@@ -28,6 +30,9 @@ impl<'a> TypedObjectHandle<'a> {
             "Model" => {
                 TypedObjectHandle::Model(model::TypedModelHandle::new(model::ModelHandle::new(obj)))
             }
+            "Video" => {
+                TypedObjectHandle::Video(video::TypedVideoHandle::new(video::VideoHandle::new(obj)))
+            }
             _ => TypedObjectHandle::Unknown(obj),
         }
     }
@@ -41,6 +46,7 @@ impl<'a> std::ops::Deref for TypedObjectHandle<'a> {
             TypedObjectHandle::Geometry(o) => &**o,
             TypedObjectHandle::Material(o) => &**o,
             TypedObjectHandle::Model(o) => &**o,
+            TypedObjectHandle::Video(o) => &**o,
             TypedObjectHandle::Unknown(o) => o,
             TypedObjectHandle::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }

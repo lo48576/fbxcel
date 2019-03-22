@@ -23,6 +23,7 @@ pub mod model;
 pub mod property;
 pub mod scene;
 mod typed;
+pub mod video;
 
 /// Node ID of a object node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
