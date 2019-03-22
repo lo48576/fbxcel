@@ -2,7 +2,7 @@
 
 use failure::{format_err, Error};
 
-use crate::dom::v7400::object::{geometry, model::ModelHandle, TypedObjectHandle};
+use crate::dom::v7400::object::{geometry, material, model::ModelHandle, TypedObjectHandle};
 
 define_object_subtype! {
     /// `Model` node handle (mesh).
@@ -25,6 +25,17 @@ impl<'a> MeshHandle<'a> {
                     "Model mesh should have a child geometry mesh, but not found: object={:?}",
                     self
                 )
+            })
+    }
+
+    /// Returns an iterator of child material objects.
+    pub fn materials(&self) -> impl Iterator<Item = material::MaterialHandle<'a>> + 'a {
+        self.destination_objects()
+            .filter(|obj| obj.label().is_none())
+            .filter_map(|obj| obj.object_handle())
+            .filter_map(|obj| match obj.get_typed() {
+                TypedObjectHandle::Material(o) => Some(o),
+                _ => None,
             })
     }
 }
