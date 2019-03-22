@@ -1,7 +1,7 @@
 //! Node types.
 
 use crate::dom::v7400::object::{
-    deformer, geometry, material, model, texture, video, ObjectHandle,
+    deformer, geometry, material, model, nodeattribute, texture, video, ObjectHandle,
 };
 
 /// Typed object handle.
@@ -15,6 +15,8 @@ pub enum TypedObjectHandle<'a> {
     Material(material::MaterialHandle<'a>),
     /// Model.
     Model(model::TypedModelHandle<'a>),
+    /// NodeAttribute.
+    NodeAttribute(nodeattribute::TypedNodeAttributeHandle<'a>),
     /// SubDeformer.
     SubDeformer(deformer::TypedSubDeformerHandle<'a>),
     /// Texture.
@@ -47,6 +49,11 @@ impl<'a> TypedObjectHandle<'a> {
             "Model" => {
                 TypedObjectHandle::Model(model::TypedModelHandle::new(model::ModelHandle::new(obj)))
             }
+            "NodeAttribute" => {
+                TypedObjectHandle::NodeAttribute(nodeattribute::TypedNodeAttributeHandle::new(
+                    nodeattribute::NodeAttributeHandle::new(obj),
+                ))
+            }
             "Texture" => TypedObjectHandle::Texture(texture::TextureHandle::new(obj)),
             "Video" => {
                 TypedObjectHandle::Video(video::TypedVideoHandle::new(video::VideoHandle::new(obj)))
@@ -65,6 +72,7 @@ impl<'a> std::ops::Deref for TypedObjectHandle<'a> {
             TypedObjectHandle::Geometry(o) => &**o,
             TypedObjectHandle::Material(o) => &**o,
             TypedObjectHandle::Model(o) => &**o,
+            TypedObjectHandle::NodeAttribute(o) => &**o,
             TypedObjectHandle::SubDeformer(o) => &**o,
             TypedObjectHandle::Texture(o) => &**o,
             TypedObjectHandle::Video(o) => &**o,

@@ -23,6 +23,7 @@ pub mod geometry;
 pub mod material;
 mod meta;
 pub mod model;
+pub mod nodeattribute;
 pub mod property;
 pub mod scene;
 pub mod texture;
