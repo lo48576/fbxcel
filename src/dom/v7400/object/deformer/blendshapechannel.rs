@@ -4,7 +4,7 @@ use failure::{format_err, Error};
 
 use crate::dom::v7400::object::{
     deformer::{self, SubDeformerHandle},
-    TypedObjectHandle,
+    geometry, TypedObjectHandle,
 };
 
 define_object_subtype! {
@@ -31,6 +31,17 @@ impl<'a> BlendShapeChannelHandle<'a> {
                      parent deformer blendshape: object={:?}",
                     self
                 )
+            })
+    }
+
+    /// Returns an iterator of child geometry shapes.
+    pub fn shapes(&self) -> impl Iterator<Item = geometry::ShapeHandle<'a>> {
+        self.source_objects()
+            .filter(|obj| obj.label().is_none())
+            .filter_map(|obj| obj.object_handle())
+            .filter_map(|obj| match obj.get_typed() {
+                TypedObjectHandle::Geometry(geometry::TypedGeometryHandle::Shape(o)) => Some(o),
+                _ => None,
             })
     }
 }
