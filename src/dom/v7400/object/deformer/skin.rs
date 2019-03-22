@@ -2,7 +2,10 @@
 
 use failure::{format_err, Error};
 
-use crate::dom::v7400::object::{deformer::DeformerHandle, geometry, TypedObjectHandle};
+use crate::dom::v7400::object::{
+    deformer::{self, DeformerHandle},
+    geometry, TypedObjectHandle,
+};
 
 define_object_subtype! {
     /// `Deformer` node handle (skin).
@@ -25,6 +28,19 @@ impl<'a> SkinHandle<'a> {
                     "Deformer skin object should have a parent geometry mesh: object={:?}",
                     self
                 )
+            })
+    }
+
+    /// Returns an iterator of child subdeformer clusters.
+    pub fn clusters(&self) -> impl Iterator<Item = deformer::ClusterHandle<'a>> + 'a {
+        self.destination_objects()
+            .filter(|obj| obj.label().is_none())
+            .filter_map(|obj| obj.object_handle())
+            .filter_map(|obj| match obj.get_typed() {
+                TypedObjectHandle::SubDeformer(deformer::TypedSubDeformerHandle::Cluster(o)) => {
+                    Some(o)
+                }
+                _ => None,
             })
     }
 }
