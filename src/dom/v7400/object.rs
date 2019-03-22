@@ -1,5 +1,7 @@
 //! Objects-related stuff.
 
+use std::fmt;
+
 use crate::{
     dom::v7400::{connection::Connection, Document},
     tree::v7400::{NodeHandle, NodeId},
@@ -91,7 +93,7 @@ impl ObjectId {
 }
 
 /// Object handle.
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ObjectHandle<'a> {
     /// Node ID.
     node_id: ObjectNodeId,
@@ -202,6 +204,33 @@ impl<'a> ObjectHandle<'a> {
     /// the `PropertyTemplate` node to be used.
     pub fn properties_by_native_typename(&self, native_typename: &str) -> ObjectProperties<'a> {
         ObjectProperties::from_object(self, native_typename)
+    }
+}
+
+impl fmt::Debug for ObjectHandle<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        /// Object metadata type for debug printing.
+        #[derive(Debug)]
+        struct ObjectMeta<'a> {
+            /// Object ID.
+            id: ObjectId,
+            /// Name (if exists).
+            name: Option<&'a str>,
+            /// Class.
+            class: &'a str,
+            /// Subclass.
+            subclass: &'a str,
+        }
+        let meta = ObjectMeta {
+            id: self.object_id(),
+            name: self.name(),
+            class: self.class(),
+            subclass: self.subclass(),
+        };
+        f.debug_struct("ObjectHandle")
+            .field("node_id", &self.node_id)
+            .field("meta", &meta)
+            .finish()
     }
 }
 
