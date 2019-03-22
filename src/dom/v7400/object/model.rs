@@ -2,10 +2,13 @@
 
 use crate::dom::v7400::object::ObjectHandle;
 
-pub use self::{camera::CameraHandle, light::LightHandle, mesh::MeshHandle};
+pub use self::{
+    camera::CameraHandle, light::LightHandle, limbnode::LimbNodeHandle, mesh::MeshHandle,
+};
 
 mod camera;
 mod light;
+mod limbnode;
 mod mesh;
 
 define_typed_handle! {
@@ -15,6 +18,8 @@ define_typed_handle! {
         ("Model", "Camera") => Camera(CameraHandle),
         /// Light.
         ("Model", "Light") => Light(LightHandle),
+        /// LimbNode.
+        ("Model", "LimbNode") => LimbNode(LimbNodeHandle),
         /// Mesh.
         ("Model", "Mesh") => Mesh(MeshHandle),
     }
