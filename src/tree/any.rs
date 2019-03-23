@@ -41,7 +41,7 @@ impl AnyTree {
                 let (tree, footer) = tree_loader.load(&mut parser)?;
                 Ok(AnyTree::V7400(tree, footer))
             }
-            AnyParser::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
+            AnyParser::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
         }
     }
 
@@ -57,7 +57,7 @@ impl AnyTree {
                 let (tree, footer) = tree_loader.load(&mut parser)?;
                 Ok(AnyTree::V7400(tree, footer))
             }
-            AnyParser::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
+            AnyParser::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
         }
     }
 }
