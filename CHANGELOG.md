@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.4.1]
+
 * Docs are made more detailed, and some examples are added.
 
 ### Added
@@ -117,8 +119,9 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.0...develop>
-[0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.0>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.1...develop>
+[0.4.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.1>
+[0.4.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.0>
 [0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.3.0>
 [0.2.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.2.0>
 [0.1.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.1.0>
