@@ -34,19 +34,22 @@ impl Loader {
     ///
     /// The given parser should be brand-new, i.e. it should not have emited any
     /// events.
+    /// This can be checked by [`Parser::is_used()`].
     /// If the given parser is already used, [`LoadError::BadParser`] error will
     /// be returned.
     ///
     /// If the tree is successfully read but FBX footer is not,
     /// `Ok(tree, Err(parser_error))` is returned.
+    ///
+    /// [`LoadError::BadParser`]: enum.LoadError.html#variant.BadParser
+    /// [`Parser::is_used()`]: ../../pull_parser/v7400/struct.Parser.html#method.is_used
     pub fn load<R: ParserSource>(
         mut self,
         parser: &mut Parser<R>,
     ) -> Result<(Tree, Result<Box<FbxFooter>, ParserError>), LoadError> {
         debug!("Loading FBX data tree from a parser");
 
-        // TODO: Do more precise check.
-        if parser.current_depth() != 0 {
+        if parser.is_used() {
             error!("The given parser should be brand-new, but it has already emitted some events");
             return Err(LoadError::BadParser);
         }

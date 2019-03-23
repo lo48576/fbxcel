@@ -7,7 +7,9 @@ use crate::{
     pull_parser::{v7400::LoadAttribute, Result},
 };
 
-/// Loader for [`AttributeValue`][`low::v7400::AttributeValue`].
+/// Loader for [`AttributeValue`].
+///
+/// [`AttributeValue`]: ../../../../low/v7400/enum.AttributeValue.html
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DirectLoader;
 

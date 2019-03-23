@@ -13,6 +13,9 @@ use crate::{
 };
 
 /// FBX 7.4 footer.
+///
+/// Data contained in a FBX 7.4 footer is not useful for normal usage.
+/// Most of users can safely ignore the footer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FbxFooter {
     /// Unknown (semirandom) 16-bytes data.
