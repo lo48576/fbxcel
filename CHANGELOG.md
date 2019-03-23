@@ -5,6 +5,8 @@
     + Very basic support, but would be useful.
 * Huge refactoring around attribute values.
     + Many types, modules, and functions are renamed and moved.
+* `{dom,pull_parser,tree}::any` module is added.
+    + They provide mostly version-independent way to read and load the FBX data.
 
 ### Breaking change
 #### Prefer "load" to "visit" for node attributes

@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use fbxcel::{dom, pull_parser};
+use fbxcel::dom::any::AnyDocument;
 
 pub fn main() {
     env_logger::init();
@@ -13,30 +13,10 @@ pub fn main() {
         }
     };
     let file = File::open(path).expect("Failed to open file");
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
 
-    let header =
-        fbxcel::low::FbxHeader::read_fbx_header(&mut reader).expect("Failed to load FBX header");
-
-    println!(
-        "FBX version: {}.{}",
-        header.version().major(),
-        header.version().minor()
-    );
-
-    let parser_version = header.parser_version().expect("Unsupported FBX version");
-
-    match parser_version {
-        pull_parser::ParserVersion::V7400 => {
-            let mut parser = pull_parser::v7400::from_seekable_reader(header, reader)
-                .expect("Should never fail: Unsupported FBX verison");
-            parser.set_warning_handler(|w, pos| {
-                eprintln!("WARNING: {} (pos={:?})", w, pos);
-                Ok(())
-            });
-            let doc = dom::v7400::Loader::new()
-                .load_from_parser(&mut parser)
-                .expect("Failed to load FBX DOM");
+    match AnyDocument::from_seekable_reader(reader).expect("Failed to load document") {
+        AnyDocument::V7400(doc) => {
             println!("Loaded FBX DOM successfully");
             for scene in doc.scenes() {
                 println!("Scene object: object_id={:?}", scene.object_id());
@@ -46,5 +26,6 @@ pub fn main() {
                 println!("\tRoot object ID: {:?}", root_id);
             }
         }
+        _ => panic!("FBX version unsupported by this example"),
     }
 }
