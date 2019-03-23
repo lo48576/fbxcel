@@ -7,6 +7,7 @@ pub use self::{
     version::ParserVersion,
 };
 
+pub mod any;
 pub mod error;
 mod position;
 pub mod reader;
