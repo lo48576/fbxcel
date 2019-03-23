@@ -2,7 +2,18 @@
 
 use crate::low::v7400::AttributeType;
 
-/// Node attribute value type.
+/// Node attribute value.
+///
+/// To get a value of the specific type easily, use `get_*()` or
+/// `get_*_or_type()` method.
+///
+/// * `get_*()` returns `Option<_>`.
+///     + If a value of the expected type available, returns `Some(_)`.
+///     + If not, returns `None`.
+/// * `get_*_or_type()` returns `Result<_, AttributeType>`.
+///     + If a value of the expected type available, returns `Ok(_)`.
+///     + If not, returns `Ok(ty)` where `ty` is value type (same value as
+///       returned by `type_()`.
 #[derive(Debug, Clone, PartialEq)]
 pub enum AttributeValue {
     /// Single `bool`.

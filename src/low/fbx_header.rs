@@ -37,6 +37,8 @@ impl From<io::Error> for HeaderError {
 }
 
 /// FBX binary header.
+///
+/// This type represents a binary header for all supported versions of FBX.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FbxHeader {
     /// FBX version.
@@ -71,6 +73,8 @@ impl FbxHeader {
     }
 
     /// Returns FBX parser version.
+    ///
+    /// Returns `None` if no parser supports the FBX version.
     pub fn parser_version(self) -> Option<ParserVersion> {
         ParserVersion::from_fbx_version(self.version())
     }

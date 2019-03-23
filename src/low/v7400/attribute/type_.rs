@@ -4,7 +4,7 @@ use std::io;
 
 use crate::pull_parser::{error::DataError, v7400::FromReader, Error as ParserError};
 
-/// Attribute type.
+/// Node attribute type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AttributeType {
     /// Single `bool`.
