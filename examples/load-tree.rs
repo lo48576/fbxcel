@@ -1,9 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use fbxcel::{
-    pull_parser::any::{from_seekable_reader, AnyParser},
-    tree,
-};
+use fbxcel::tree::any::AnyTree;
 
 pub fn main() {
     env_logger::init();
@@ -18,24 +15,11 @@ pub fn main() {
     let file = File::open(path).expect("Failed to open file");
     let reader = BufReader::new(file);
 
-    match from_seekable_reader(reader).expect("Failed to create parser") {
-        AnyParser::V7400(mut parser) => {
-            let version = parser.fbx_version();
-            println!("FBX version: {}.{}", version.major(), version.minor());
-            parser.set_warning_handler(|w, pos| {
-                eprintln!("WARNING: {} (pos={:?})", w, pos);
-                Ok(())
-            });
-            let tree_loader = tree::v7400::Loader::new();
-            let (tree, footer) = tree_loader
-                .load(&mut parser)
-                .expect("Failed to load FBX data tree");
+    match AnyTree::from_seekable_reader(reader).expect("Failed to load tree") {
+        AnyTree::V7400(tree, footer) => {
             println!("tree = {:#?}", tree);
             println!("footer = {:#?}", footer);
         }
-        parser => panic!(
-            "Unsupported by this example: fbx_version={:?}",
-            parser.fbx_version()
-        ),
+        _ => panic!("FBX version unsupported by this example"),
     }
 }

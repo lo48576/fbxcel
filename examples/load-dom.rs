@@ -1,9 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use fbxcel::{
-    dom,
-    pull_parser::any::{from_seekable_reader, AnyParser},
-};
+use fbxcel::{dom, tree::any::AnyTree};
 
 pub fn main() {
     env_logger::init();
@@ -18,16 +15,10 @@ pub fn main() {
     let file = File::open(path).expect("Failed to open file");
     let reader = BufReader::new(file);
 
-    match from_seekable_reader(reader).expect("Failed to create parser") {
-        AnyParser::V7400(mut parser) => {
-            let version = parser.fbx_version();
-            println!("FBX version: {}.{}", version.major(), version.minor());
-            parser.set_warning_handler(|w, pos| {
-                eprintln!("WARNING: {} (pos={:?})", w, pos);
-                Ok(())
-            });
+    match AnyTree::from_seekable_reader(reader).expect("Failed to load tree") {
+        AnyTree::V7400(tree, _footer) => {
             let doc = dom::v7400::Loader::new()
-                .load_from_parser(&mut parser)
+                .load_from_tree(tree)
                 .expect("Failed to load FBX DOM");
             println!("Loaded FBX DOM successfully");
             for scene in doc.scenes() {
@@ -38,9 +29,6 @@ pub fn main() {
                 println!("\tRoot object ID: {:?}", root_id);
             }
         }
-        parser => panic!(
-            "Unsupported by this example: fbx_version={:?}",
-            parser.fbx_version()
-        ),
+        _ => panic!("FBX version unsupported by this example"),
     }
 }
