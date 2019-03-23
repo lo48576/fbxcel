@@ -47,7 +47,7 @@ pub struct FbxHeader {
 
 impl FbxHeader {
     /// Reads an FBX header from the given reader.
-    pub fn read_fbx_header(mut reader: impl io::Read) -> Result<Self, HeaderError> {
+    pub fn load(mut reader: impl io::Read) -> Result<Self, HeaderError> {
         /// Magic binary.
         const MAGIC: &[u8; MAGIC_LEN] = b"Kaydara FBX Binary  \x00\x1a\x00";
 
@@ -65,6 +65,12 @@ impl FbxHeader {
         Ok(FbxHeader {
             version: FbxVersion::new(version),
         })
+    }
+
+    /// Reads an FBX header from the given reader.
+    #[deprecated(since = "0.4.1", note = "Renamed to `load`")]
+    pub fn read_fbx_header(reader: impl io::Read) -> Result<Self, HeaderError> {
+        Self::load(reader)
     }
 
     /// Returns FBX version.
@@ -97,7 +103,7 @@ mod tests {
     fn header_ok() {
         let raw_header = b"Kaydara FBX Binary  \x00\x1a\x00\xe8\x1c\x00\x00";
         let mut cursor = Cursor::new(raw_header);
-        let header = FbxHeader::read_fbx_header(cursor.by_ref()).expect("Should never fail");
+        let header = FbxHeader::load(cursor.by_ref()).expect("Should never fail");
         assert_eq!(
             header.version(),
             FbxVersion::new(7400),
@@ -116,7 +122,7 @@ mod tests {
         let mut cursor = Cursor::new(wrong_header);
         // `HeaderError` may contain `io::Error` and is not comparable.
         assert!(
-            match FbxHeader::read_fbx_header(cursor.by_ref()).unwrap_err() {
+            match FbxHeader::load(cursor.by_ref()).unwrap_err() {
                 HeaderError::MagicNotDetected => true,
                 _ => false,
             },

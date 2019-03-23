@@ -53,7 +53,7 @@ fn parser_version(header: FbxHeader) -> Result<ParserVersion> {
 /// This works for seekable readers (which implement `std::io::Seek`), but
 /// `from_seekable_reader` should be used for them, because it is more efficent.
 pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<PlainSource<R>>> {
-    let header = FbxHeader::read_fbx_header(&mut reader)?;
+    let header = FbxHeader::load(&mut reader)?;
     match parser_version(header)? {
         ParserVersion::V7400 => {
             let parser = pull_parser::v7400::from_reader(header, reader).unwrap_or_else(|e| {
@@ -71,7 +71,7 @@ pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<PlainSource<R>>> 
 
 /// Loads a tree from the given seekable reader.
 pub fn from_seekable_reader<R: Read + Seek>(mut reader: R) -> Result<AnyParser<SeekableSource<R>>> {
-    let header = FbxHeader::read_fbx_header(&mut reader)?;
+    let header = FbxHeader::load(&mut reader)?;
     match parser_version(header)? {
         ParserVersion::V7400 => {
             let parser =
