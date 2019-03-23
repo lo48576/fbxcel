@@ -39,6 +39,8 @@ impl Loader {
     ///
     /// If the tree is successfully read but FBX footer is not,
     /// `Ok(tree, Err(parser_error))` is returned.
+    ///
+    /// [`LoadError::BadParser`]: enum.LoadError.html#variant.BadParser
     pub fn load<R: ParserSource>(
         mut self,
         parser: &mut Parser<R>,
