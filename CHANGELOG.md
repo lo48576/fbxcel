@@ -4,6 +4,14 @@
 
 * Docs are made more detailed, and some examples are added.
 
+### Non-breaking change
+* `low::FbxHeader::read_fbx_header()` is renamed to `load()`.
+  The old name is deprecated.
+
+#### Deprecation
+* `low::FbxHeader::read_fbx_header()` is deprecated.
+    + Use `low::FbxHeader::load()` instead.
+
 ## [0.4.0]
 
 * **`dom` module is now split to another crate,
