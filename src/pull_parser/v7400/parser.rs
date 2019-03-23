@@ -421,6 +421,7 @@ impl<R: ParserSource> Parser<R> {
             .expect("Attempt to skip implicit top-level node")
             .node_end_offset;
         self.reader.skip_to(end_pos)?;
+        self.state.last_event_kind = Some(EventKind::EndNode);
 
         Ok(())
     }

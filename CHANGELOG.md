@@ -10,6 +10,12 @@
 ### Non-breaking change
 * `low::FbxHeader::read_fbx_header()` is renamed to `load()`.
   The old name is deprecated.
+* `pull_parser::skip_current_node()` now updates parser status correctly.
+    + Previously the parser status is not updated correctly after
+      `skip_current_node()`.
+      This can cause parser error for correct FBX file, because the parser was
+      not able to determine presence of node end marker.
+      This problem is now fixed.
 
 #### Deprecation
 * `low::FbxHeader::read_fbx_header()` is deprecated.
