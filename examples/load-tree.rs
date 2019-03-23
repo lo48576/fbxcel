@@ -1,6 +1,9 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use fbxcel::{pull_parser, tree};
+use fbxcel::{
+    pull_parser::any::{from_seekable_reader, AnyParser},
+    tree,
+};
 
 pub fn main() {
     env_logger::init();
@@ -13,23 +16,12 @@ pub fn main() {
         }
     };
     let file = File::open(path).expect("Failed to open file");
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
 
-    let header =
-        fbxcel::low::FbxHeader::read_fbx_header(&mut reader).expect("Failed to load FBX header");
-
-    println!(
-        "FBX version: {}.{}",
-        header.version().major(),
-        header.version().minor()
-    );
-
-    let parser_version = header.parser_version().expect("Unsupported FBX version");
-
-    match parser_version {
-        pull_parser::ParserVersion::V7400 => {
-            let mut parser = pull_parser::v7400::from_seekable_reader(header, reader)
-                .expect("Should never fail: Unsupported FBX verison");
+    match from_seekable_reader(reader).expect("Failed to create parser") {
+        AnyParser::V7400(mut parser) => {
+            let version = parser.fbx_version();
+            println!("FBX version: {}.{}", version.major(), version.minor());
             parser.set_warning_handler(|w, pos| {
                 eprintln!("WARNING: {} (pos={:?})", w, pos);
                 Ok(())
@@ -41,5 +33,9 @@ pub fn main() {
             println!("tree = {:#?}", tree);
             println!("footer = {:#?}", footer);
         }
+        parser => panic!(
+            "Unsupported by this example: fbx_version={:?}",
+            parser.fbx_version()
+        ),
     }
 }
