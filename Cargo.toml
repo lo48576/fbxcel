@@ -1,6 +1,6 @@
 [package]
 name = "fbxcel"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["YOSHIOKA Takuma <lo48576@hard-wi.red>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -15,12 +15,10 @@ all-features = true
 [features]
 default = []
 
-dom = ["failure", "tree"]
 tree = ["indextree", "string-interner"]
 
 [dependencies]
 byteorder = "1"
-failure = { version = "0.1.5", optional = true }
 indextree = { version = "3", optional = true }
 libflate = "0.1"
 log = "0.4.4"
@@ -35,10 +33,6 @@ travis-ci = { repository = "lo48576/fbxcel" }
 
 [[example]]
 name = "dump-pull-parser-events"
-
-[[example]]
-name = "load-dom"
-required-features = ["dom"]
 
 [[example]]
 name = "load-tree"

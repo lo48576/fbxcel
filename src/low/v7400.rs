@@ -5,10 +5,13 @@ pub(crate) use self::{
     node_header::NodeHeader,
     special_attribute::SpecialAttributeHeader,
 };
-pub use self::{attribute_type::AttributeType, fbx_footer::FbxFooter};
+pub use self::{
+    attribute::{AttributeType, AttributeValue},
+    fbx_footer::FbxFooter,
+};
 
 mod array_attribute;
-mod attribute_type;
+mod attribute;
 mod fbx_footer;
 mod node_header;
 mod special_attribute;

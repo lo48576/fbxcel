@@ -1,6 +1,9 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use fbxcel::pull_parser;
+use fbxcel::pull_parser::{
+    self,
+    any::{from_seekable_reader, AnyParser},
+};
 
 fn main() {
     env_logger::init();
@@ -13,28 +16,22 @@ fn main() {
         }
     };
     let file = File::open(path).expect("Failed to open file");
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
 
-    let header =
-        fbxcel::low::FbxHeader::read_fbx_header(&mut reader).expect("Failed to load FBX header");
-
-    println!(
-        "FBX version: {}.{}",
-        header.version().major(),
-        header.version().minor()
-    );
-
-    let parser_version = header.parser_version().expect("Unsupported FBX version");
-    match parser_version {
-        pull_parser::ParserVersion::V7400 => {
-            let mut parser = pull_parser::v7400::from_seekable_reader(header, reader)
-                .expect("Should never fail: Unsupported FBX verison");
+    match from_seekable_reader(reader).expect("Failed to create parser") {
+        AnyParser::V7400(mut parser) => {
+            let version = parser.fbx_version();
+            println!("FBX version: {}.{}", version.major(), version.minor());
             parser.set_warning_handler(|w, pos| {
                 eprintln!("WARNING: {} (pos={:?})", w, pos);
                 Ok(())
             });
             dump_fbx_7400(parser).expect("Failed to parse FBX file");
         }
+        parser => panic!(
+            "Unsupported by this example: fbx_version={:?}",
+            parser.fbx_version()
+        ),
     }
 }
 
@@ -107,39 +104,27 @@ fn dump_v7400_attributes_length<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::{visitor::DirectVisitor, DirectAttributeValue};
+    use fbxcel::{
+        low::v7400::AttributeValue, pull_parser::v7400::attribute::loaders::DirectLoader,
+    };
 
-    while let Some(attr) = attrs.visit_next(DirectVisitor)? {
+    while let Some(attr) = attrs.load_next(DirectLoader)? {
         let type_ = attr.type_();
         indent(depth);
         match attr {
-            DirectAttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I16(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::ArrBool(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrI32(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrI64(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrF32(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::ArrF64(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::Binary(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
-            DirectAttributeValue::String(v) => {
-                println!("Attribute: type={:?}, len={}", type_, v.len())
-            }
+            AttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I16(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::ArrBool(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrI32(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrI64(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrF32(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::ArrF64(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::Binary(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
+            AttributeValue::String(v) => println!("Attribute: type={:?}, len={}", type_, v.len()),
         }
     }
 
@@ -153,9 +138,9 @@ fn dump_v7400_attributes_type<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::visitor::TypeVisitor;
+    use self::pull_parser::v7400::attribute::loaders::TypeLoader;
 
-    while let Some(type_) = attrs.visit_next(TypeVisitor).unwrap() {
+    while let Some(type_) = attrs.load_next(TypeLoader).unwrap() {
         indent(depth);
         println!("Attribute: {:?}", type_);
     }
@@ -170,55 +155,57 @@ fn dump_v7400_attributes_full<R>(
 where
     R: pull_parser::ParserSource,
 {
-    use self::pull_parser::v7400::attribute::{visitor::DirectVisitor, DirectAttributeValue};
+    use fbxcel::{
+        low::v7400::AttributeValue, pull_parser::v7400::attribute::loaders::DirectLoader,
+    };
 
-    while let Some(attr) = attrs.visit_next(DirectVisitor)? {
+    while let Some(attr) = attrs.load_next(DirectLoader)? {
         let type_ = attr.type_();
         indent(depth);
         match attr {
-            DirectAttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I16(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::I64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F32(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::F64(_) => println!("Attribute: {:?}", attr),
-            DirectAttributeValue::ArrBool(v) => println!(
+            AttributeValue::Bool(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I16(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::I64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F32(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::F64(_) => println!("Attribute: {:?}", attr),
+            AttributeValue::ArrBool(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrI32(v) => println!(
+            AttributeValue::ArrI32(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrI64(v) => println!(
+            AttributeValue::ArrI64(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrF32(v) => println!(
+            AttributeValue::ArrF32(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::ArrF64(v) => println!(
+            AttributeValue::ArrF64(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::Binary(v) => println!(
+            AttributeValue::Binary(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),
                 v
             ),
-            DirectAttributeValue::String(v) => println!(
+            AttributeValue::String(v) => println!(
                 "Attribute: type={:?}, len={}, value={:?}",
                 type_,
                 v.len(),

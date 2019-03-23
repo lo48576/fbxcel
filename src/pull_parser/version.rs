@@ -12,6 +12,8 @@ use crate::low::FbxVersion;
 pub enum ParserVersion {
     /// FBX 7.4 and 7.5.
     V7400,
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 impl ParserVersion {

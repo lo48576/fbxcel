@@ -1,6 +1,6 @@
 //! Node-local data.
 
-use crate::{pull_parser::v7400::attribute::DirectAttributeValue, tree::v7400::node::NodeNameSym};
+use crate::{low::v7400::AttributeValue, tree::v7400::node::NodeNameSym};
 
 /// Node-local data in FBX data tree.
 ///
@@ -11,7 +11,7 @@ pub(crate) struct NodeData {
     /// Node name.
     name_sym: NodeNameSym,
     /// Node attributes.
-    attributes: Vec<DirectAttributeValue>,
+    attributes: Vec<AttributeValue>,
 }
 
 impl NodeData {
@@ -21,12 +21,12 @@ impl NodeData {
     }
 
     /// Returns the reference to the attributes.
-    pub(crate) fn attributes(&self) -> &[DirectAttributeValue] {
+    pub(crate) fn attributes(&self) -> &[AttributeValue] {
         &self.attributes
     }
 
     /// Creates a new `NodeData`.
-    pub(crate) fn new(name_sym: NodeNameSym, attributes: Vec<DirectAttributeValue>) -> Self {
+    pub(crate) fn new(name_sym: NodeNameSym, attributes: Vec<AttributeValue>) -> Self {
         Self {
             name_sym,
             attributes,

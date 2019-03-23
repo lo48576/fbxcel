@@ -2,6 +2,43 @@
 
 ## [Unreleased]
 
+## [0.4.0]
+
+* **`dom` module is now split to another crate,
+  [`fbxcel-dom`](https://github.com/lo48576/fbxcel-dom)**.
+    + If you want to interpret and render FBX data, use it.
+* Object properties are supported.
+    + Very basic support, but would be useful.
+* Huge refactoring around attribute values.
+    + Many types, modules, and functions are renamed and moved.
+* `{pull_parser,tree}::any` module is added.
+    + They provide mostly version-independent way to read and load the FBX data.
+
+### Breaking change
+#### Prefer "load" to "visit" for node attributes
+* `pull_parser::v7400::attribute::VisitAttribute` is changed to
+  `pull_parser::v7400::attribute::LoadAttribute`.
+    + `VisitAttributeValue::visit_*` is renamed to `LoadAttribute::load_*`.
+* `pull_parser::v7400::attribute::Attributes::visit_*` is renamed to
+  `Attributes::load_*`.
+* `pull_parser::ParserVersion` is now nonexhaustive.
+    + By this change, it is non-breaking change to add new parser version in
+      future.
+
+### Non-breaking change
+* Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have
+  same lifetime as the tree.
+    + The lifetime was mistakenly set too short in previous implementation, but
+      this is now fixed.
+
+#### Deprecation
+* `pull_parser::v7400::attribute:DirectAttributeValue` is now deprecated.
+    + It is moved to `low::v7400::AttributeValue`.
+    + Now `DirectAttributeValue` is a type alias to
+      `low::v7400::AttributeValue`.
+    + The type alias will exists for a while, but will be removed in future
+      version.
+
 ## [0.3.0]
 
 * `dom` module is completely rewritten.
@@ -61,7 +98,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.3.0...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.0...develop>
+[0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.0>
 [0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.3.0>
 [0.2.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.2.0>
 [0.1.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.1.0>
