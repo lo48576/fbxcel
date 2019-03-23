@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use fbxcel::{dom, tree::any::AnyTree};
+use fbxcel::dom::any::AnyDocument;
 
 pub fn main() {
     env_logger::init();
@@ -15,11 +15,8 @@ pub fn main() {
     let file = File::open(path).expect("Failed to open file");
     let reader = BufReader::new(file);
 
-    match AnyTree::from_seekable_reader(reader).expect("Failed to load tree") {
-        AnyTree::V7400(tree, _footer) => {
-            let doc = dom::v7400::Loader::new()
-                .load_from_tree(tree)
-                .expect("Failed to load FBX DOM");
+    match AnyDocument::from_seekable_reader(reader).expect("Failed to load document") {
+        AnyDocument::V7400(doc) => {
             println!("Loaded FBX DOM successfully");
             for scene in doc.scenes() {
                 println!("Scene object: object_id={:?}", scene.object_id());
