@@ -65,6 +65,7 @@ pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<PlainSource<R>>> 
             });
             Ok(AnyParser::V7400(parser))
         }
+        ParserVersion::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
     }
 }
 
@@ -83,5 +84,6 @@ pub fn from_seekable_reader<R: Read + Seek>(mut reader: R) -> Result<AnyParser<S
                 });
             Ok(AnyParser::V7400(parser))
         }
+        ParserVersion::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
     }
 }
