@@ -31,7 +31,7 @@ impl FbxVersion {
         (self.raw() % 1000) / 100
     }
 
-    /// Returns the major and minor verison.
+    /// Returns a tuple of the major and minor verison.
     ///
     /// For example, `(7, 4)` for FBX 7.4.
     pub fn major_minor(self) -> (u32, u32) {

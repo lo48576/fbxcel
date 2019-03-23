@@ -78,6 +78,24 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Sets the warning handler.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use fbxcel::low::FbxHeader;
+    /// # let reader = std::io::empty();
+    /// # let header: FbxHeader = unimplemented!();
+    /// let mut parser = fbxcel::pull_parser::v7400::from_reader(header, reader)
+    ///     .expect("Failed to create parser");
+    /// parser.set_warning_handler(|warning, pos| {
+    ///     // Print warning.
+    ///     eprintln!("WARNING: {} (pos={:?})", warning, pos);
+    ///     // To ignore the warning and continue processing, return `Ok(())`.
+    ///     // To treat the given warning as a critical error, return
+    ///     // `Err(warning.into())`.
+    ///     Ok(())
+    /// });
+    /// ```
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
         F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
@@ -368,6 +386,9 @@ impl<R: ParserSource> Parser<R> {
 
     /// Ignore events until the current node closes.
     ///
+    /// In other words, this discards parser events including `EndNode` for the
+    /// current node.
+    ///
     /// This method seeks to the already known node end position, without
     /// parsing events to be ignored.
     /// Because of this, some errors can be overlooked, or some errors can be
@@ -378,6 +399,21 @@ impl<R: ParserSource> Parser<R> {
     /// # Panics
     ///
     /// Panics if there are no open nodes.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use fbxcel::low::FbxHeader;
+    /// # let reader = std::io::empty();
+    /// # let header: FbxHeader = unimplemented!();
+    /// let mut parser = fbxcel::pull_parser::v7400::from_reader(header, reader)
+    ///     .expect("Failed to create parser");
+    /// // Do something here.
+    /// // Something done.
+    /// let depth = parser.current_depth();
+    /// parser.skip_current_node().expect("Failed to skip current node");
+    /// assert_eq!(parser.current_depth(), depth - 1);
+    /// ```
     pub fn skip_current_node(&mut self) -> Result<()> {
         let end_pos = self
             .state

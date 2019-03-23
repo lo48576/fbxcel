@@ -5,6 +5,21 @@ use std::{fmt, io};
 use crate::pull_parser::{error::DataError, Result};
 
 /// A trait for attribute loader types.
+///
+/// This is a lot like a "visitor", but node attributes do not have recursive
+/// structures, so this loader is not "visitor".
+///
+/// The `load_*` method corresponding to the node attribute type are called with
+/// its value.
+///
+/// All of `load_*` has default implementation to return error as "unexpected
+/// attribute".
+/// Users should implement them manually for types they want to interpret.
+///
+/// For simple types, [`pull_parser::v7400::attribute::loaders`] module contains
+/// useful loaders.
+///
+/// [`pull_parser::v7400::attribute::loaders`]: loaders/index.html
 pub trait LoadAttribute: Sized + fmt::Debug {
     /// Result type on successful read.
     type Output;

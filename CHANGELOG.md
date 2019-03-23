@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Docs are made more detailed, and some examples are added.
+
 ## [0.4.0]
 
 * **`dom` module is now split to another crate,

@@ -26,6 +26,21 @@ impl<R: io::Read> PositionCacheReader<R> {
     }
 
     /// Creates a new `PositionCache` with the given offset.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use fbxcel::pull_parser::reader::PositionCacheReader;
+    /// let msg = "Hello, world!";
+    /// let len = msg.len();
+    /// let mut reader = std::io::Cursor::new(msg);
+    /// let mut reader = PositionCacheReader::with_offset(&mut reader, 42);
+    ///
+    /// assert_eq!(reader.position(), 42, "Start position is 42");
+    /// std::io::copy(&mut reader, &mut std::io::sink())
+    ///     .expect("Should never fail");
+    /// assert_eq!(reader.position(), len + 42);
+    /// ```
     pub fn with_offset(inner: R, offset: usize) -> Self {
         Self {
             inner,
@@ -44,6 +59,26 @@ impl<R: io::Read> PositionCacheReader<R> {
     }
 
     /// Skips the given distance.
+    ///
+    /// A seek beyond the end of a stream is allowed, but behavior is defined by
+    /// the implementation.
+    /// See the document for `std::io::Seek::seek()`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use fbxcel::pull_parser::reader::PositionCacheReader;
+    /// use fbxcel::pull_parser::ParserSource;
+    ///
+    /// let msg = "Hello, world!";
+    /// let len = msg.len() as u64;
+    /// let mut reader = std::io::Cursor::new(msg);
+    /// let mut reader = PositionCacheReader::new(&mut reader);
+    ///
+    /// assert_eq!(reader.position(), 0);
+    /// reader.skip_distance(7).expect("Failed to skip");
+    /// assert_eq!(reader.position(), 7);
+    /// ```
     pub fn skip_distance(&mut self, mut distance: u64) -> io::Result<()>
     where
         R: io::Seek,

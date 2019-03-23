@@ -60,7 +60,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         self.total_count
     }
 
-    /// Returns the rest number of attributes.
+    /// Returns the number of the rest attributes.
     pub fn rest_count(&self) -> u64 {
         self.rest_count
     }
@@ -117,7 +117,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         Ok(Some(attr_type))
     }
 
-    /// Let loader load the next node attribute.
+    /// Lets loader load the next node attribute.
     pub fn load_next<V>(&mut self, loader: V) -> Result<Option<V::Output>>
     where
         V: LoadAttribute,
@@ -132,7 +132,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
         })
     }
 
-    /// Let loader load the next node attribute.
+    /// Lets loader load the next node attribute.
     ///
     /// This method prefers `V::load_{binary,string}_buffered` to
     /// `V::load_{binary,string}`.
