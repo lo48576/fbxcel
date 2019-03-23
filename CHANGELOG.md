@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased]
+
+## [0.4.0]
+
 * **`dom` module is now split to another crate,
   [`fbxcel-dom`](https://github.com/lo48576/fbxcel-dom)**.
     + If you want to interpret and render FBX data, use it.
@@ -95,7 +98,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.3.0...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.0...develop>
+[0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.0>
 [0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.3.0>
 [0.2.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.2.0>
 [0.1.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.1.0>
