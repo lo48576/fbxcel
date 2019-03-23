@@ -6,6 +6,10 @@
 
 `fbxcel` is an FBX library for Rust programming language.
 
+`fbxcel` is relatively low-level library.
+If you want to interpret and render FBX data, use
+[`fbxcel-dom`](https://github.com/lo48576/fbxcel-dom) crate.
+
 ## Features
 
 * Pull parser for FBX binary (`pull_parser` module)
@@ -13,11 +17,6 @@
 * Types and functions for low-level FBX tree access
     + This is optional and enabled by `tree` feature.
     + Provides arena-based tree type and read-only access to nodes.
-* Basic FBX DOM
-    + This is optional and enabled by `dom` feature.
-    + FBX 7.4 and 7.5 is explicitly supported.
-    + Currently, quite basic tree and objects traversal functions are available.
-    + Read-only operations are supported.
 
 ### FBX versions
 

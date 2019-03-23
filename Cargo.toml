@@ -15,16 +15,13 @@ all-features = true
 [features]
 default = []
 
-dom = ["failure", "tree"]
 tree = ["indextree", "string-interner"]
 
 [dependencies]
 byteorder = "1"
-failure = { version = "0.1.5", optional = true }
 indextree = { version = "3", optional = true }
 libflate = "0.1"
 log = "0.4.4"
-mint = { version = "0.5", optional = true }
 string-interner = { version = "0.7", optional = true, default-features = false }
 
 [dev-dependencies]
@@ -36,10 +33,6 @@ travis-ci = { repository = "lo48576/fbxcel" }
 
 [[example]]
 name = "dump-pull-parser-events"
-
-[[example]]
-name = "load-dom"
-required-features = ["dom"]
 
 [[example]]
 name = "load-tree"
