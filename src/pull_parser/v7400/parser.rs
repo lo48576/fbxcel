@@ -466,6 +466,36 @@ impl<R: ParserSource> Parser<R> {
             attribute_index: None,
         }
     }
+
+    /// Returns whether the parser is already used or brand-new.
+    ///
+    /// Returns `true` if the parser emitted some events in the past, returns
+    /// `false` if the parser have not emitted any events.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use fbxcel::low::FbxHeader;
+    /// # let reader = std::io::empty();
+    /// # let header: FbxHeader = unimplemented!();
+    /// let mut parser = fbxcel::pull_parser::v7400::from_reader(header, reader)
+    ///     .expect("Failed to create parser");
+    /// assert!(!parser.is_used());
+    /// parser.set_warning_handler(|warning, pos| {
+    ///     // Print warning.
+    ///     eprintln!("WARNING: {} (pos={:?})", warning, pos);
+    ///     // To ignore the warning and continue processing, return `Ok(())`.
+    ///     // To treat the given warning as a critical error, return
+    ///     // `Err(warning.into())`.
+    ///     Ok(())
+    /// });
+    /// assert!(!parser.is_used(), "Parser emitted no events yet");
+    /// let _ = parser.next_event();
+    /// assert!(parser.is_used(), "Parser emitted an event");
+    /// ```
+    pub fn is_used(&self) -> bool {
+        self.state.last_event_kind.is_some()
+    }
 }
 
 impl<R: fmt::Debug> fmt::Debug for Parser<R> {
