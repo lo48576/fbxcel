@@ -1,11 +1,14 @@
 # Change Log
 
 ## [Unreleased]
+* **`dom` module is now split to another crate,
+  [`fbxcel-dom`](https://github.com/lo48576/fbxcel-dom)**.
+    + If you want to interpret and render FBX data, use it.
 * Object properties are supported.
     + Very basic support, but would be useful.
 * Huge refactoring around attribute values.
     + Many types, modules, and functions are renamed and moved.
-* `{dom,pull_parser,tree}::any` module is added.
+* `{pull_parser,tree}::any` module is added.
     + They provide mostly version-independent way to read and load the FBX data.
 
 ### Breaking change
@@ -19,42 +22,11 @@
     + By this change, it is non-breaking change to add new parser version in
       future.
 
-### Added
-* `dom::v7400::Document::objects()` is added.
-* `dom::v7400::ObjectNodeId` now implements `Deref<Target=tree::v7400::NodeId>`.
-* `dom::v7400::object::property` module and related features are added.
-    + This module contains things related to object properties.
-    + `dom::v7400::ObjectHandle::direct_properties()` is added.
-        * By this method, users can access object properties.
-    + `dom::v7400::ObjectHandle::properties_by_native_typename()` is added.
-        * By this method, users can access object properties.
-* Object-node-type-specific handle types are added.
-    + Modules corresponding to node name are added under `dom::v7400::object`.
-        * `deformer`: `Deformer` and `SubDeformer` node.
-        * `geometry`: `Geometry` node.
-        * `material`: `Material` node.
-        * `model`: `Model` node.
-        * `nodeattribute`: `NodeAttribute` node.
-        * `texture`: `Texture` node.
-        * `video`: `Video` node.
-        * Some new types of them have the same name (for example
-          `model::MeshHandle` and `geometry::MeshHandle`).
-          Use with care.
-    + Meaningful objects traversing is partially supported, but they are
-      unstable and subject to change.
-      Be careful.
-
 ### Non-breaking change
 * Attributes slice returned by `tree::v7400::NodeHandle::attributes()` now have
   same lifetime as the tree.
     + The lifetime was mistakenly set too short in previous implementation, but
       this is now fixed.
-* Debug (`{:?}`) formatting for `dom::v7400::object::ObjectHandle` became much
-  simpler and "usable".
-    + Previously it uses default format and dumps contents of `Document` data,
-      which can be very large and not so much useful.
-    + Now it simply dumps object node ID and object metadata.
-      Simple, small, and human-readable.
 
 #### Deprecation
 * `pull_parser::v7400::attribute:DirectAttributeValue` is now deprecated.
