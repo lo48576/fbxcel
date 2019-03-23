@@ -4,6 +4,9 @@
 
 * Docs are made more detailed, and some examples are added.
 
+### Added
+* `pull_parser::v7400::Parser::is_used()` is added.
+
 ### Non-breaking change
 * `low::FbxHeader::read_fbx_header()` is renamed to `load()`.
   The old name is deprecated.
