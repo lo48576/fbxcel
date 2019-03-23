@@ -15,6 +15,9 @@
     + `VisitAttributeValue::visit_*` is renamed to `LoadAttribute::load_*`.
 * `pull_parser::v7400::attribute::Attributes::visit_*` is renamed to
   `Attributes::load_*`.
+* `pull_parser::ParserVersion` is now nonexhaustive.
+    + By this change, it is non-breaking change to add new parser version in
+      future.
 
 ### Added
 * `dom::v7400::Document::objects()` is added.
