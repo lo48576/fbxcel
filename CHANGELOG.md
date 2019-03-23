@@ -5,22 +5,30 @@
 ## [0.4.1]
 
 * Docs are made more detailed, and some examples are added.
+* A bug around `pull_parser::v7400::Parser::skip_current_node()` is fixed.
 
 ### Added
-* `pull_parser::v7400::Parser::is_used()` is added.
+* `pull_parser::v7400::Parser::is_used()` is added (f55e385c745e).
 
 ### Non-breaking change
-* `low::FbxHeader::read_fbx_header()` is renamed to `load()`.
+* `low::FbxHeader::read_fbx_header()` is renamed to `load()` (62f8af93a701).
   The old name is deprecated.
-* `pull_parser::skip_current_node()` now updates parser status correctly.
+* `pull_parser::skip_current_node()` now updates parser status correctly
+  (5e8d3fbd97e5).
     + Previously the parser status is not updated correctly after
       `skip_current_node()`.
       This can cause parser error for correct FBX file, because the parser was
       not able to determine presence of node end marker.
       This problem is now fixed.
+* `tree::v7400::Loader::load()` now check parser status more precisely
+  (f55e385c745e).
+    + Previously, the check is loose and some of already used parser could be
+      accepted.
+      Now this check is fixed perfectly, and invalid parser is rejected as
+      expected.
 
 #### Deprecation
-* `low::FbxHeader::read_fbx_header()` is deprecated.
+* `low::FbxHeader::read_fbx_header()` is deprecated (62f8af93a701).
     + Use `low::FbxHeader::load()` instead.
 
 ## [0.4.0]
