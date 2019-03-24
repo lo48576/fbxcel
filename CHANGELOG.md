@@ -7,7 +7,8 @@
 * A bug around `pull_parser::v7400::Parser::skip_current_node()` is fixed.
 
 ### Non-breaking change
-* `pull_parser::skip_current_node()` now updates parser status correctly.
+* `pull_parser::skip_current_node()` now updates parser status correctly
+  (20f4d82d676a).
     + Previously, internal state of the parser is not updated correctly after
       `skip_current_node()`.
       This can cause parser error for correct FBX file, because the parser
