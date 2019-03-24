@@ -2,16 +2,19 @@
 
 ## [Unreleased]
 
+## [0.4.2]
+
 * A bug around `pull_parser::v7400::Parser::skip_current_node()` is fixed.
 
 ### Non-breaking change
-* `pull_parser::skip_current_node()` now updates parser status correctly.
+* `pull_parser::skip_current_node()` now updates parser status correctly
+  (20f4d82d676a).
     + Previously, internal state of the parser is not updated correctly after
       `skip_current_node()`.
       This can cause parser error for correct FBX file, because the parser
       cannot track correct end position of the next node.
       This problem is now fixed.
-    + This is overlooked when 5e8d3fbd97e5 was merged...
+    + This was overlooked when 5e8d3fbd97e5 was merged...
 
 ## [0.4.1]
 
@@ -138,7 +141,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.1...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.2...develop>
+[0.4.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.2>
 [0.4.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.1>
 [0.4.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.0>
 [0.3.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.3.0>
