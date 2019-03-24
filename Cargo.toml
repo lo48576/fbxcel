@@ -1,6 +1,6 @@
 [package]
 name = "fbxcel"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["YOSHIOKA Takuma <lo48576@hard-wi.red>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -28,7 +28,7 @@ string-interner = { version = "0.7", optional = true, default-features = false }
 env_logger = "0.6"
 
 [badges]
-maintenance = { status = "experimental" }
+maintenance = { status = "actively-developed" }
 travis-ci = { repository = "lo48576/fbxcel" }
 
 [[example]]

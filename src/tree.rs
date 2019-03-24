@@ -2,9 +2,9 @@
 //!
 //! This module is enabled by `tree` feature.
 //!
-//! # Using pull parser
+//! # Creating tree
 //!
-//! There are two ways to set up a parser: easy setup and manual setup.
+//! There are two ways to load a tree: easy setup and manual setup.
 //!
 //! ## Easy setup (recommended)
 //!

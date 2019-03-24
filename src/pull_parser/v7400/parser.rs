@@ -417,11 +417,12 @@ impl<R: ParserSource> Parser<R> {
     pub fn skip_current_node(&mut self) -> Result<()> {
         let end_pos = self
             .state
-            .current_node()
+            .started_nodes
+            .pop()
             .expect("Attempt to skip implicit top-level node")
             .node_end_offset;
-        self.reader.skip_to(end_pos)?;
         self.state.last_event_kind = Some(EventKind::EndNode);
+        self.reader.skip_to(end_pos)?;
 
         Ok(())
     }
