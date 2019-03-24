@@ -13,7 +13,7 @@
       This can cause parser error for correct FBX file, because the parser
       cannot track correct end position of the next node.
       This problem is now fixed.
-    + This is overlooked when 5e8d3fbd97e5 was merged...
+    + This was overlooked when 5e8d3fbd97e5 was merged...
 
 ## [0.4.1]
 
