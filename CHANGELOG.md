@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+* Longer lifetime for iterator returned by
+  `tree::v7400::NodeHandle::children_by_name()`.
+
+### Non-breaking change
+* Longer lifetime for iterator returned by
+  `tree::v7400::NodeHandle::children_by_name()`.
+    + Previously, lifetime of the returned iterator should be same as or shorter
+      than the `NodeHandle` object.
+      This was unnecessary restriction.
+    + Now the restriction is relaxed. The iterator can live longer, and have
+      the same lifetime as `Tree` object.
+
 ## [0.4.2]
 
 * A bug around `pull_parser::v7400::Parser::skip_current_node()` is fixed.
