@@ -74,16 +74,15 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns an iterator of children with the given name.
-    pub fn children_by_name<'b>(&'b self, name: &str) -> impl Iterator<Item = NodeHandle<'a>> + 'b {
-        // Using `flat_map` first, the iterator can return `None` before
-        // traversing the tree if `target_name` is not registered.
+    pub fn children_by_name(&self, name: &str) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
+        // Using `flat_map` for `Option<impl Iterator>`, the iterator can return
+        // `None` before without traversing the tree if `target_name` is not
+        // registered.
         self.tree
             .node_name_sym(name)
+            .map(|sym| self.children().filter(move |child| child.name_sym() == sym))
             .into_iter()
-            .flat_map(move |target_name| {
-                self.children()
-                    .filter(move |child| child.name_sym() == target_name)
-            })
+            .flat_map(|iter| iter)
     }
 }
 
