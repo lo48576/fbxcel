@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.4.3]
+
 * Longer lifetime for iterator returned by
   `tree::v7400::NodeHandle::children_by_name()`.
 
@@ -153,7 +155,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.2...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.3...develop>
+[0.4.3]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.3>
 [0.4.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.2>
 [0.4.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.1>
 [0.4.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.0>
