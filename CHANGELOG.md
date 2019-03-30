@@ -9,7 +9,7 @@
 
 ### Non-breaking change
 * Longer lifetime for iterator returned by
-  `tree::v7400::NodeHandle::children_by_name()`.
+  `tree::v7400::NodeHandle::children_by_name()` (08ab27a7fc23).
     + Previously, lifetime of the returned iterator should be same as or shorter
       than the `NodeHandle` object.
       This was unnecessary restriction.
