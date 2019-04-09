@@ -13,7 +13,9 @@ use crate::low::v7400::AttributeType;
 /// * `get_*_or_type()` returns `Result<_, AttributeType>`.
 ///     + If a value of the expected type available, returns `Ok(_)`.
 ///     + If not, returns `Ok(ty)` where `ty` is value type (same value as
-///       returned by `type_()`.
+///       returned by [`type_()`][`type_`].
+///
+/// [`type_`]: #method.type_
 #[derive(Debug, Clone, PartialEq)]
 pub enum AttributeValue {
     /// Single `bool`.
