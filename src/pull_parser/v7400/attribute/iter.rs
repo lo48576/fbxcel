@@ -34,14 +34,7 @@ where
     V: LoadAttribute,
 {
     let loader = loaders.next()?;
-
-    // TODO: Use `transpose` when it is stabilized.
-    // See <https://github.com/rust-lang/rust/issues/47338> for detail.
-    match attributes.load_next(loader) {
-        Ok(Some(v)) => Some(Ok(v)),
-        Ok(None) => None,
-        Err(e) => Some(Err(e)),
-    }
+    attributes.load_next(loader).transpose()
 }
 
 /// Loads the next attrbute with buffered I/O.
@@ -54,14 +47,7 @@ where
     V: LoadAttribute,
 {
     let loader = loaders.next()?;
-
-    // TODO: Use `transpose` when it is stabilized.
-    // See <https://github.com/rust-lang/rust/issues/47338> for detail.
-    match attributes.load_next_buffered(loader) {
-        Ok(Some(v)) => Some(Ok(v)),
-        Ok(None) => None,
-        Err(e) => Some(Err(e)),
-    }
+    attributes.load_next(loader).transpose()
 }
 
 /// Node attributes iterator.
