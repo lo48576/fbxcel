@@ -395,6 +395,7 @@ impl<R: ParserSource> Parser<R> {
     /// detected at the different position from the true error position.
     ///
     /// To detect errors correctly, you should use [`next_event`] manually.
+    /// See an example to how to do this.
     ///
     /// # Panics
     ///
@@ -413,6 +414,22 @@ impl<R: ParserSource> Parser<R> {
     /// let depth = parser.current_depth();
     /// parser.skip_current_node().expect("Failed to skip current node");
     /// assert_eq!(parser.current_depth(), depth - 1);
+    /// ```
+    ///
+    /// `parser.skip_current_node()` is almost same as the code below, except
+    /// for error handling.
+    ///
+    /// ```no_run
+    /// # use fbxcel::pull_parser::{v7400::{Parser, Event}, ParserSource, Result};
+    /// fn skip_current_node<R: ParserSource>(parser: &mut Parser<R>) -> Result<()> {
+    ///     loop {
+    ///         match parser.next_event()? {
+    ///             Event::StartNode(_) => skip_current_node(parser)?,
+    ///             Event::EndNode => return Ok(()),
+    ///             Event::EndFbx(_) => panic!("Attempt to skip implicit top-level node"),
+    ///         }
+    ///     }
+    /// }
     /// ```
     pub fn skip_current_node(&mut self) -> Result<()> {
         let end_pos = self
