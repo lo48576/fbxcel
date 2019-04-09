@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Documents are improved a little.
+
 ## [0.4.3]
 
 * Longer lifetime for iterator returned by
