@@ -386,20 +386,22 @@ impl<R: ParserSource> Parser<R> {
 
     /// Ignore events until the current node closes.
     ///
-    /// In other words, this discards parser events including `EndNode` for the
-    /// current node.
+    /// This discards parser events until the `EndNode` event for the current
+    /// node is read.
+    /// The last `EndNode` (for the current node) is also discarded.
     ///
-    /// This method seeks to the already known node end position, without
-    /// parsing events to be ignored.
-    /// Because of this, some errors can be overlooked, or some errors can be
-    /// detected at the different position from the true error position.
+    /// This method seeks to the node end position without any additional
+    /// parsing, since the parser already knows the node end position.
+    /// Because of this, some errors can be overlooked, or detected at the
+    /// different position from the true error position.
     ///
     /// To detect errors correctly, you should use [`next_event`] manually.
     /// See an example to how to do this.
     ///
     /// # Panics
     ///
-    /// Panics if there are no open nodes.
+    /// Panics if there are no open nodes, i.e. when [`current_depth()`][`current_depth`]
+    /// returns 0.
     ///
     /// # Examples
     ///
@@ -431,6 +433,9 @@ impl<R: ParserSource> Parser<R> {
     ///     }
     /// }
     /// ```
+    ///
+    /// [`next_event`]: #method.next_event
+    /// [`current_depth`]: #method.current_depth
     pub fn skip_current_node(&mut self) -> Result<()> {
         let end_pos = self
             .state
