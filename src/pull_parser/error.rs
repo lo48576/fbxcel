@@ -47,7 +47,7 @@ impl Error {
         self.repr.position.as_ref()
     }
 
-    /// Creates a new `error` with the given syntactic position info.
+    /// Creates a new `Error` with the given syntactic position info.
     pub(crate) fn with_position(error: ErrorContainer, position: SyntacticPosition) -> Self {
         Self {
             repr: Box::new(Repr::with_position(error, position)),
@@ -117,18 +117,27 @@ pub enum ErrorKind {
     /// Invalid data.
     ///
     /// With this error kind, the inner error must be [`DataError`].
+    ///
+    /// [`DataError`]: enum.DataError.html
     Data,
     /// I/O error.
     ///
     /// With this error kind, the inner error must be [`std::io::Error`].
+    ///
+    /// [`std::io::Error`]:
+    /// https://doc.rust-lang.org/stable/std/io/struct.Error.html
     Io,
     /// Invalid operation.
     ///
     /// With this error kind, the inner error must be [`OperationError`].
+    ///
+    /// [`OperationError`]: enum.OperationError.html
     Operation,
     /// Critical warning.
     ///
     /// With this error kind, the inner error must be [`Warning`].
+    ///
+    /// [`Warning`]: enum.Warning.html
     Warning,
 }
 

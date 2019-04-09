@@ -7,7 +7,7 @@
 //! These modules are common among all supported FBX versions:
 //!
 //! * Error types (defined in [`error`] module).
-//! * `AnyParser` feature (defined in [`any`] module).
+//! * [`AnyParser`] feature (defined in [`any`] module).
 //! * Parser source traits and wrappers (defined in [`reader`] module).
 //!
 //! # Using pull parser
@@ -85,6 +85,7 @@
 //! [`any`]: any/index.html
 //! [`error`]: error/index.html
 //! [`reader`]: reader/index.html
+//! [`AnyParser`]: any/enum.AnyParser.html
 
 pub use self::{
     error::{Error, Result, Warning},

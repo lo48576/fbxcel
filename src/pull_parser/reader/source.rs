@@ -8,11 +8,12 @@ use crate::pull_parser::{reader::PositionCacheReader, ParserSource};
 ///
 /// This may be inefficient, but works with any reader types.
 /// It is recommended to use [`SeekableSource`] if the reader implements
-/// `std::io::Seek`.
+/// [`std::io::Seek`].
 ///
 /// This internally uses `PositionCacheReader`, so users don't need to wrap
 /// readers by `PositionCacheReader` manually.
 ///
+/// [`std::io::Seek`]: https://doc.rust-lang.org/stable/std/io/trait.Seek.html
 /// [`PositionCacheReader`]: struct.PositionCacheReader.html
 /// [`SeekableSource`]: struct.SeekableSource.html
 #[derive(Debug, Clone, Copy)]
