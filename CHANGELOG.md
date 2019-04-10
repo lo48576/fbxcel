@@ -95,7 +95,7 @@
     + It is moved to `low::v7400::AttributeValue`.
     + Now `DirectAttributeValue` is a type alias to
       `low::v7400::AttributeValue`.
-    + The type alias will exists for a while, but will be removed in future
+    + The type alias will exist for a while, but will be removed in future
       version.
 
 ## [0.3.0]
