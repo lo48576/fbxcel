@@ -28,6 +28,15 @@ impl ArrayAttributeEncoding {
             _ => None,
         }
     }
+
+    /// Returns the raw value.
+    #[cfg(feature = "writer")]
+    pub(crate) fn to_u32(self) -> u32 {
+        match self {
+            ArrayAttributeEncoding::Direct => 0,
+            ArrayAttributeEncoding::Zlib => 1,
+        }
+    }
 }
 
 impl From<ArrayAttributeEncoding> for Compression {

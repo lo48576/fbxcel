@@ -5,6 +5,12 @@
 pub struct FbxVersion(u32);
 
 impl FbxVersion {
+    /// Version 7.4.
+    pub const V7_4: Self = FbxVersion(7400);
+
+    /// Version 7.5.
+    pub const V7_5: Self = FbxVersion(7500);
+
     /// Creates a new `FbxVersion`.
     pub(crate) fn new(version: u32) -> Self {
         FbxVersion(version)
