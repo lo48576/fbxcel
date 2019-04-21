@@ -11,10 +11,70 @@ use crate::{
     writer::v7400::binary::{CompressionError, Error, Result, Writer},
 };
 
+/// A trait for types which can be represented as single bytes array.
+pub(crate) trait IntoBytes: Sized {
+    /// Calls the given function with the bytes array.
+    fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R;
+}
+
+impl IntoBytes for bool {
+    fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
+        let v = if self { b'Y' } else { b'T' };
+        f(&v.to_le_bytes())
+    }
+}
+
+impl IntoBytes for i16 {
+    fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&self.to_le_bytes())
+    }
+}
+
+impl IntoBytes for i32 {
+    fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&self.to_le_bytes())
+    }
+}
+
+impl IntoBytes for i64 {
+    fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&self.to_le_bytes())
+    }
+}
+
+impl IntoBytes for f32 {
+    fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&self.to_bits().to_le_bytes())
+    }
+}
+
+impl IntoBytes for f64 {
+    fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&self.to_bits().to_le_bytes())
+    }
+}
+
 /// Node attributes writer.
 pub struct AttributesWriter<'a, W: Write> {
     /// Inner writer.
     writer: &'a mut Writer<W>,
+}
+
+macro_rules! impl_single_attr_append {
+    ($(
+        $(#[$meta:meta])*
+        $method:ident($ty:ty): $variant:ident;
+    )*) => {
+        $(
+            $(#[$meta])*
+            pub fn $method(&mut self, v: $ty) -> Result<()> {
+                self.update_node_header()?;
+                self.write_type_code(AttributeType::$variant)?;
+                v.call_with_le_bytes(|bytes| self.writer.sink().write_all(bytes))
+                    .map_err(Into::into)
+            }
+        )*
+    }
 }
 
 macro_rules! impl_arr_from_iter {
@@ -193,65 +253,19 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         Ok(())
     }
 
-    /// Writes a single boolean attribute.
-    pub fn append_bool(&mut self, v: bool) -> Result<()> {
-        self.update_node_header()?;
-        self.write_type_code(AttributeType::Bool)?;
-        let v = if v { b'Y' } else { b'T' };
-        self.writer
-            .sink()
-            .write_all(&v.to_le_bytes())
-            .map_err(Into::into)
-    }
-
-    /// Writes a single `i16` attribute.
-    pub fn append_i16(&mut self, v: i16) -> Result<()> {
-        self.update_node_header()?;
-        self.write_type_code(AttributeType::I16)?;
-        self.writer
-            .sink()
-            .write_all(&v.to_le_bytes())
-            .map_err(Into::into)
-    }
-
-    /// Writes a single `i32` attribute.
-    pub fn append_i32(&mut self, v: i32) -> Result<()> {
-        self.update_node_header()?;
-        self.write_type_code(AttributeType::I32)?;
-        self.writer
-            .sink()
-            .write_all(&v.to_le_bytes())
-            .map_err(Into::into)
-    }
-
-    /// Writes a single `i64` attribute.
-    pub fn append_i64(&mut self, v: i64) -> Result<()> {
-        self.update_node_header()?;
-        self.write_type_code(AttributeType::I64)?;
-        self.writer
-            .sink()
-            .write_all(&v.to_le_bytes())
-            .map_err(Into::into)
-    }
-
-    /// Writes a single `f32` attribute.
-    pub fn append_f32(&mut self, v: f32) -> Result<()> {
-        self.update_node_header()?;
-        self.write_type_code(AttributeType::F32)?;
-        self.writer
-            .sink()
-            .write_all(&v.to_bits().to_le_bytes())
-            .map_err(Into::into)
-    }
-
-    /// Writes a single `f64` attribute.
-    pub fn append_f64(&mut self, v: f64) -> Result<()> {
-        self.update_node_header()?;
-        self.write_type_code(AttributeType::F64)?;
-        self.writer
-            .sink()
-            .write_all(&v.to_bits().to_le_bytes())
-            .map_err(Into::into)
+    impl_single_attr_append! {
+        /// Writes a single boolean attribute.
+        append_bool(bool): Bool;
+        /// Writes a single `i16` attribute.
+        append_i16(i16): I16;
+        /// Writes a single `i32` attribute.
+        append_i32(i32): I32;
+        /// Writes a single `i64` attribute.
+        append_i64(i64): I64;
+        /// Writes a single `f32` attribute.
+        append_f32(f32): F32;
+        /// Writes a single `f64` attribute.
+        append_f64(f64): F64;
     }
 
     /// Writes the given array attribute header.
