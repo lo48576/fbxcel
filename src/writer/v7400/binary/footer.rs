@@ -16,7 +16,7 @@ impl Default for FbxFooterPaddingLength {
 }
 
 /// FBX 7.4 footer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FbxFooter<'a> {
     /// Unknown (semirandom) 16-bytes data.
     ///
