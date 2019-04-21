@@ -26,6 +26,17 @@ impl NodeHeader {
             && self.bytelen_attributes == 0
             && self.bytelen_name == 0
     }
+
+    /// Returns node end marker.
+    #[cfg(feature = "writer")]
+    pub(crate) fn node_end() -> Self {
+        Self {
+            end_offset: 0,
+            num_attributes: 0,
+            bytelen_attributes: 0,
+            bytelen_name: 0,
+        }
+    }
 }
 
 impl FromParser for NodeHeader {

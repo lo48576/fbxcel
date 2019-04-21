@@ -55,6 +55,26 @@ impl AttributeType {
             _ => None,
         }
     }
+
+    /// Returns the type code.
+    #[cfg(feature = "writer")]
+    pub(crate) fn type_code(self) -> u8 {
+        match self {
+            AttributeType::Bool => b'C',
+            AttributeType::I16 => b'Y',
+            AttributeType::I32 => b'I',
+            AttributeType::I64 => b'L',
+            AttributeType::F32 => b'F',
+            AttributeType::F64 => b'D',
+            AttributeType::ArrBool => b'b',
+            AttributeType::ArrI32 => b'i',
+            AttributeType::ArrI64 => b'l',
+            AttributeType::ArrF32 => b'f',
+            AttributeType::ArrF64 => b'd',
+            AttributeType::Binary => b'R',
+            AttributeType::String => b'S',
+        }
+    }
 }
 
 impl FromReader for AttributeType {
