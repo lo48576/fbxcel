@@ -2,7 +2,7 @@
 
 use std::{
     convert::TryFrom,
-    io::{self, Seek, SeekFrom, Write},
+    io::{self, Seek, Write},
 };
 
 use crate::{
@@ -78,7 +78,7 @@ pub(crate) fn write_array_attr_result_iter<W: Write + Seek, T: IntoBytes, E: Int
     let header_pos = writer.initialize_array(ty, encoding)?;
 
     // Write elements.
-    let start_pos = writer.sink().seek(SeekFrom::Current(0))?;
+    let start_pos = writer.sink().stream_position()?;
     let elements_count = match encoding {
         ArrayAttributeEncoding::Direct => write_elements_result_iter(writer.sink(), iter)?,
         ArrayAttributeEncoding::Zlib => {
@@ -90,7 +90,7 @@ pub(crate) fn write_array_attr_result_iter<W: Write + Seek, T: IntoBytes, E: Int
             count
         }
     };
-    let end_pos = writer.sink().seek(SeekFrom::Current(0))?;
+    let end_pos = writer.sink().stream_position()?;
     let bytelen = end_pos - start_pos;
 
     // Calculate header fields.

@@ -193,7 +193,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
 
         // Write attribute header.
         self.write_type_code(ty)?;
-        let header_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let header_pos = self.writer.sink().stream_position()?;
 
         // Write array header placeholder.
         self.write_array_header(&ArrayAttributeHeader {
@@ -210,7 +210,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
     /// Note that this should be called at the end of the array attribute.
     fn finalize_array(&mut self, header_pos: u64, header: &ArrayAttributeHeader) -> Result<()> {
         // Write real array header.
-        let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let end_pos = self.writer.sink().stream_position()?;
         self.writer.sink().seek(SeekFrom::Start(header_pos))?;
         self.write_array_header(header)?;
         self.writer.sink().seek(SeekFrom::Start(end_pos))?;
@@ -259,7 +259,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         self.write_type_code(ty)?;
 
         // Write special attribute header (dummy).
-        let header_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let header_pos = self.writer.sink().stream_position()?;
         self.writer.sink().write_all(&0u32.to_le_bytes())?;
 
         Ok(header_pos)
@@ -273,7 +273,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         let bytelen = u32::try_from(bytelen).map_err(|_| Error::AttributeTooLong(bytelen))?;
 
         // Write real special attribute header.
-        let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let end_pos = self.writer.sink().stream_position()?;
         self.writer.sink().seek(SeekFrom::Start(header_pos))?;
         self.writer.sink().write_all(&bytelen.to_le_bytes())?;
         self.writer.sink().seek(SeekFrom::Start(end_pos))?;

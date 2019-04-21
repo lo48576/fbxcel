@@ -218,7 +218,7 @@ impl<W: Write + Seek> Writer<W> {
             return Ok(());
         }
 
-        let current_pos = self.sink.seek(SeekFrom::Current(0))?;
+        let current_pos = self.sink.stream_position()?;
         current_node.header.bytelen_attributes = current_pos - current_node.body_pos;
         current_node.is_attrs_finalized = true;
 
@@ -244,7 +244,7 @@ impl<W: Write + Seek> Writer<W> {
         let bytelen_name =
             u8::try_from(name.len()).map_err(|_| Error::NodeNameTooLong(name.len()))?;
 
-        let header_pos = self.sink.seek(SeekFrom::Current(0))?;
+        let header_pos = self.sink.stream_position()?;
 
         let header = NodeHeader {
             end_offset: 0,
@@ -259,7 +259,7 @@ impl<W: Write + Seek> Writer<W> {
         // Write node name.
         self.sink.write_all(name.as_ref())?;
 
-        let body_pos = self.sink.seek(SeekFrom::Current(0))?;
+        let body_pos = self.sink.stream_position()?;
 
         self.open_nodes.push(OpenNode {
             header_pos,
@@ -288,7 +288,7 @@ impl<W: Write + Seek> Writer<W> {
         }
 
         // Update node header.
-        let node_end_pos = self.sink.seek(SeekFrom::Current(0))?;
+        let node_end_pos = self.sink.stream_position()?;
         self.sink.seek(SeekFrom::Start(current_node.header_pos))?;
         current_node.header.end_offset = node_end_pos;
         assert_eq!(
@@ -401,7 +401,7 @@ impl<W: Write + Seek> Writer<W> {
         {
             let len = match footer.padding_len {
                 FbxFooterPaddingLength::Default => {
-                    let current = self.sink.seek(SeekFrom::Current(0))?;
+                    let current = self.sink.stream_position()?;
                     current.wrapping_neg() & 0x0f
                 }
                 FbxFooterPaddingLength::Forced(len) => u64::from(len),
