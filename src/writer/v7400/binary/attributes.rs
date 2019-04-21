@@ -65,6 +65,8 @@ impl IntoBytes for f64 {
 }
 
 /// Node attributes writer.
+///
+/// See [module documentation](index.html) for usage.
 pub struct AttributesWriter<'a, W: Write> {
     /// Inner writer.
     writer: &'a mut Writer<W>,
