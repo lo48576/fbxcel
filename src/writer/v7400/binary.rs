@@ -1,4 +1,101 @@
 //! Binary writer for FBX 7.4 or later.
+//!
+//! # Using writer
+//!
+//! ## Setup and finalize
+//!
+//! To setup writer, use [`Writer::new`].
+//!
+//! To finalize writer, use [`Writer::finalize`] or
+//! [`Writer::finalize_and_flush`].
+//! Users should explicitly finalize the writer, because finalizing is not
+//! implicitly done on drop.
+//!
+//! ```
+//! use fbxcel::{low::FbxVersion, writer::v7400::binary::{FbxFooter, Writer}};
+//! # let mut sink = std::io::Cursor::new(Vec::new());
+//! let mut writer = Writer::new(sink, FbxVersion::V7_4)?;
+//!
+//! // Do something here.
+//!
+//! // Prepare FBX footer.
+//! // Use default if you don't care.
+//! let footer = FbxFooter::default();
+//! writer.finalize(&footer)?;
+//! // Or `writer.finalize_and_flush(&footer)?;` if you want to flush.
+//! # Ok::<_, fbxcel::writer::v7400::binary::Error>(())
+//! ```
+//!
+//! ## Create node and add node attributes
+//!
+//! To create node, use [`Writer::new_node`].
+//! It returns [`AttributesWriter`] and users can add node attributes to the
+//! newly created node through it.
+//!
+//! Once `AttributesWriter` is dropped, you cannot add node attributes to the
+//! node anymore.
+//!
+//! ```
+//! use fbxcel::{
+//!     low::{v7400::ArrayAttributeEncoding, FbxVersion},
+//!     writer::v7400::binary::{FbxFooter, Writer}
+//! };
+//! # let mut sink = std::io::Cursor::new(Vec::new());
+//! let mut writer = Writer::new(sink, FbxVersion::V7_4)?;
+//!
+//! // Create a node with name `NodeName`.
+//! let mut attrs_writer = writer.new_node("NodeName")?;
+//!
+//! // Add attributes to the node.
+//! attrs_writer.append_bool(true)?;
+//! // If you don't care about compression, pass `None`.
+//! attrs_writer.append_arr_i32_from_iter(None, [1, 2, 4, 8, 16].iter().cloned())?;
+//! // If you want to use specific compression, pass `Some(_)`.
+//! attrs_writer.append_arr_f32_from_iter(
+//!     Some(ArrayAttributeEncoding::Zlib),
+//!     [3.14, 1.412].iter().cloned(),
+//! )?;
+//! attrs_writer.append_string_direct("Hello, world")?;
+//!
+//! # Ok::<_, fbxcel::writer::v7400::binary::Error>(())
+//! ```
+//!
+//! ## Close current node
+//!
+//! Simply call [`Writer::close_node`].
+//!
+//! It is user's responsibility to manage depth of current node and avoid
+//! calling extra `close_node`.
+//!
+//! If `close_node` call is too few and there remains open nodes on finalizing
+//! writer, `finalize()` and `finalize_and_flush()` will return error.
+//!
+//! ```
+//! use fbxcel::{
+//!     low::{v7400::ArrayAttributeEncoding, FbxVersion},
+//!     writer::v7400::binary::{FbxFooter, Writer}
+//! };
+//! # let mut sink = std::io::Cursor::new(Vec::new());
+//! let mut writer = Writer::new(sink, FbxVersion::V7_4)?;
+//!
+//! // Create a node with name `NodeName`.
+//! let mut attrs_writer = writer.new_node("NodeName")?;
+//!
+//! // Do something here.
+//! # let _ = &attrs_writer;
+//!
+//! // To close current node, simply call `close_node()`.
+//! writer.close_node()?;
+//!
+//! # Ok::<_, fbxcel::writer::v7400::binary::Error>(())
+//! ```
+//!
+//! [`AttributesWriter`]: struct.AttributesWriter.html
+//! [`Writer::close_node`]: struct.Writer.html#method.close_node
+//! [`Writer::finalize`]: struct.Writer.html#method.finalize
+//! [`Writer::finalize_and_flush`]: struct.Writer.html#method.finalize_and_flush
+//! [`Writer::new`]: struct.Writer.html#method.new
+//! [`Writer::new_node`]: struct.Writer.html#method.new_node
 
 use std::{
     convert::TryFrom,
@@ -20,6 +117,8 @@ mod error;
 mod footer;
 
 /// Binary writer.
+///
+/// See [module documentation](index.html) for usage.
 #[derive(Debug, Clone)]
 pub struct Writer<W: Write> {
     /// Writer destination.
