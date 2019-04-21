@@ -11,7 +11,7 @@ use crate::low::{v7400::NodeHeader, FbxVersion, MAGIC};
 
 pub use self::{
     attributes::AttributesWriter,
-    error::{Error, Result},
+    error::{CompressionError, Error, Result},
     footer::{FbxFooter, FbxFooterPaddingLength},
 };
 
