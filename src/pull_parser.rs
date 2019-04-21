@@ -56,7 +56,7 @@
 //! let mut reader = std::io::BufReader::new(file);
 //!
 //! // 1. Get FBX header.
-//! let header = FbxHeader::read_fbx_header(&mut reader)
+//! let header = FbxHeader::load(&mut reader)
 //!     .expect("Failed to load FBX header");
 //! // 2. Decide which version of parser to use.
 //! match header.parser_version() {
