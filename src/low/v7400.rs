@@ -2,7 +2,7 @@
 
 pub use self::{
     array_attribute::ArrayAttributeEncoding,
-    attribute::{AttributeType, AttributeValue},
+    attribute::{type_::AttributeType, value::AttributeValue},
     fbx_footer::FbxFooter,
 };
 pub(crate) use self::{

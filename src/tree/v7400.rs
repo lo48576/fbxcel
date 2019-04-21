@@ -9,7 +9,7 @@ use self::node::{NodeData, NodeNameSym};
 pub use self::{
     error::LoadError,
     loader::Loader,
-    node::{NodeHandle, NodeId},
+    node::{handle::NodeHandle, NodeId},
 };
 
 mod error;
