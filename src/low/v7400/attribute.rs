@@ -1,6 +1,4 @@
 //! Node attribute.
 
-pub use self::{type_::AttributeType, value::AttributeValue};
-
-mod type_;
-mod value;
+pub(crate) mod type_;
+pub(crate) mod value;

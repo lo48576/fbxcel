@@ -2,13 +2,12 @@
 
 use indextree;
 
-use crate::tree::v7400::Tree;
+use crate::tree::v7400::{NodeHandle, Tree};
 
-pub use self::handle::NodeHandle;
 pub(crate) use self::{data::NodeData, name::NodeNameSym};
 
 mod data;
-mod handle;
+pub(crate) mod handle;
 mod name;
 
 /// Node ID in FBX data tree.
