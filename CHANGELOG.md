@@ -4,12 +4,16 @@
 
 * Documents are improved a little.
 * Manual tree construction support is added.
+* FBX binary writer is added.
 
 ### Added
 * Manual tree construction support is added.
     + Methods to add new nodes and attributes are added.
     + Complete modification is not yet supported, for example modifying already
       added attributes or removing nodes.
+* FBX binary writer is added.
+    + `writer::v7400::binary` contains FBX binary writer stuff.
+    + This can be enabled by `writer` feature.
 
 ## [0.4.3]
 
