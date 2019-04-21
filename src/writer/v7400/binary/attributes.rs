@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     low::v7400::{ArrayAttributeEncoding, ArrayAttributeHeader, AttributeType},
-    writer::v7400::binary::{Error, Result, Writer},
+    writer::v7400::binary::{CompressionError, Error, Result, Writer},
 };
 
 /// Node attributes writer.
@@ -34,27 +34,49 @@ macro_rules! impl_arr_from_iter {
             iter: impl IntoIterator<Item = $ty_elem>,
         ) -> Result<()> {
             let encoding = encoding.into().unwrap_or(ArrayAttributeEncoding::Direct);
-            if encoding != ArrayAttributeEncoding::Direct {
-                unimplemented!("encoding={:?}", encoding);
-            }
 
             let header_pos = self.initialize_array(AttributeType::$tyval, encoding)?;
 
-            // Write elements.
-            let mut elements_count = 0u32;
-            iter.into_iter().try_for_each(|elem| -> Result<()> {
-                elements_count = elements_count
-                    .checked_add(1)
-                    .ok_or_else(|| Error::TooManyArrayAttributeElements(elements_count as usize + 1))?;
-                self.writer.sink().write_all(
-                    &{$to_bytes}(elem)
-                )?;
 
-                Ok(())
-            })?;
+            fn write_elements(
+                mut writer: impl Write,
+                iter: impl IntoIterator<Item = $ty_elem>,
+            ) -> Result<u32> {
+                let mut elements_count = 0u32;
+                iter.into_iter().try_for_each(|elem| -> Result<()> {
+                    elements_count = elements_count
+                        .checked_add(1)
+                        .ok_or_else(|| Error::TooManyArrayAttributeElements(elements_count as usize + 1))?;
+                    writer.write_all(
+                        &{$to_bytes}(elem)
+                    )?;
+
+                    Ok(())
+                })?;
+                Ok(elements_count)
+            }
+
+            // Write elements.
+            let (elements_count, bytelen) = match encoding {
+                ArrayAttributeEncoding::Direct => {
+                    let elements_count = write_elements(self.writer.sink(), iter)?;
+                    let bytelen = elements_count as usize * size_of::<$ty_real>();
+                    (elements_count, bytelen)
+                },
+                ArrayAttributeEncoding::Zlib => {
+                    let start_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+                    let elements_count = {
+                        let mut sink = libflate::zlib::Encoder::new(self.writer.sink())?;
+                        let count = write_elements(&mut sink, iter)?;
+                        sink.finish().into_result().map_err(CompressionError::Zlib)?;
+                        count
+                    };
+                    let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+                    (elements_count, (end_pos - start_pos) as usize)
+                },
+            };
 
             // Calculate header fields.
-            let bytelen = elements_count as usize * size_of::<$ty_real>();
             let bytelen = u32::try_from(bytelen).map_err(|_| Error::AttributeTooLong(bytelen))?;
 
             // Write real array header.
@@ -80,28 +102,52 @@ macro_rules! impl_arr_from_iter {
             E: Into<Box<std::error::Error + 'static>>,
         {
             let encoding = encoding.into().unwrap_or(ArrayAttributeEncoding::Direct);
-            if encoding != ArrayAttributeEncoding::Direct {
-                unimplemented!("encoding={:?}", encoding);
-            }
 
             let header_pos = self.initialize_array(AttributeType::$tyval, encoding)?;
 
-            // Write elements.
-            let mut elements_count = 0u32;
-            iter.into_iter().try_for_each(|elem| -> Result<()> {
-                let elem = elem.map_err(|e| Error::UserDefined(e.into()))?;
-                elements_count = elements_count
-                    .checked_add(1)
-                    .ok_or_else(|| Error::TooManyArrayAttributeElements(elements_count as usize + 1))?;
-                self.writer.sink().write_all(
-                    &{$to_bytes}(elem)
-                )?;
+            fn write_elements<E>(
+                mut writer: impl Write,
+                iter: impl IntoIterator<Item = std::result::Result<$ty_elem, E>>,
+            ) -> Result<u32>
+            where
+                E: Into<Box<std::error::Error + 'static>>,
+            {
+                let mut elements_count = 0u32;
+                iter.into_iter().try_for_each(|elem| -> Result<()> {
+                    let elem = elem.map_err(|e| Error::UserDefined(e.into()))?;
+                    elements_count = elements_count
+                        .checked_add(1)
+                        .ok_or_else(|| Error::TooManyArrayAttributeElements(elements_count as usize + 1))?;
+                    writer.write_all(
+                        &{$to_bytes}(elem)
+                    )?;
 
-                Ok(())
-            })?;
+                    Ok(())
+                })?;
+                Ok(elements_count)
+            }
+
+            // Write elements.
+            let (elements_count, bytelen) = match encoding {
+                ArrayAttributeEncoding::Direct => {
+                    let elements_count = write_elements(self.writer.sink(), iter)?;
+                    let bytelen = elements_count as usize * size_of::<$ty_real>();
+                    (elements_count, bytelen)
+                },
+                ArrayAttributeEncoding::Zlib => {
+                    let start_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+                    let elements_count = {
+                        let mut sink = libflate::zlib::Encoder::new(self.writer.sink())?;
+                        let count = write_elements(&mut sink, iter)?;
+                        sink.finish().into_result().map_err(CompressionError::Zlib)?;
+                        count
+                    };
+                    let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+                    (elements_count, (end_pos - start_pos) as usize)
+                },
+            };
 
             // Calculate header fields.
-            let bytelen = elements_count as usize * size_of::<$ty_real>();
             let bytelen = u32::try_from(bytelen).map_err(|_| Error::AttributeTooLong(bytelen))?;
 
             // Write real array header.
