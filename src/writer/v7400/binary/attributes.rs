@@ -11,6 +11,8 @@ use crate::{
     writer::v7400::binary::{CompressionError, Error, Result, Writer},
 };
 
+mod array;
+
 /// A trait for types which can be represented as single bytes array.
 pub(crate) trait IntoBytes: Sized {
     /// Calls the given function with the bytes array.
@@ -84,7 +86,6 @@ macro_rules! impl_arr_from_iter {
             from_result_iter: $name_from_result_iter:ident,
             tyval: $tyval:ident,
             ty_real: $ty_real:ty,
-            to_bytes: $to_bytes:expr,
         },
     )*) => {$(
         $(#[$meta])*
@@ -97,29 +98,10 @@ macro_rules! impl_arr_from_iter {
 
             let header_pos = self.initialize_array(AttributeType::$tyval, encoding)?;
 
-
-            fn write_elements(
-                mut writer: impl Write,
-                iter: impl IntoIterator<Item = $ty_elem>,
-            ) -> Result<u32> {
-                let mut elements_count = 0u32;
-                iter.into_iter().try_for_each(|elem| -> Result<()> {
-                    elements_count = elements_count
-                        .checked_add(1)
-                        .ok_or_else(|| Error::TooManyArrayAttributeElements(elements_count as usize + 1))?;
-                    writer.write_all(
-                        &{$to_bytes}(elem)
-                    )?;
-
-                    Ok(())
-                })?;
-                Ok(elements_count)
-            }
-
             // Write elements.
             let (elements_count, bytelen) = match encoding {
                 ArrayAttributeEncoding::Direct => {
-                    let elements_count = write_elements(self.writer.sink(), iter)?;
+                    let elements_count = array::write_elements_direct_iter(self.writer.sink(), iter)?;
                     let bytelen = elements_count as usize * size_of::<$ty_real>();
                     (elements_count, bytelen)
                 },
@@ -127,7 +109,7 @@ macro_rules! impl_arr_from_iter {
                     let start_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
                     let elements_count = {
                         let mut sink = libflate::zlib::Encoder::new(self.writer.sink())?;
-                        let count = write_elements(&mut sink, iter)?;
+                        let count = array::write_elements_direct_iter(&mut sink, iter)?;
                         sink.finish().into_result().map_err(CompressionError::Zlib)?;
                         count
                     };
@@ -165,32 +147,11 @@ macro_rules! impl_arr_from_iter {
 
             let header_pos = self.initialize_array(AttributeType::$tyval, encoding)?;
 
-            fn write_elements<E>(
-                mut writer: impl Write,
-                iter: impl IntoIterator<Item = std::result::Result<$ty_elem, E>>,
-            ) -> Result<u32>
-            where
-                E: Into<Box<std::error::Error + 'static>>,
-            {
-                let mut elements_count = 0u32;
-                iter.into_iter().try_for_each(|elem| -> Result<()> {
-                    let elem = elem.map_err(|e| Error::UserDefined(e.into()))?;
-                    elements_count = elements_count
-                        .checked_add(1)
-                        .ok_or_else(|| Error::TooManyArrayAttributeElements(elements_count as usize + 1))?;
-                    writer.write_all(
-                        &{$to_bytes}(elem)
-                    )?;
-
-                    Ok(())
-                })?;
-                Ok(elements_count)
-            }
-
             // Write elements.
+            let iter = iter.into_iter().map(|res| res.map_err(|e| Error::UserDefined(e.into())));
             let (elements_count, bytelen) = match encoding {
                 ArrayAttributeEncoding::Direct => {
-                    let elements_count = write_elements(self.writer.sink(), iter)?;
+                    let elements_count = array::write_elements_result_iter(self.writer.sink(), iter)?;
                     let bytelen = elements_count as usize * size_of::<$ty_real>();
                     (elements_count, bytelen)
                 },
@@ -198,7 +159,7 @@ macro_rules! impl_arr_from_iter {
                     let start_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
                     let elements_count = {
                         let mut sink = libflate::zlib::Encoder::new(self.writer.sink())?;
-                        let count = write_elements(&mut sink, iter)?;
+                        let count = array::write_elements_result_iter(&mut sink, iter)?;
                         sink.finish().into_result().map_err(CompressionError::Zlib)?;
                         count
                     };
@@ -324,7 +285,6 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             from_result_iter: append_arr_bool_from_result_iter,
             tyval: ArrBool,
             ty_real: u8,
-            to_bytes: |elem: bool| if elem { [b'Y'] } else { [b'T'] },
         },
 
         /// Writes an `i32` array attribute.
@@ -332,7 +292,6 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             from_result_iter: append_arr_i32_from_result_iter,
             tyval: ArrI32,
             ty_real: i32,
-            to_bytes: |elem: i32| elem.to_le_bytes(),
         },
 
         /// Writes an `i64` array attribute.
@@ -340,7 +299,6 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             from_result_iter: append_arr_i64_from_result_iter,
             tyval: ArrI64,
             ty_real: i64,
-            to_bytes: |elem: i64| elem.to_le_bytes(),
         },
 
         /// Writes an `f32` array attribute.
@@ -348,7 +306,6 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             from_result_iter: append_arr_f32_from_result_iter,
             tyval: ArrI32,
             ty_real: f32,
-            to_bytes: |elem: f32| elem.to_bits().to_le_bytes(),
         },
 
         /// Writes an `f64` array attribute.
@@ -356,7 +313,6 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             from_result_iter: append_arr_f64_from_result_iter,
             tyval: ArrI64,
             ty_real: f64,
-            to_bytes: |elem: f64| elem.to_bits().to_le_bytes(),
         },
     }
 
