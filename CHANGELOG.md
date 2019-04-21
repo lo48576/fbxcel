@@ -5,6 +5,8 @@
 * Documents are improved a little.
 * Manual tree construction support is added.
 * FBX binary writer is added.
+* Now rustc-1.34 or later is required.
+    + To use `std::convert::{TryFrom, TryInto}`.
 
 ### Added
 * Manual tree construction support is added.
@@ -14,6 +16,15 @@
 * FBX binary writer is added.
     + `writer::v7400::binary` contains FBX binary writer stuff.
     + This can be enabled by `writer` feature.
+
+### Non-breaking change
+* Now rustc-1.34 or later is required.
+    + To use `std::convert::TryFrom`.
+    + Strictly, this is a breaking change (for users with rustc-1.33 or below),
+      but not breaking for users with latest rustc.
+    + Currently, only `writer` module uses `TryFrom`.
+      Users not using `writer` feature won't be affected for now, but they could
+      encounter compile error in future version of fbxcel.
 
 ## [0.4.3]
 
