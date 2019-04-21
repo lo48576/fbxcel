@@ -157,3 +157,18 @@ impl Tree {
         node.data.append_attribute(v)
     }
 }
+
+impl Default for Tree {
+    fn default() -> Self {
+        let mut arena = Arena::new();
+        let mut node_names = StringInterner::new();
+        let root_id =
+            NodeId::new(arena.new_node(NodeData::new(node_names.get_or_intern(""), Vec::new())));
+
+        Self {
+            arena,
+            node_names,
+            root_id,
+        }
+    }
+}
