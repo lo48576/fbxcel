@@ -12,6 +12,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     /// Node attribute is too long.
     AttributeTooLong(usize),
+    /// Compression error.
+    Compression(CompressionError),
     /// File is too large.
     FileTooLarge(u64),
     /// I/O error.
@@ -35,6 +37,7 @@ pub enum Error {
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
+            Error::Compression(e) => Some(e),
             Error::Io(e) => Some(e),
             Error::UserDefined(e) => Some(&**e),
             _ => None,
@@ -46,6 +49,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::AttributeTooLong(v) => write!(f, "Node attribute is too long: {} bytes", v),
+            Error::Compression(e) => write!(f, "Compression error: {}", e),
             Error::FileTooLarge(v) => write!(f, "File is too large: {} bytes", v),
             Error::Io(e) => write!(f, "I/O error: {}", e),
             Error::NoNodesToClose => write!(f, "There are no nodes to close"),
@@ -66,5 +70,34 @@ impl fmt::Display for Error {
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Self {
         Error::Io(e)
+    }
+}
+
+impl From<CompressionError> for Error {
+    fn from(e: CompressionError) -> Self {
+        Error::Compression(e)
+    }
+}
+
+/// Compression error.
+#[derive(Debug)]
+pub enum CompressionError {
+    /// Zlib error.
+    Zlib(io::Error),
+}
+
+impl error::Error for CompressionError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            CompressionError::Zlib(e) => Some(e),
+        }
+    }
+}
+
+impl fmt::Display for CompressionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            CompressionError::Zlib(e) => write!(f, "Zlib compression error: {}", e),
+        }
     }
 }
