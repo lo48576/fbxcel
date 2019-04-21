@@ -3,6 +3,13 @@
 ## [Unreleased]
 
 * Documents are improved a little.
+* Manual tree construction support is added.
+
+### Added
+* Manual tree construction support is added.
+    + Methods to add new nodes and attributes are added.
+    + Complete modification is not yet supported, for example modifying already
+      added attributes or removing nodes.
 
 ## [0.4.3]
 
