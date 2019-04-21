@@ -3,15 +3,23 @@
 use std::{
     convert::TryFrom,
     io::{self, Seek, SeekFrom, Write},
-    mem::size_of,
 };
 
 use crate::{
     low::v7400::{ArrayAttributeEncoding, ArrayAttributeHeader, AttributeType},
-    writer::v7400::binary::{CompressionError, Error, Result, Writer},
+    writer::v7400::binary::{Error, Result, Writer},
 };
 
 mod array;
+
+/// A dummy type for impossible error.
+pub(crate) enum Never {}
+
+impl From<Never> for Error {
+    fn from(_: Never) -> Self {
+        unreachable!("Should never happen")
+    }
+}
 
 /// A trait for types which can be represented as single bytes array.
 pub(crate) trait IntoBytes: Sized {
@@ -85,7 +93,6 @@ macro_rules! impl_arr_from_iter {
         $name:ident: $ty_elem:ty {
             from_result_iter: $name_from_result_iter:ident,
             tyval: $tyval:ident,
-            ty_real: $ty_real:ty,
         },
     )*) => {$(
         $(#[$meta])*
@@ -94,44 +101,12 @@ macro_rules! impl_arr_from_iter {
             encoding: impl Into<Option<ArrayAttributeEncoding>>,
             iter: impl IntoIterator<Item = $ty_elem>,
         ) -> Result<()> {
-            let encoding = encoding.into().unwrap_or(ArrayAttributeEncoding::Direct);
-
-            let header_pos = self.initialize_array(AttributeType::$tyval, encoding)?;
-
-            // Write elements.
-            let (elements_count, bytelen) = match encoding {
-                ArrayAttributeEncoding::Direct => {
-                    let elements_count = array::write_elements_direct_iter(self.writer.sink(), iter)?;
-                    let bytelen = elements_count as usize * size_of::<$ty_real>();
-                    (elements_count, bytelen)
-                },
-                ArrayAttributeEncoding::Zlib => {
-                    let start_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
-                    let elements_count = {
-                        let mut sink = libflate::zlib::Encoder::new(self.writer.sink())?;
-                        let count = array::write_elements_direct_iter(&mut sink, iter)?;
-                        sink.finish().into_result().map_err(CompressionError::Zlib)?;
-                        count
-                    };
-                    let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
-                    (elements_count, (end_pos - start_pos) as usize)
-                },
-            };
-
-            // Calculate header fields.
-            let bytelen = u32::try_from(bytelen).map_err(|_| Error::AttributeTooLong(bytelen))?;
-
-            // Write real array header.
-            self.finalize_array(
-                header_pos,
-                &ArrayAttributeHeader {
-                    elements_count,
-                    encoding,
-                    bytelen,
-                },
-            )?;
-
-            Ok(())
+            array::write_array_attr_result_iter(
+                self,
+                AttributeType::$tyval,
+                encoding.into(),
+                iter.into_iter().map(Ok::<_, Never>),
+            )
         }
 
         $(#[$meta])*
@@ -143,45 +118,12 @@ macro_rules! impl_arr_from_iter {
         where
             E: Into<Box<std::error::Error + 'static>>,
         {
-            let encoding = encoding.into().unwrap_or(ArrayAttributeEncoding::Direct);
-
-            let header_pos = self.initialize_array(AttributeType::$tyval, encoding)?;
-
-            // Write elements.
-            let iter = iter.into_iter().map(|res| res.map_err(|e| Error::UserDefined(e.into())));
-            let (elements_count, bytelen) = match encoding {
-                ArrayAttributeEncoding::Direct => {
-                    let elements_count = array::write_elements_result_iter(self.writer.sink(), iter)?;
-                    let bytelen = elements_count as usize * size_of::<$ty_real>();
-                    (elements_count, bytelen)
-                },
-                ArrayAttributeEncoding::Zlib => {
-                    let start_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
-                    let elements_count = {
-                        let mut sink = libflate::zlib::Encoder::new(self.writer.sink())?;
-                        let count = array::write_elements_result_iter(&mut sink, iter)?;
-                        sink.finish().into_result().map_err(CompressionError::Zlib)?;
-                        count
-                    };
-                    let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
-                    (elements_count, (end_pos - start_pos) as usize)
-                },
-            };
-
-            // Calculate header fields.
-            let bytelen = u32::try_from(bytelen).map_err(|_| Error::AttributeTooLong(bytelen))?;
-
-            // Write real array header.
-            self.finalize_array(
-                header_pos,
-                &ArrayAttributeHeader {
-                    elements_count,
-                    encoding,
-                    bytelen,
-                },
-            )?;
-
-            Ok(())
+            array::write_array_attr_result_iter(
+                self,
+                AttributeType::$tyval,
+                encoding.into(),
+                iter.into_iter().map(|res| res.map_err(|e| Error::UserDefined(e.into()))),
+            )
         }
     )*}
 }
@@ -190,6 +132,11 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
     /// Creates a new `AttributesWriter`.
     pub(crate) fn new(writer: &'a mut Writer<W>) -> Self {
         Self { writer }
+    }
+
+    /// Returns the inner writer.
+    pub(crate) fn sink(&mut self) -> &mut W {
+        self.writer.sink()
     }
 
     /// Writes the given attribute type as type code.
@@ -231,21 +178,11 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
 
     /// Writes the given array attribute header.
     fn write_array_header(&mut self, header: &ArrayAttributeHeader) -> Result<()> {
-        self.writer
-            .sink()
-            .write_all(&header.elements_count.to_le_bytes())?;
-        self.writer
-            .sink()
-            .write_all(&header.encoding.to_u32().to_le_bytes())?;
-        self.writer
-            .sink()
-            .write_all(&header.bytelen.to_le_bytes())?;
-
-        Ok(())
+        array::write_array_header(self.writer.sink(), header).map_err(Into::into)
     }
 
     /// Writes some headers for an array attibute, and returns header position.
-    fn initialize_array(
+    pub(crate) fn initialize_array(
         &mut self,
         ty: AttributeType,
         encoding: ArrayAttributeEncoding,
@@ -284,35 +221,30 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         append_arr_bool_from_iter: bool {
             from_result_iter: append_arr_bool_from_result_iter,
             tyval: ArrBool,
-            ty_real: u8,
         },
 
         /// Writes an `i32` array attribute.
         append_arr_i32_from_iter: i32 {
             from_result_iter: append_arr_i32_from_result_iter,
             tyval: ArrI32,
-            ty_real: i32,
         },
 
         /// Writes an `i64` array attribute.
         append_arr_i64_from_iter: i64 {
             from_result_iter: append_arr_i64_from_result_iter,
             tyval: ArrI64,
-            ty_real: i64,
         },
 
         /// Writes an `f32` array attribute.
         append_arr_f32_from_iter: f32 {
             from_result_iter: append_arr_f32_from_result_iter,
             tyval: ArrI32,
-            ty_real: f32,
         },
 
         /// Writes an `f64` array attribute.
         append_arr_f64_from_iter: f64 {
             from_result_iter: append_arr_f64_from_result_iter,
             tyval: ArrI64,
-            ty_real: f64,
         },
     }
 

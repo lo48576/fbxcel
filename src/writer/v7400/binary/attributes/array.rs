@@ -1,8 +1,16 @@
 //! Array attributes things.
 
-use std::{convert::TryFrom, io::Write};
+use std::{
+    convert::TryFrom,
+    io::{self, Seek, SeekFrom, Write},
+};
 
-use crate::writer::v7400::binary::{attributes::IntoBytes, Error, Result};
+use crate::{
+    low::v7400::{ArrayAttributeEncoding, ArrayAttributeHeader, AttributeType},
+    writer::v7400::binary::{
+        attributes::IntoBytes, AttributesWriter, CompressionError, Error, Result,
+    },
+};
 
 /// A trait for types which can be represented as multiple bytes array.
 pub(crate) trait IntoBytesMulti<E>: Sized {
@@ -28,24 +36,6 @@ impl<T: IntoBytes, E, I: IntoIterator<Item = std::result::Result<T, E>>> IntoByt
 }
 
 /// Writes array elements into the given writer.
-pub(crate) fn write_elements_direct_iter<T>(
-    writer: impl Write,
-    iter: impl IntoIterator<Item = T>,
-) -> Result<u32>
-where
-    T: IntoBytes,
-{
-    /// A dummy type for impossible error.
-    enum Never {}
-    impl From<Never> for Error {
-        fn from(_: Never) -> Self {
-            unreachable!("Should never happen")
-        }
-    }
-    write_elements_result_iter(writer, iter.into_iter().map(Ok::<_, Never>))
-}
-
-/// Writes array elements into the given writer.
 pub(crate) fn write_elements_result_iter<T, E>(
     mut writer: impl Write,
     iter: impl IntoIterator<Item = std::result::Result<T, E>>,
@@ -53,7 +43,6 @@ pub(crate) fn write_elements_result_iter<T, E>(
 where
     T: IntoBytes,
     E: Into<Error>,
-    //Error: From<E>,
 {
     let elements_count = iter
         .into_iter()
@@ -63,4 +52,59 @@ where
         .map_err(|_| Error::TooManyArrayAttributeElements(elements_count + 1))?;
 
     Ok(elements_count)
+}
+
+/// Writes the given array attribute header.
+pub(crate) fn write_array_header(
+    mut writer: impl Write,
+    header: &ArrayAttributeHeader,
+) -> io::Result<()> {
+    writer.write_all(&header.elements_count.to_le_bytes())?;
+    writer.write_all(&header.encoding.to_u32().to_le_bytes())?;
+    writer.write_all(&header.bytelen.to_le_bytes())?;
+
+    Ok(())
+}
+
+/// Writes the given array attribute.
+pub(crate) fn write_array_attr_result_iter<W: Write + Seek, T: IntoBytes, E: Into<Error>>(
+    writer: &mut AttributesWriter<W>,
+    ty: AttributeType,
+    encoding: Option<ArrayAttributeEncoding>,
+    iter: impl IntoIterator<Item = std::result::Result<T, E>>,
+) -> Result<()> {
+    let encoding = encoding.unwrap_or(ArrayAttributeEncoding::Direct);
+
+    let header_pos = writer.initialize_array(ty, encoding)?;
+
+    // Write elements.
+    let start_pos = writer.sink().seek(SeekFrom::Current(0))?;
+    let elements_count = match encoding {
+        ArrayAttributeEncoding::Direct => write_elements_result_iter(writer.sink(), iter)?,
+        ArrayAttributeEncoding::Zlib => {
+            let mut sink = libflate::zlib::Encoder::new(writer.sink())?;
+            let count = write_elements_result_iter(&mut sink, iter)?;
+            sink.finish()
+                .into_result()
+                .map_err(CompressionError::Zlib)?;
+            count
+        }
+    };
+    let end_pos = writer.sink().seek(SeekFrom::Current(0))?;
+    let bytelen = end_pos - start_pos;
+
+    // Calculate header fields.
+    let bytelen = u32::try_from(bytelen).map_err(|_| Error::AttributeTooLong(bytelen as usize))?;
+
+    // Write real array header.
+    writer.finalize_array(
+        header_pos,
+        &ArrayAttributeHeader {
+            elements_count,
+            encoding,
+            bytelen,
+        },
+    )?;
+
+    Ok(())
 }
