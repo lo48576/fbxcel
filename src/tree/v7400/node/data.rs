@@ -25,6 +25,11 @@ impl NodeData {
         &self.attributes
     }
 
+    /// Appends the given value to the attributes.
+    pub(crate) fn append_attribute(&mut self, v: AttributeValue) {
+        self.attributes.push(v)
+    }
+
     /// Creates a new `NodeData`.
     pub(crate) fn new(name_sym: NodeNameSym, attributes: Vec<AttributeValue>) -> Self {
         Self {
