@@ -151,7 +151,16 @@ impl Tree {
     /// # Panics
     ///
     /// Panics if the given node ID is invalid (i.e. not used or root node).
-    pub fn append_attribute(&mut self, node_id: NodeId, v: AttributeValue) {
+    pub fn append_attribute(&mut self, node_id: NodeId, v: impl Into<AttributeValue>) {
+        self.append_attribute_impl(node_id, v.into())
+    }
+
+    /// Internal implementation of `append_attribute`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given node ID is invalid (i.e. not used or root node).
+    fn append_attribute_impl(&mut self, node_id: NodeId, v: AttributeValue) {
         assert_ne!(node_id, self.root_id, "Root node should have no attributes");
         let node = self.arena.get_mut(node_id.raw()).expect("Invalid node ID");
         node.data.append_attribute(v)
