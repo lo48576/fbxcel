@@ -165,6 +165,18 @@ impl Tree {
         let node = self.arena.get_mut(node_id.raw()).expect("Invalid node ID");
         node.data.append_attribute(v)
     }
+
+    /// Compares trees strictly.
+    ///
+    /// Returns `true` if the two trees are same.
+    ///
+    /// Note that `f32` and `f64` values are compared bitwise.
+    ///
+    /// Note that this method compares tree data, not internal states of the
+    /// objects.
+    pub fn strict_eq(&self, other: &Self) -> bool {
+        self.root().strict_eq(&other.root())
+    }
 }
 
 impl Default for Tree {

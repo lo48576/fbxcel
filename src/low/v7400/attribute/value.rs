@@ -222,6 +222,36 @@ impl AttributeValue {
         get_binary_or_type,
         "Returns the reference to the inner binary data, if available.\n\nReturns `Err(type)` on type mismatch.",
     }
+
+    /// Compares attribute values strictly.
+    ///
+    /// "Strictly" means, `f32` and `f64` values are compared bitwise.
+    pub fn strict_eq(&self, other: &Self) -> bool {
+        use AttributeValue::*;
+
+        match (self, other) {
+            (Bool(l), Bool(r)) => l == r,
+            (I16(l), I16(r)) => l == r,
+            (I32(l), I32(r)) => l == r,
+            (I64(l), I64(r)) => l == r,
+            (F32(l), F32(r)) => l.to_bits() == r.to_bits(),
+            (F64(l), F64(r)) => l.to_bits() == r.to_bits(),
+            (ArrBool(l), ArrBool(r)) => l == r,
+            (ArrI32(l), ArrI32(r)) => l == r,
+            (ArrI64(l), ArrI64(r)) => l == r,
+            (ArrF32(l), ArrF32(r)) => l
+                .iter()
+                .map(|v| v.to_bits())
+                .eq(r.iter().map(|v| v.to_bits())),
+            (ArrF64(l), ArrF64(r)) => l
+                .iter()
+                .map(|v| v.to_bits())
+                .eq(r.iter().map(|v| v.to_bits())),
+            (Binary(l), Binary(r)) => l == r,
+            (String(l), String(r)) => l == r,
+            _ => false,
+        }
+    }
 }
 
 macro_rules! impl_from {
