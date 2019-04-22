@@ -5,7 +5,7 @@ mod tests {
     use std::{cell::RefCell, io::Cursor, iter, rc::Rc};
 
     use fbxcel::{
-        low::{v7400::AttributeValue, FbxVersion},
+        low::FbxVersion,
         pull_parser::{
             any::{from_seekable_reader, AnyParser},
             v7400::{Attributes, Event, Parser},
@@ -124,13 +124,13 @@ mod tests {
             // Node 1: With attributes, with children.
             // Node 1-x: With attributes, without children.
             let node1_id = tree.append_new(tree.root().node_id(), "Node1");
-            tree.append_attribute(node1_id, AttributeValue::Bool(true));
+            tree.append_attribute(node1_id, true);
             let node1_1_id = tree.append_new(node1_id, "Node1-0");
-            tree.append_attribute(node1_1_id, AttributeValue::I32(42));
-            tree.append_attribute(node1_1_id, AttributeValue::F64(3.14));
+            tree.append_attribute(node1_1_id, 42i32);
+            tree.append_attribute(node1_1_id, 3.14f64);
             let node1_2_id = tree.append_new(node1_id, "Node1-1");
-            tree.append_attribute(node1_2_id, AttributeValue::Binary(vec![1, 2, 4, 8, 16]));
-            tree.append_attribute(node1_2_id, AttributeValue::String("Hello, world".into()));
+            tree.append_attribute(node1_2_id, &[1u8, 2, 4, 8, 16] as &[_]);
+            tree.append_attribute(node1_2_id, "Hello, world");
         }
 
         let mut dest = Vec::new();
