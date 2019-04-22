@@ -6,6 +6,7 @@
 * Manual tree construction support is added.
 * FBX binary writer is added.
 * `low::v7400::AttributeValue` implements `From<_>` for some types.
+* Strict equality check is added for trees, nodes, and attribute values.
 * Now rustc-1.34 or later is required.
     + To use `std::convert::{TryFrom, TryInto}`.
 
@@ -23,6 +24,12 @@
       `Vec<u8>`.
     + Slice types: `&[bool]`, `&[i32]`, `&[i64]`, `&[f32]`, `&[f64]`, `&[u8]`.
     + Special types: `String`, `&str`.
+* Strict equality check is added for trees, nodes, and attribute values.
+    + Trees: `tree::v7400::Tree::strict_eq()`.
+    + Nodes: `tree::v7400::NodeHandle::strict_eq()`.
+    + Attributes: `low::v7400::AttributeValue::strict_eq()`.
+    + These checks compares `f32` and `f64` bitwise.
+      This means `NAN == NAN` situation is possible.
 
 ### Non-breaking change
 * Now rustc-1.34 or later is required.
