@@ -223,3 +223,40 @@ impl AttributeValue {
         "Returns the reference to the inner binary data, if available.\n\nReturns `Err(type)` on type mismatch.",
     }
 }
+
+macro_rules! impl_from {
+    (direct: $ty:ty, $variant:ident) => {
+        impl From<$ty> for AttributeValue {
+            fn from(v: $ty) -> Self {
+                AttributeValue::$variant(v.into())
+            }
+        }
+    };
+    (map: $ty:ty, $variant:ident, $arg:ident, $v:expr) => {
+        impl From<$ty> for AttributeValue {
+            fn from($arg: $ty) -> Self {
+                AttributeValue::$variant($v)
+            }
+        }
+    };
+}
+
+impl_from! { direct: bool, Bool }
+impl_from! { direct: i16, I16 }
+impl_from! { direct: i32, I32 }
+impl_from! { direct: i64, I64 }
+impl_from! { direct: f32, F32 }
+impl_from! { direct: f64, F64 }
+impl_from! { direct: Vec<i32>, ArrI32 }
+impl_from! { direct: Vec<i64>, ArrI64 }
+impl_from! { direct: Vec<f32>, ArrF32 }
+impl_from! { direct: Vec<f64>, ArrF64 }
+impl_from! { direct: Vec<u8>, Binary }
+impl_from! { direct: String, String }
+impl_from! { map: &[bool], ArrBool, v, v.to_owned() }
+impl_from! { map: &[i32], ArrI32, v, v.to_owned() }
+impl_from! { map: &[i64], ArrI64, v, v.to_owned() }
+impl_from! { map: &[f32], ArrF32, v, v.to_owned() }
+impl_from! { map: &[f64], ArrF64, v, v.to_owned() }
+impl_from! { map: &[u8], Binary, v, v.to_owned() }
+impl_from! { map: &str, String, v, v.to_owned() }
