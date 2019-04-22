@@ -38,3 +38,41 @@ fn compare_trees() {
     let empty = tree_v7400!();
     assert!(!empty.strict_eq(&tree2));
 }
+
+#[test]
+fn correct_tree() {
+    let tree_manual = {
+        let mut tree = Tree::default();
+        // Node 0: Without attributes, with children.
+        // Node 0-x: Without attributes, without children.
+        let node0_id = tree.append_new(tree.root().node_id(), "Node0");
+        tree.append_new(node0_id, "Node0_0");
+        tree.append_new(node0_id, "Node0_1");
+
+        // Node 1: With attributes, with children.
+        // Node 1-x: With attributes, without children.
+        let node1_id = tree.append_new(tree.root().node_id(), "Node1");
+        tree.append_attribute(node1_id, true);
+        let node1_0_id = tree.append_new(node1_id, "Node1_0");
+        tree.append_attribute(node1_0_id, 42i32);
+        tree.append_attribute(node1_0_id, 3.14f64);
+        let node1_1_id = tree.append_new(node1_id, "Node1_1");
+        tree.append_attribute(node1_1_id, &[1u8, 2, 4, 8, 16] as &[_]);
+        tree.append_attribute(node1_1_id, "Hello, world");
+
+        tree
+    };
+
+    let tree_macro = tree_v7400! {
+        Node0: {
+            Node0_0: {},
+            Node0_1: {},
+        },
+        Node1: [true] {
+            Node1_0: (vec![42i32.into(), 3.14f64.into()]) {}
+            Node1_1: [&[1u8, 2, 4, 8, 16][..], "Hello, world"] {}
+        },
+    };
+
+    assert!(tree_manual.strict_eq(&tree_macro));
+}
