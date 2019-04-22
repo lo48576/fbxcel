@@ -12,6 +12,8 @@ pub use self::{
     node::{handle::NodeHandle, NodeId},
 };
 
+mod macros;
+
 mod error;
 mod loader;
 mod node;
