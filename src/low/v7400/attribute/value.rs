@@ -277,6 +277,7 @@ impl_from! { direct: i32, I32 }
 impl_from! { direct: i64, I64 }
 impl_from! { direct: f32, F32 }
 impl_from! { direct: f64, F64 }
+impl_from! { direct: Vec<bool>, ArrBool }
 impl_from! { direct: Vec<i32>, ArrI32 }
 impl_from! { direct: Vec<i64>, ArrI64 }
 impl_from! { direct: Vec<f32>, ArrF32 }
