@@ -5,6 +5,7 @@
 * Documents are improved a little.
 * Manual tree construction support is added.
 * FBX binary writer is added.
+* `low::v7400::AttributeValue` implements `From<_>` for some types.
 * Now rustc-1.34 or later is required.
     + To use `std::convert::{TryFrom, TryInto}`.
 
@@ -16,6 +17,12 @@
 * FBX binary writer is added.
     + `writer::v7400::binary` contains FBX binary writer stuff.
     + This can be enabled by `writer` feature.
+* `low::v7400::AttributeValue` implements `From<_>` for some types.
+    + Primitive types: `bool`, `i16`, `i32`, `i64`, `f32`, `f64`.
+    + Vector types: `Vec<bool>`, `Vec<i32>`, `Vec<i64>`, `Vec<f32>`, `Vec<f64>`,
+      `Vec<u8>`.
+    + Slice types: `&[bool]`, `&[i32]`, `&[i64]`, `&[f32]`, `&[f64]`, `&[u8]`.
+    + Special types: `String`, `&str`.
 
 ### Non-breaking change
 * Now rustc-1.34 or later is required.
