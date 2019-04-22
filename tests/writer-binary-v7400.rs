@@ -111,27 +111,18 @@ mod tests {
     #[cfg(feature = "writer")]
     #[test]
     fn tree_write_7500() -> Result<(), Box<dyn std::error::Error>> {
-        use fbxcel::tree::v7400::Tree;
+        use fbxcel::tree_v7400;
 
-        let mut tree = Tree::default();
-        {
-            // Node 0: Without attributes, with children.
-            // Node 0-x: Without attributes, without children.
-            let node0_id = tree.append_new(tree.root().node_id(), "Node0");
-            tree.append_new(node0_id, "Node0-0");
-            tree.append_new(node0_id, "Node0-1");
-
-            // Node 1: With attributes, with children.
-            // Node 1-x: With attributes, without children.
-            let node1_id = tree.append_new(tree.root().node_id(), "Node1");
-            tree.append_attribute(node1_id, true);
-            let node1_1_id = tree.append_new(node1_id, "Node1-0");
-            tree.append_attribute(node1_1_id, 42i32);
-            tree.append_attribute(node1_1_id, 3.14f64);
-            let node1_2_id = tree.append_new(node1_id, "Node1-1");
-            tree.append_attribute(node1_2_id, &[1u8, 2, 4, 8, 16] as &[_]);
-            tree.append_attribute(node1_2_id, "Hello, world");
-        }
+        let tree = tree_v7400! {
+            Node0: {
+                Node0_0: {},
+                Node0_1: {},
+            },
+            Node1: [true] {
+                Node1_0: (vec![42i32.into(), 3.14f64.into()]) {}
+                Node1_1: [&[1u8, 2, 4, 8, 16][..], "Hello, world"] {}
+            },
+        };
 
         let mut dest = Vec::new();
         let cursor = Cursor::new(&mut dest);
@@ -164,12 +155,12 @@ mod tests {
             assert_eq!(attrs.total_count(), 0);
         }
         {
-            let attrs = expect_node_start(&mut parser, "Node0-0")?;
+            let attrs = expect_node_start(&mut parser, "Node0_0")?;
             assert_eq!(attrs.total_count(), 0);
         }
         expect_node_end(&mut parser)?;
         {
-            let attrs = expect_node_start(&mut parser, "Node0-1")?;
+            let attrs = expect_node_start(&mut parser, "Node0_1")?;
             assert_eq!(attrs.total_count(), 0);
         }
         expect_node_end(&mut parser)?;
@@ -179,12 +170,12 @@ mod tests {
             assert_eq!(attrs.total_count(), 1);
         }
         {
-            let attrs = expect_node_start(&mut parser, "Node1-0")?;
+            let attrs = expect_node_start(&mut parser, "Node1_0")?;
             assert_eq!(attrs.total_count(), 2);
         }
         expect_node_end(&mut parser)?;
         {
-            let attrs = expect_node_start(&mut parser, "Node1-1")?;
+            let attrs = expect_node_start(&mut parser, "Node1_1")?;
             assert_eq!(attrs.total_count(), 2);
         }
         expect_node_end(&mut parser)?;
