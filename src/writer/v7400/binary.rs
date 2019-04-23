@@ -38,7 +38,7 @@
 //! ```
 //! use fbxcel::{
 //!     low::{v7400::ArrayAttributeEncoding, FbxVersion},
-//!     writer::v7400::binary::{FbxFooter, Writer}
+//!     writer::v7400::binary::Writer,
 //! };
 //! # let mut sink = std::io::Cursor::new(Vec::new());
 //! let mut writer = Writer::new(sink, FbxVersion::V7_4)?;
@@ -73,7 +73,7 @@
 //! ```
 //! use fbxcel::{
 //!     low::{v7400::ArrayAttributeEncoding, FbxVersion},
-//!     writer::v7400::binary::{FbxFooter, Writer}
+//!     writer::v7400::binary::Writer,
 //! };
 //! # let mut sink = std::io::Cursor::new(Vec::new());
 //! let mut writer = Writer::new(sink, FbxVersion::V7_4)?;
