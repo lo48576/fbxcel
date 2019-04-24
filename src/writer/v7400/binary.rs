@@ -366,21 +366,23 @@ impl<W: Write + Seek> Writer<W> {
         Ok(())
     }
 
-    /// Finalizes the FBX binary.
+    /// Finalizes the FBX binary and returns the inner sink.
     ///
     /// You may want to use [`finalize_and_flush()`].
     ///
     /// [`finalize_and_flush()`]: #method.finalize_and_flush
-    pub fn finalize(mut self, footer: &FbxFooter) -> Result<()> {
-        self.finalize_impl(footer)
+    pub fn finalize(mut self, footer: &FbxFooter) -> Result<W> {
+        self.finalize_impl(footer)?;
+
+        Ok(self.sink)
     }
 
-    /// Finalizes the FBX binary and flushes.
-    pub fn finalize_and_flush(mut self, footer: &FbxFooter) -> Result<()> {
+    /// Finalizes the FBX binary, and returns the inner sink after flushing.
+    pub fn finalize_and_flush(mut self, footer: &FbxFooter) -> Result<W> {
         self.finalize_impl(footer)?;
         self.sink.flush()?;
 
-        Ok(())
+        Ok(self.sink)
     }
 
     /// Internal implementation of `finalize()` and `finalize_and_flush()`.
