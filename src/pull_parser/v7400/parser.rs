@@ -83,6 +83,14 @@ impl<R: ParserSource> Parser<R> {
 
     /// Sets the warning handler.
     ///
+    /// The warning handler will receive warnings and their [syntactic
+    /// position]s each time the warnings happen.
+    ///
+    /// If the handler returned `Ok(())`, the warning is considered non-critical
+    /// and parsing can be continued.
+    /// If the handler returned `Err(_)`, the warning is considered critical,
+    /// and the parsing cannot be continued.
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -100,6 +108,8 @@ impl<R: ParserSource> Parser<R> {
     ///     Ok(())
     /// });
     /// ```
+    ///
+    /// [syntactic position]: ../struct.SyntacticPosition.html
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
         F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
@@ -370,7 +380,7 @@ impl<R: ParserSource> Parser<R> {
         Ok(EventKind::StartNode)
     }
 
-    /// Skip unread attribute of the current node, if remains.
+    /// Skips unread attribute of the current node, if remains.
     ///
     /// If there are no unread attributes, this method simply do nothing.
     fn skip_unread_attributes(&mut self) -> Result<()> {
@@ -391,7 +401,7 @@ impl<R: ParserSource> Parser<R> {
         self.state.health = Health::Aborted(pos);
     }
 
-    /// Ignore events until the current node closes.
+    /// Ignores events until the current node closes.
     ///
     /// This discards parser events until the [`EndNode`] event for the current
     /// node is read.
