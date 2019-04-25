@@ -9,6 +9,7 @@
 * Strict equality check is added for trees, nodes, and attribute values.
 * `tree_v7400!` macro is added to construct tree easily.
 * `write_v7400_binary!` macro is added to write tree easily.
+* `tree::v7400::Tree::debug_tree()` is added.
 * Now rustc-1.34 or later is required.
     + To use `std::convert::{TryFrom, TryInto}`.
 
@@ -38,6 +39,11 @@
 * `write_v7400_binary!` macro is added to write tree easily.
     + Enabled by `writer` feature.
     + See documentation.
+* `tree::v7400::Tree::debug_tree()` is added.
+    * This returns pretty-printable object of the tree.
+    * It dumps human-readable tree structure.
+    * Default `Debug` implementation for `Tree` is hard to read because it dumps
+      arena and interned string table.
 
 ### Non-breaking change
 * Now rustc-1.34 or later is required.
