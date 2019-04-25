@@ -421,8 +421,10 @@ impl<R: ParserSource> Parser<R> {
     /// // Do something here.
     /// // Something done.
     /// let depth = parser.current_depth();
-    /// parser.skip_current_node().expect("Failed to skip current node");
-    /// assert_eq!(parser.current_depth(), depth - 1);
+    /// if depth > 0 {
+    ///     parser.skip_current_node().expect("Failed to skip current node");
+    ///     assert_eq!(parser.current_depth(), depth - 1);
+    /// }
     /// ```
     ///
     /// `parser.skip_current_node()` is almost same as the code below, except
