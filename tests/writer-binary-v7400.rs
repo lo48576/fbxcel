@@ -9,6 +9,7 @@ use fbxcel::{
         any::{from_seekable_reader, AnyParser},
         v7400::attribute::loaders::DirectLoader,
     },
+    write_v7400_binary,
     writer::v7400::binary::{FbxFooter, Writer},
 };
 
@@ -104,8 +105,6 @@ fn empty_write_v7400() -> Result<(), Box<dyn std::error::Error>> {
 /// Compares expected binary and binary generated with events.
 #[test]
 fn tree_write_7500() -> Result<(), Box<dyn std::error::Error>> {
-    use fbxcel::write_v7400_binary;
-
     let mut dest = Vec::new();
     let cursor = Cursor::new(&mut dest);
     let mut writer = Writer::new(cursor, FbxVersion::V7_5)?;
@@ -181,8 +180,6 @@ fn tree_write_7500() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn macro_v7400_idempotence() -> Result<(), Box<dyn std::error::Error>> {
-    use fbxcel::write_v7400_binary;
-
     let version = FbxVersion::V7_4;
     let mut writer = Writer::new(std::io::Cursor::new(Vec::new()), version)?;
 
