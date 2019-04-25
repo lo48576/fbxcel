@@ -1,4 +1,4 @@
-//! Writer test.
+//! Writer and parser test.
 #![cfg(feature = "writer")]
 
 use std::{cell::RefCell, io::Cursor, iter, rc::Rc};
@@ -104,7 +104,7 @@ fn empty_write_v7400() -> Result<(), Box<dyn std::error::Error>> {
 
 /// Compares expected binary and binary generated with events.
 #[test]
-fn tree_write_7500() -> Result<(), Box<dyn std::error::Error>> {
+fn tree_write_v7500() -> Result<(), Box<dyn std::error::Error>> {
     let mut dest = Vec::new();
     let cursor = Cursor::new(&mut dest);
     let mut writer = Writer::new(cursor, FbxVersion::V7_5)?;
