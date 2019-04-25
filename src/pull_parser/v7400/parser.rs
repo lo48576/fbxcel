@@ -370,7 +370,7 @@ impl<R: ParserSource> Parser<R> {
         Ok(EventKind::StartNode)
     }
 
-    /// Skip unread attribute of the current node, if remains.
+    /// Skips unread attribute of the current node, if remains.
     ///
     /// If there are no unread attributes, this method simply do nothing.
     fn skip_unread_attributes(&mut self) -> Result<()> {
@@ -391,7 +391,7 @@ impl<R: ParserSource> Parser<R> {
         self.state.health = Health::Aborted(pos);
     }
 
-    /// Ignore events until the current node closes.
+    /// Ignores events until the current node closes.
     ///
     /// This discards parser events until the [`EndNode`] event for the current
     /// node is read.
