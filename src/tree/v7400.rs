@@ -1,5 +1,7 @@
 //! FBX data tree for v7.4 or later.
 
+use std::fmt;
+
 use indextree::Arena;
 use string_interner::StringInterner;
 
@@ -179,6 +181,13 @@ impl Tree {
     pub fn strict_eq(&self, other: &Self) -> bool {
         self.root().strict_eq(&other.root())
     }
+
+    /// Pretty-print the tree for debugging purpose.
+    ///
+    /// Be careful, this output format may change in future.
+    pub fn debug_tree<'a>(&'a self) -> impl fmt::Debug + 'a {
+        DebugTree { tree: self }
+    }
 }
 
 impl Default for Tree {
@@ -193,5 +202,54 @@ impl Default for Tree {
             node_names,
             root_id,
         }
+    }
+}
+
+/// A simple wrapper for pretty-printing tree.
+struct DebugTree<'a> {
+    /// Tree.
+    tree: &'a Tree,
+}
+
+impl fmt::Debug for DebugTree<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let v = DebugNodeHandle {
+            node: self.tree.root(),
+        };
+        v.fmt(f)
+    }
+}
+
+/// A simple wrapper for pretty-printing node.
+struct DebugNodeHandle<'a> {
+    /// Node.
+    node: NodeHandle<'a>,
+}
+
+impl fmt::Debug for DebugNodeHandle<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Node")
+            .field("name", &self.node.name())
+            .field("attributes", &self.node.attributes())
+            .field("children", &DebugNodeHandleChildren { node: self.node })
+            .finish()
+    }
+}
+
+/// A simple wrapper for pretty-printing children.
+struct DebugNodeHandleChildren<'a> {
+    /// Parent node.
+    node: NodeHandle<'a>,
+}
+
+impl fmt::Debug for DebugNodeHandleChildren<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list()
+            .entries(
+                self.node
+                    .children()
+                    .map(|child| DebugNodeHandle { node: child }),
+            )
+            .finish()
     }
 }
