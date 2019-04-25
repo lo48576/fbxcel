@@ -8,6 +8,7 @@
 * `low::v7400::AttributeValue` implements `From<_>` for some types.
 * Strict equality check is added for trees, nodes, and attribute values.
 * `tree_v7400!` macro is added to construct tree easily.
+* `write_v7400_binary!` macro is added to write tree easily.
 * Now rustc-1.34 or later is required.
     + To use `std::convert::{TryFrom, TryInto}`.
 
@@ -33,6 +34,9 @@
       This means `NAN == NAN` situation is possible.
 * `tree_v7400!` macro is added to construct tree easily.
     + Enabled by `tree` feature.
+    + See documentation.
+* `write_v7400_binary!` macro is added to write tree easily.
+    + Enabled by `writer` feature.
     + See documentation.
 
 ### Non-breaking change
