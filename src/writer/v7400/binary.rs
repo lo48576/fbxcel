@@ -112,6 +112,8 @@ pub use self::{
     footer::{FbxFooter, FbxFooterPaddingLength},
 };
 
+mod macros;
+
 mod attributes;
 mod error;
 mod footer;
