@@ -191,6 +191,83 @@ fn tree_write_7500() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[test]
+fn macro_v7400_idempotence() -> Result<(), Box<dyn std::error::Error>> {
+    use fbxcel::write_v7400_binary;
+
+    let version = FbxVersion::V7_4;
+    let mut writer = Writer::new(std::io::Cursor::new(Vec::new()), version)?;
+
+    write_v7400_binary!(
+        writer=writer,
+        tree={
+            Node0: {
+                Node0_0: {},
+                Node0_1: {},
+            },
+            Node1: [true] {
+                Node1_0: (vec![42i32.into(), 3.14f64.into()]) {}
+                Node1_1: [&[1u8, 2, 4, 8, 16][..], "Hello, world"] {}
+            },
+        },
+    )?;
+    let bin = writer.finalize_and_flush(&Default::default())?.into_inner();
+
+    let mut parser = match from_seekable_reader(Cursor::new(bin))? {
+        AnyParser::V7400(parser) => parser,
+        _ => panic!("Generated data should be parsable with v7400 parser"),
+    };
+    let warnings = Rc::new(RefCell::new(Vec::new()));
+    parser.set_warning_handler({
+        let warnings = warnings.clone();
+        move |warning, _pos| {
+            warnings.borrow_mut().push(warning);
+            Ok(())
+        }
+    });
+    assert_eq!(parser.fbx_version(), version);
+
+    {
+        let attrs = expect_node_start(&mut parser, "Node0")?;
+        assert_eq!(attrs.total_count(), 0);
+    }
+    {
+        let attrs = expect_node_start(&mut parser, "Node0_0")?;
+        assert_eq!(attrs.total_count(), 0);
+    }
+    expect_node_end(&mut parser)?;
+    {
+        let attrs = expect_node_start(&mut parser, "Node0_1")?;
+        assert_eq!(attrs.total_count(), 0);
+    }
+    expect_node_end(&mut parser)?;
+    expect_node_end(&mut parser)?;
+    {
+        let attrs = expect_node_start(&mut parser, "Node1")?;
+        assert_eq!(attrs.total_count(), 1);
+    }
+    {
+        let attrs = expect_node_start(&mut parser, "Node1_0")?;
+        assert_eq!(attrs.total_count(), 2);
+    }
+    expect_node_end(&mut parser)?;
+    {
+        let attrs = expect_node_start(&mut parser, "Node1_1")?;
+        assert_eq!(attrs.total_count(), 2);
+    }
+    expect_node_end(&mut parser)?;
+    expect_node_end(&mut parser)?;
+
+    {
+        let footer_res = expect_fbx_end(&mut parser)?;
+        assert!(footer_res.is_ok());
+    }
+
+    assert_eq!(warnings.borrow().len(), 0);
+
+    Ok(())
+}
+
 fn expect_node_start<'a, R: ParserSource + std::fmt::Debug>(
     parser: &'a mut Parser<R>,
     name: &str,
