@@ -83,6 +83,14 @@ impl<R: ParserSource> Parser<R> {
 
     /// Sets the warning handler.
     ///
+    /// The warning handler will receive warnings and their [syntactic
+    /// position]s each time the warnings happen.
+    ///
+    /// If the handler returned `Ok(())`, the warning is considered non-critical
+    /// and parsing can be continued.
+    /// If the handler returned `Err(_)`, the warning is considered critical,
+    /// and the parsing cannot be continued.
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -100,6 +108,8 @@ impl<R: ParserSource> Parser<R> {
     ///     Ok(())
     /// });
     /// ```
+    ///
+    /// [syntactic position]: ../struct.SyntacticPosition.html
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
         F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
