@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.4.4]
+
 * Documents are improved a little.
 * Manual tree construction support is added.
 * FBX binary writer is added.
@@ -207,7 +209,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.3...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.4...develop>
+[0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.4>
 [0.4.3]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.3>
 [0.4.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.2>
 [0.4.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.1>
