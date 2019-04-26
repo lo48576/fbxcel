@@ -4,5 +4,8 @@ rust:
   - stable
   - beta
   - 1.34.0
+script:
+  - cargo build --verbose --all-features
+  - cargo test --verbose --all-features
 notifications:
   email: false
