@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+* Fix regression due to <https://github.com/rust-lang/rust/issues/60958>.
+
+### Fixes (non-breaking)
+* Fix regression due to <https://github.com/rust-lang/rust/issues/60958>.
+    + This fix does not change the program's behaviour.
+
 ## [0.2.0]
 
 * Syntactic position information for pull parser is supported.
