@@ -118,7 +118,7 @@ macro_rules! impl_arr_from_iter {
             iter: impl IntoIterator<Item = std::result::Result<$ty_elem, E>>,
         ) -> Result<()>
         where
-            E: Into<Box<std::error::Error + 'static>>,
+            E: Into<Box<dyn std::error::Error + 'static>>,
         {
             array::write_array_attr_result_iter(
                 self,
@@ -340,7 +340,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         iter: impl IntoIterator<Item = std::result::Result<u8, E>>,
     ) -> Result<()>
     where
-        E: Into<Box<std::error::Error + 'static>>,
+        E: Into<Box<dyn std::error::Error + 'static>>,
     {
         let header_pos = self.initialize_special(AttributeType::Binary)?;
 
@@ -387,7 +387,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         iter: impl IntoIterator<Item = std::result::Result<char, E>>,
     ) -> Result<()>
     where
-        E: Into<Box<std::error::Error + 'static>>,
+        E: Into<Box<dyn std::error::Error + 'static>>,
     {
         let header_pos = self.initialize_special(AttributeType::String)?;
 

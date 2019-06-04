@@ -46,7 +46,7 @@ impl error::Error for Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::AttributeTooLong(v) => write!(f, "Node attribute is too long: {} bytes", v),
             Error::Compression(e) => write!(f, "Compression error: {}", e),
@@ -95,7 +95,7 @@ impl error::Error for CompressionError {
 }
 
 impl fmt::Display for CompressionError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CompressionError::Zlib(e) => write!(f, "Zlib compression error: {}", e),
         }

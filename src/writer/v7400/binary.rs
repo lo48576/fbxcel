@@ -373,14 +373,14 @@ impl<W: Write + Seek> Writer<W> {
     /// You may want to use [`finalize_and_flush()`].
     ///
     /// [`finalize_and_flush()`]: #method.finalize_and_flush
-    pub fn finalize(mut self, footer: &FbxFooter) -> Result<W> {
+    pub fn finalize(mut self, footer: &FbxFooter<'_>) -> Result<W> {
         self.finalize_impl(footer)?;
 
         Ok(self.sink)
     }
 
     /// Finalizes the FBX binary, and returns the inner sink after flushing.
-    pub fn finalize_and_flush(mut self, footer: &FbxFooter) -> Result<W> {
+    pub fn finalize_and_flush(mut self, footer: &FbxFooter<'_>) -> Result<W> {
         self.finalize_impl(footer)?;
         self.sink.flush()?;
 
@@ -388,7 +388,7 @@ impl<W: Write + Seek> Writer<W> {
     }
 
     /// Internal implementation of `finalize()` and `finalize_and_flush()`.
-    fn finalize_impl(&mut self, footer: &FbxFooter) -> Result<()> {
+    fn finalize_impl(&mut self, footer: &FbxFooter<'_>) -> Result<()> {
         if !self.open_nodes.is_empty() {
             return Err(Error::UnclosedNode(self.open_nodes.len()));
         }
