@@ -212,7 +212,7 @@ struct DebugTree<'a> {
 }
 
 impl fmt::Debug for DebugTree<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let v = DebugNodeHandle {
             node: self.tree.root(),
         };
@@ -227,7 +227,7 @@ struct DebugNodeHandle<'a> {
 }
 
 impl fmt::Debug for DebugNodeHandle<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Node")
             .field("name", &self.node.name())
             .field("attributes", &self.node.attributes())
@@ -243,7 +243,7 @@ struct DebugNodeHandleChildren<'a> {
 }
 
 impl fmt::Debug for DebugNodeHandleChildren<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list()
             .entries(
                 self.node

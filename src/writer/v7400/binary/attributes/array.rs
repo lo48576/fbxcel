@@ -68,7 +68,7 @@ pub(crate) fn write_array_header(
 
 /// Writes the given array attribute.
 pub(crate) fn write_array_attr_result_iter<W: Write + Seek, T: IntoBytes, E: Into<Error>>(
-    writer: &mut AttributesWriter<W>,
+    writer: &mut AttributesWriter<'_, W>,
     ty: AttributeType,
     encoding: Option<ArrayAttributeEncoding>,
     iter: impl IntoIterator<Item = std::result::Result<T, E>>,
