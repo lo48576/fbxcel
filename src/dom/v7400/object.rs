@@ -90,7 +90,7 @@ impl ObjectMeta {
 
         // Get subclass.
         let subclass = match attrs.get(2) {
-            Some(DirectAttributeValue::String(v)) => strings.get_or_intern(v.as_ref()),
+            Some(DirectAttributeValue::String(v)) => strings.get_or_intern(v.as_str()),
             Some(_) => return Err(AccessError::UnexpectedAttributeType(Some(2))),
             None => return Err(AccessError::AttributeNotFound(Some(2))),
         };
