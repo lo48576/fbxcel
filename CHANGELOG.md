@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [0.2.1]
 
 * Fix regression due to <https://github.com/rust-lang/rust/issues/60958>.
 
@@ -43,6 +43,6 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.2.0...develop>
+[0.2.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.2.1>
 [0.2.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.2.0>
 [0.1.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.1.0>
