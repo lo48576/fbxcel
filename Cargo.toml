@@ -1,6 +1,6 @@
 [package]
 name = "fbxcel"
-version = "0.4.3"
+version = "0.4.4"
 authors = ["YOSHIOKA Takuma <lo48576@hard-wi.red>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"

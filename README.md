@@ -15,6 +15,9 @@ If you want to interpret and render FBX data, use
 
 * Pull parser for FBX binary (`pull_parser` module)
     + FBX 7.4 and 7.5 is explicitly supported.
+* Writer for FBX binary (`writer` module)
+    + FBX 7.4 and 7.5 is explicitly supported.
+    + This is optional and enabled by `writer` feature.
 * Types and functions for low-level FBX tree access
     + This is optional and enabled by `tree` feature.
     + Provides arena-based tree type and read-only access to nodes.

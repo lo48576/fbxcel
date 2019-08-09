@@ -2,44 +2,48 @@
 
 ## [Unreleased]
 
+## [0.4.4]
+
 * Documents are improved a little.
-* Manual tree construction support is added.
+* Manual tree construction (without using parser) is now supported.
+    + You can add nodes and attributes manually to the tree at runtime.
+    + You can describe the tree using `tree_v7400!` macro at compile time.
 * FBX binary writer is added.
-* `low::v7400::AttributeValue` implements `From<_>` for some types.
-* Strict equality check is added for trees, nodes, and attribute values.
-* `tree_v7400!` macro is added to construct tree easily.
-* `write_v7400_binary!` macro is added to write tree easily.
-* `tree::v7400::Tree::debug_tree()` is added.
+* Tiny improvements:
+    + `low::v7400::AttributeValue` implements `From<_>` for some types.
+    + Strict equality check is added for trees, nodes, and attribute values.
+    + `tree::v7400::Tree::debug_tree()` is added.
 * Now rustc-1.34 or later is required.
     + To use `std::convert::{TryFrom, TryInto}`.
 
 ### Added
-* Manual tree construction support is added.
+* Manual tree construction support is added (64f70b051c30, 39c4fabad119).
     + Methods to add new nodes and attributes are added.
     + Complete modification is not yet supported, for example modifying already
       added attributes or removing nodes.
-* FBX binary writer is added.
+    * `tree_v7400!` macro is added to construct tree easily.
+      See documentation for detail.
+* FBX binary writer is added (e1cb2a232d19, 33d9ac3a589c, d5dc779c0bd4,
+  6cddca849a4f, 8c84359d2578).
     + `writer::v7400::binary` contains FBX binary writer stuff.
     + This can be enabled by `writer` feature.
-* `low::v7400::AttributeValue` implements `From<_>` for some types.
+    + `write_v7400_binary!` macro is also added.
+      See the documentation for detail.
+* `low::v7400::AttributeValue` implements `From<_>` for some types
+  (a54226534a73, 6546d62fd38a).
     + Primitive types: `bool`, `i16`, `i32`, `i64`, `f32`, `f64`.
     + Vector types: `Vec<bool>`, `Vec<i32>`, `Vec<i64>`, `Vec<f32>`, `Vec<f64>`,
       `Vec<u8>`.
     + Slice types: `&[bool]`, `&[i32]`, `&[i64]`, `&[f32]`, `&[f64]`, `&[u8]`.
     + Special types: `String`, `&str`.
-* Strict equality check is added for trees, nodes, and attribute values.
+* Strict equality check is added for trees, nodes, and attribute values
+  (8784d7609d8e).
     + Trees: `tree::v7400::Tree::strict_eq()`.
     + Nodes: `tree::v7400::NodeHandle::strict_eq()`.
     + Attributes: `low::v7400::AttributeValue::strict_eq()`.
     + These checks compares `f32` and `f64` bitwise.
       This means `NAN == NAN` situation is possible.
-* `tree_v7400!` macro is added to construct tree easily.
-    + Enabled by `tree` feature.
-    + See documentation.
-* `write_v7400_binary!` macro is added to write tree easily.
-    + Enabled by `writer` feature.
-    + See documentation.
-* `tree::v7400::Tree::debug_tree()` is added.
+* `tree::v7400::Tree::debug_tree()` is added (4524b4dc4a99).
     * This returns pretty-printable object of the tree.
     * It dumps human-readable tree structure.
     * Default `Debug` implementation for `Tree` is hard to read because it dumps
@@ -207,7 +211,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.3...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.4...develop>
+[0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.4>
 [0.4.3]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.3>
 [0.4.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.2>
 [0.4.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.1>
