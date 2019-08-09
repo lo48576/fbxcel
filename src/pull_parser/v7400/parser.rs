@@ -20,9 +20,11 @@ use crate::{
 /// Warning handler type.
 type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;
 
-/// Creates a new `Parser` from the given reader.
+/// Creates a new [`Parser`] from the given reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
+///
+/// [`Parser`]: struct.Parser.html
 pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<PlainSource<R>>>
 where
     R: io::Read,
@@ -33,9 +35,11 @@ where
     )
 }
 
-/// Creates a new `Parser` from the given seekable reader.
+/// Creates a new [`Parser`] from the given seekable reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
+///
+/// [`Parser`]: struct.Parser.html
 pub fn from_seekable_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<SeekableSource<R>>>
 where
     R: io::Read + io::Seek,
@@ -79,6 +83,14 @@ impl<R: ParserSource> Parser<R> {
 
     /// Sets the warning handler.
     ///
+    /// The warning handler will receive warnings and their [syntactic
+    /// position]s each time the warnings happen.
+    ///
+    /// If the handler returned `Ok(())`, the warning is considered non-critical
+    /// and parsing can be continued.
+    /// If the handler returned `Err(_)`, the warning is considered critical,
+    /// and the parsing cannot be continued.
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -96,6 +108,8 @@ impl<R: ParserSource> Parser<R> {
     ///     Ok(())
     /// });
     /// ```
+    ///
+    /// [syntactic position]: ../struct.SyntacticPosition.html
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
         F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
@@ -175,6 +189,9 @@ impl<R: ParserSource> Parser<R> {
     /// already failed and returned error.
     /// If you call `next_event()` with failed parser, error created from
     /// [`OperationError::AlreadyAborted`] will be returned.
+    ///
+    /// [`OperationError::AlreadyAborted`]:
+    /// ../error/enum.OperationError.html#variant.AlreadyAborted
     pub fn next_event(&mut self) -> Result<Event<'_, R>> {
         let previous_depth = self.current_depth();
 
@@ -363,7 +380,7 @@ impl<R: ParserSource> Parser<R> {
         Ok(EventKind::StartNode)
     }
 
-    /// Skip unread attribute of the current node, if remains.
+    /// Skips unread attribute of the current node, if remains.
     ///
     /// If there are no unread attributes, this method simply do nothing.
     fn skip_unread_attributes(&mut self) -> Result<()> {
@@ -384,21 +401,24 @@ impl<R: ParserSource> Parser<R> {
         self.state.health = Health::Aborted(pos);
     }
 
-    /// Ignore events until the current node closes.
+    /// Ignores events until the current node closes.
     ///
-    /// In other words, this discards parser events including `EndNode` for the
-    /// current node.
+    /// This discards parser events until the [`EndNode`] event for the current
+    /// node is read.
+    /// The last [`EndNode`] (for the current node) is also discarded.
     ///
-    /// This method seeks to the already known node end position, without
-    /// parsing events to be ignored.
-    /// Because of this, some errors can be overlooked, or some errors can be
-    /// detected at the different position from the true error position.
+    /// This method seeks to the node end position without any additional
+    /// parsing, since the parser already knows the node end position.
+    /// Because of this, some errors can be overlooked, or detected at the
+    /// different position from the true error position.
     ///
     /// To detect errors correctly, you should use [`next_event`] manually.
+    /// See an example to how to do this.
     ///
     /// # Panics
     ///
-    /// Panics if there are no open nodes.
+    /// Panics if there are no open nodes, i.e. when [`current_depth()`][`current_depth`]
+    /// returns 0.
     ///
     /// # Examples
     ///
@@ -411,9 +431,31 @@ impl<R: ParserSource> Parser<R> {
     /// // Do something here.
     /// // Something done.
     /// let depth = parser.current_depth();
-    /// parser.skip_current_node().expect("Failed to skip current node");
-    /// assert_eq!(parser.current_depth(), depth - 1);
+    /// if depth > 0 {
+    ///     parser.skip_current_node().expect("Failed to skip current node");
+    ///     assert_eq!(parser.current_depth(), depth - 1);
+    /// }
     /// ```
+    ///
+    /// `parser.skip_current_node()` is almost same as the code below, except
+    /// for error handling.
+    ///
+    /// ```no_run
+    /// # use fbxcel::pull_parser::{v7400::{Parser, Event}, ParserSource, Result};
+    /// fn skip_current_node<R: ParserSource>(parser: &mut Parser<R>) -> Result<()> {
+    ///     loop {
+    ///         match parser.next_event()? {
+    ///             Event::StartNode(_) => skip_current_node(parser)?,
+    ///             Event::EndNode => return Ok(()),
+    ///             Event::EndFbx(_) => panic!("Attempt to skip implicit top-level node"),
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// [`next_event`]: #method.next_event
+    /// [`current_depth`]: #method.current_depth
+    /// [`EndNode`]: enum.Event.html#variant.EndNode
     pub fn skip_current_node(&mut self) -> Result<()> {
         let end_pos = self
             .state

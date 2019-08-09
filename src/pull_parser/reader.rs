@@ -34,18 +34,19 @@ pub trait ParserSource: Sized + io::Read {
     /// This is called many times during parsing, so it is desirable to be fast
     /// as possible.
     ///
-    /// Reader types with `std::io::Seek` can implement this as
+    /// Reader types with [`std::io::Seek`] can implement this as
     /// `self.seek(SeekFrom::Current(0)).unwrap()`, but this is fallible and
     /// can be inefficient.
     /// Use of [`PositionCacheReader`] is reccomended.
     ///
+    /// [`std::io::Seek`]: https://doc.rust-lang.org/stable/std/io/trait.Seek.html
     /// [`PositionCacheReader`]: struct.PositionCacheReader.html
     fn position(&self) -> u64;
 
     /// Skips (seeks formward) the given size.
     ///
-    /// Reader types can make this more efficient using `io::Seek::seek` if
-    /// possible.
+    /// Reader types can make this more efficient using [`std::io::Seek::seek`]
+    /// if possible.
     ///
     /// # Examples
     ///
@@ -61,6 +62,9 @@ pub trait ParserSource: Sized + io::Read {
     /// reader.skip_distance(7).expect("Failed to skip");
     /// assert_eq!(reader.position(), 7);
     /// ```
+    ///
+    /// [`std::io::Seek::seek`]:
+    /// https://doc.rust-lang.org/stable/std/io/trait.Seek.html#tymethod.seek
     fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
         // NOTE: `let mut limited = self.by_ref().take(distance);` is E0507.
         let mut limited = io::Read::take(self.by_ref(), distance);
@@ -70,8 +74,8 @@ pub trait ParserSource: Sized + io::Read {
 
     /// Skips (seeks forward) to the given position.
     ///
-    /// Reader types can make this more efficient using `io::Seek::seek` if
-    /// possible.
+    /// Reader types can make this more efficient using [`std::io::Seek::seek`]
+    /// if possible.
     ///
     /// # Panics
     ///
@@ -91,6 +95,9 @@ pub trait ParserSource: Sized + io::Read {
     /// reader.skip_to(7).expect("Failed to skip");
     /// assert_eq!(reader.position(), 7);
     /// ```
+    ///
+    /// [`std::io::Seek::seek`]:
+    /// https://doc.rust-lang.org/stable/std/io/trait.Seek.html#tymethod.seek
     fn skip_to(&mut self, pos: u64) -> io::Result<()> {
         let distance = pos
             .checked_sub(self.position())

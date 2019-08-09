@@ -6,7 +6,7 @@ use crate::pull_parser::{v7400::LoadAttribute, Result};
 
 /// Loader for primitive types.
 ///
-/// Supported types are: [`bool`], [`i16`] , [`i32`], [`i64`], [`f32`], [`f64`].
+/// Supported types are: `bool`, `i16` , `i32`, `i64`, `f32`, and `f64`.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PrimitiveLoader<T>(std::marker::PhantomData<T>);
 

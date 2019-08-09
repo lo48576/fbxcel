@@ -14,7 +14,9 @@ use crate::{
 use self::array::{ArrayAttributeValues, AttributeStreamDecoder, BooleanArrayAttributeValues};
 pub use self::loader::LoadAttribute;
 
-/// Use `low::v7400::AttributeValue` instead.
+/// Use [`low::v7400::AttributeValue`] instead.
+///
+/// [`low::v7400::AttributeValue`]: ../../../low/v7400/enum.AttributeValue.html
 #[deprecated(
     since = "0.4.0",
     note = "`DirectAttributeValue` is moved to `low::v7400::AttributeValue`"

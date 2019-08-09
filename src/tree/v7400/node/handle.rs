@@ -51,7 +51,7 @@ impl<'a> NodeHandle<'a> {
 
     /// Returns the node name symbol.
     pub(crate) fn name_sym(&self) -> NodeNameSym {
-        self.node().data.name_sym()
+        self.node().get().name_sym()
     }
 
     /// Returns the node name.
@@ -61,7 +61,7 @@ impl<'a> NodeHandle<'a> {
 
     /// Returns the node attributes.
     pub fn attributes(&self) -> &'a [AttributeValue] {
-        self.node().data.attributes()
+        self.node().get().attributes()
     }
 
     /// Returns an iterator of children with the given name.
@@ -83,6 +83,18 @@ impl<'a> NodeHandle<'a> {
             .map(|sym| self.children().filter(move |child| child.name_sym() == sym))
             .into_iter()
             .flat_map(|iter| iter)
+    }
+
+    /// Compares nodes strictly.
+    ///
+    /// Returns `true` if the two trees are same.
+    ///
+    /// Note that `f32` and `f64` values are compared bitwise.
+    ///
+    /// Note that this method compares tree data, not internal states of the
+    /// trees.
+    pub fn strict_eq(&self, other: &Self) -> bool {
+        nodes_strict_eq(*self, *other)
     }
 }
 
@@ -120,4 +132,40 @@ impl_related_node_accessor! {
     previous_sibling;
     /// Returns next sibling node handle if available.
     next_sibling;
+}
+
+/// Compares nodes strictly.
+fn nodes_strict_eq(left: NodeHandle<'_>, right: NodeHandle<'_>) -> bool {
+    // Compare name.
+    if left.name() != right.name() {
+        return false;
+    }
+    // Compare attributes.
+    {
+        let left = left.attributes();
+        let right = right.attributes();
+        if left.len() != right.len() {
+            return false;
+        }
+        if !left.iter().zip(right).all(|(l, r)| l.strict_eq(r)) {
+            return false;
+        }
+    }
+    // Compare children.
+    {
+        let mut left = left.children();
+        let mut right = right.children();
+        loop {
+            match (left.next(), right.next()) {
+                (Some(l), Some(r)) => {
+                    if !nodes_strict_eq(l, r) {
+                        return false;
+                    }
+                }
+                (None, None) => break,
+                _ => return false,
+            }
+        }
+    }
+    true
 }

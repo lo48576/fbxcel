@@ -28,7 +28,7 @@ impl SyntacticPosition {
         self.byte_pos
     }
 
-    /// Beginning the byte position of the node or attribute.
+    /// Returns the beginning byte position of the node or attribute.
     pub fn component_byte_pos(&self) -> u64 {
         self.component_byte_pos
     }
@@ -41,7 +41,7 @@ impl SyntacticPosition {
         &self.node_path
     }
 
-    /// Node attribute index (if the position points an attribute).
+    /// Returns the node attribute index (if the position points an attribute).
     pub fn attribute_index(&self) -> Option<usize> {
         self.attribute_index
     }

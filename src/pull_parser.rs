@@ -7,7 +7,7 @@
 //! These modules are common among all supported FBX versions:
 //!
 //! * Error types (defined in [`error`] module).
-//! * `AnyParser` feature (defined in [`any`] module).
+//! * [`AnyParser`] feature (defined in [`any`] module).
 //! * Parser source traits and wrappers (defined in [`reader`] module).
 //!
 //! # Using pull parser
@@ -56,7 +56,7 @@
 //! let mut reader = std::io::BufReader::new(file);
 //!
 //! // 1. Get FBX header.
-//! let header = FbxHeader::read_fbx_header(&mut reader)
+//! let header = FbxHeader::load(&mut reader)
 //!     .expect("Failed to load FBX header");
 //! // 2. Decide which version of parser to use.
 //! match header.parser_version() {
@@ -85,6 +85,7 @@
 //! [`any`]: any/index.html
 //! [`error`]: error/index.html
 //! [`reader`]: reader/index.html
+//! [`AnyParser`]: any/enum.AnyParser.html
 
 pub use self::{
     error::{Error, Result, Warning},

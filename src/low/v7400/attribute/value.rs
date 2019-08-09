@@ -13,7 +13,9 @@ use crate::low::v7400::AttributeType;
 /// * `get_*_or_type()` returns `Result<_, AttributeType>`.
 ///     + If a value of the expected type available, returns `Ok(_)`.
 ///     + If not, returns `Ok(ty)` where `ty` is value type (same value as
-///       returned by `type_()`.
+///       returned by [`type_()`][`type_`].
+///
+/// [`type_`]: #method.type_
 #[derive(Debug, Clone, PartialEq)]
 pub enum AttributeValue {
     /// Single `bool`.
@@ -220,4 +222,72 @@ impl AttributeValue {
         get_binary_or_type,
         "Returns the reference to the inner binary data, if available.\n\nReturns `Err(type)` on type mismatch.",
     }
+
+    /// Compares attribute values strictly.
+    ///
+    /// "Strictly" means, `f32` and `f64` values are compared bitwise.
+    pub fn strict_eq(&self, other: &Self) -> bool {
+        use AttributeValue::*;
+
+        match (self, other) {
+            (Bool(l), Bool(r)) => l == r,
+            (I16(l), I16(r)) => l == r,
+            (I32(l), I32(r)) => l == r,
+            (I64(l), I64(r)) => l == r,
+            (F32(l), F32(r)) => l.to_bits() == r.to_bits(),
+            (F64(l), F64(r)) => l.to_bits() == r.to_bits(),
+            (ArrBool(l), ArrBool(r)) => l == r,
+            (ArrI32(l), ArrI32(r)) => l == r,
+            (ArrI64(l), ArrI64(r)) => l == r,
+            (ArrF32(l), ArrF32(r)) => l
+                .iter()
+                .map(|v| v.to_bits())
+                .eq(r.iter().map(|v| v.to_bits())),
+            (ArrF64(l), ArrF64(r)) => l
+                .iter()
+                .map(|v| v.to_bits())
+                .eq(r.iter().map(|v| v.to_bits())),
+            (Binary(l), Binary(r)) => l == r,
+            (String(l), String(r)) => l == r,
+            _ => false,
+        }
+    }
 }
+
+macro_rules! impl_from {
+    (direct: $ty:ty, $variant:ident) => {
+        impl From<$ty> for AttributeValue {
+            fn from(v: $ty) -> Self {
+                AttributeValue::$variant(v.into())
+            }
+        }
+    };
+    (map: $ty:ty, $variant:ident, $arg:ident, $v:expr) => {
+        impl From<$ty> for AttributeValue {
+            fn from($arg: $ty) -> Self {
+                AttributeValue::$variant($v)
+            }
+        }
+    };
+}
+
+impl_from! { direct: bool, Bool }
+impl_from! { direct: i16, I16 }
+impl_from! { direct: i32, I32 }
+impl_from! { direct: i64, I64 }
+impl_from! { direct: f32, F32 }
+impl_from! { direct: f64, F64 }
+impl_from! { direct: Vec<bool>, ArrBool }
+impl_from! { direct: Vec<i32>, ArrI32 }
+impl_from! { direct: Vec<i64>, ArrI64 }
+impl_from! { direct: Vec<f32>, ArrF32 }
+impl_from! { direct: Vec<f64>, ArrF64 }
+impl_from! { direct: Vec<u8>, Binary }
+impl_from! { direct: String, String }
+impl_from! { map: &[bool], ArrBool, v, v.to_owned() }
+impl_from! { map: &[i32], ArrI32, v, v.to_owned() }
+impl_from! { map: &[i64], ArrI64, v, v.to_owned() }
+impl_from! { map: &[f32], ArrF32, v, v.to_owned() }
+impl_from! { map: &[f64], ArrF64, v, v.to_owned() }
+impl_from! { map: &[u8], Binary, v, v.to_owned() }
+impl_from! { map: &str, String, v, v.to_owned() }
