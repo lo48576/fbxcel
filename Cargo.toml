@@ -21,7 +21,7 @@ writer = []
 
 [dependencies]
 byteorder = "1"
-indextree = { version = "3", optional = true }
+indextree = { version = "4", optional = true }
 libflate = "0.1"
 log = "0.4.4"
 string-interner = { version = "0.7", optional = true, default-features = false }

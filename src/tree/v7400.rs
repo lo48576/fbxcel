@@ -92,10 +92,7 @@ impl Tree {
     pub fn append_new(&mut self, parent: NodeId, name: &str) -> NodeId {
         let name_sym = self.node_names.get_or_intern(name);
         let new_child = self.arena.new_node(NodeData::new(name_sym, Vec::new()));
-        parent
-            .raw()
-            .append(new_child, &mut self.arena)
-            .expect("Should never fail");
+        parent.raw().append(new_child, &mut self.arena);
 
         NodeId::new(new_child)
     }
@@ -108,10 +105,7 @@ impl Tree {
     pub fn prepend_new(&mut self, parent: NodeId, name: &str) -> NodeId {
         let name_sym = self.node_names.get_or_intern(name);
         let new_child = self.arena.new_node(NodeData::new(name_sym, Vec::new()));
-        parent
-            .raw()
-            .prepend(new_child, &mut self.arena)
-            .expect("Should never fail");
+        parent.raw().prepend(new_child, &mut self.arena);
 
         NodeId::new(new_child)
     }
@@ -125,10 +119,7 @@ impl Tree {
         assert_ne!(sibling, self.root_id, "Root node should have no siblings");
         let name_sym = self.node_names.get_or_intern(name);
         let new_child = self.arena.new_node(NodeData::new(name_sym, Vec::new()));
-        sibling
-            .raw()
-            .insert_after(new_child, &mut self.arena)
-            .expect("Should never fail");
+        sibling.raw().insert_after(new_child, &mut self.arena);
 
         NodeId::new(new_child)
     }
@@ -142,10 +133,7 @@ impl Tree {
         assert_ne!(sibling, self.root_id, "Root node should have no siblings");
         let name_sym = self.node_names.get_or_intern(name);
         let new_child = self.arena.new_node(NodeData::new(name_sym, Vec::new()));
-        sibling
-            .raw()
-            .insert_before(new_child, &mut self.arena)
-            .expect("Should never fail");
+        sibling.raw().insert_before(new_child, &mut self.arena);
 
         NodeId::new(new_child)
     }
@@ -167,7 +155,7 @@ impl Tree {
     fn append_attribute_impl(&mut self, node_id: NodeId, v: AttributeValue) {
         assert_ne!(node_id, self.root_id, "Root node should have no attributes");
         let node = self.arena.get_mut(node_id.raw()).expect("Invalid node ID");
-        node.data.append_attribute(v)
+        node.get_mut().append_attribute(v)
     }
 
     /// Compares trees strictly.

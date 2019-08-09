@@ -51,7 +51,7 @@ impl<'a> NodeHandle<'a> {
 
     /// Returns the node name symbol.
     pub(crate) fn name_sym(&self) -> NodeNameSym {
-        self.node().data.name_sym()
+        self.node().get().name_sym()
     }
 
     /// Returns the node name.
@@ -61,7 +61,7 @@ impl<'a> NodeHandle<'a> {
 
     /// Returns the node attributes.
     pub fn attributes(&self) -> &'a [AttributeValue] {
-        self.node().data.attributes()
+        self.node().get().attributes()
     }
 
     /// Returns an iterator of children with the given name.

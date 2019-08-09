@@ -121,9 +121,7 @@ impl Loader {
         };
 
         // Set the parent.
-        parent.raw().append(current.raw(), &mut self.arena).expect(
-            "Should never fail: The newly created node should always be successfully appended",
-        );
+        parent.raw().append(current.raw(), &mut self.arena);
 
         trace!(
             "Successfully added a new child {:?} to the parent {:?}",
