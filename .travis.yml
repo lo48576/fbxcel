@@ -29,7 +29,7 @@ before_script:
     fi
 script:
   # TODO: Use `--workspace` instead of `--all` for Rust 1.39 or later.
-  - cargo build --verbose --all --all-features && cargo test --verbose --all --all-features
+  - if [ "${LINT:-0}" -eq 0 ] ; then cargo build --verbose --all --all-features && cargo test --verbose --all --all-features ; fi
   # Fail if the code is correctly formatted.
   - if [ "${LINT:-0}" -ne 0 ] ; then cargo fmt --all -- --check ; fi
   # Fail if the code has warnings.
