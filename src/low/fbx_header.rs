@@ -67,12 +67,6 @@ impl FbxHeader {
         })
     }
 
-    /// Reads an FBX header from the given reader.
-    #[deprecated(since = "0.4.1", note = "Renamed to `load`")]
-    pub fn read_fbx_header(reader: impl io::Read) -> Result<Self, HeaderError> {
-        Self::load(reader)
-    }
-
     /// Returns FBX version.
     pub fn version(self) -> FbxVersion {
         self.version

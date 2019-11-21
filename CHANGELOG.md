@@ -10,6 +10,9 @@
     + Two new variants `Warning::{ExtraNodeEndMarker, MissingNodeEndMarker}` are added to
       `pull_parser::error::Warning` type.
         - Note that `Warning` have been nonexhaustive since this release.
+* Deprecated items are removed.
+    + `low::FbxHeader::read_fbx_header()`
+    + `pull_parser::v7400::attribute::DirectAttributeValue`
 
 ### Breaking changes
 
@@ -23,6 +26,9 @@
     + Two new variants `Warning::{ExtraNodeEndMarker, MissingNodeEndMarker}` are added to
       `pull_parser::error::Warning` type.
         - Note that `Warning` have been nonexhaustive since this release.
+* Deprecated items are removed.
+    + `low::FbxHeader::read_fbx_header()`
+    + `pull_parser::v7400::attribute::DirectAttributeValue`
 
 ## [0.4.4]
 
