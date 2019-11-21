@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.0]
+
 * `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.
     + This would make some of future changes non-breaking.
 * Support parsing nodes with missing or extra node end markers.
@@ -15,10 +17,11 @@
     + `pull_parser::v7400::attribute::DirectAttributeValue`
 
 ### Breaking changes
-
-* `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.
+* `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive
+  (d0651118feabf842f9495da626ccb127090db331).
     + This would make some of future changes non-breaking.
-* Support parsing nodes with missing or extra node end markers.
+* Support parsing nodes with missing or extra node end markers
+  (8c3d8b7f210fe8422784ef86b468e5331bb0c2ee).
     + Previously, missing node end markers caused errors, and extra node end markers were silently
       ignored.
       Now they are notified as warnings.
@@ -26,7 +29,7 @@
     + Two new variants `Warning::{ExtraNodeEndMarker, MissingNodeEndMarker}` are added to
       `pull_parser::error::Warning` type.
         - Note that `Warning` have been nonexhaustive since this release.
-* Deprecated items are removed.
+* Deprecated items are removed (9e38b4217d33ed8bca3f7e8b11d210845a4fa8c1).
     + `low::FbxHeader::read_fbx_header()`
     + `pull_parser::v7400::attribute::DirectAttributeValue`
 
@@ -239,7 +242,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.4.4...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.5.0...develop>
+[0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.5.0>
 [0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.4>
 [0.4.3]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.3>
 [0.4.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.2>
