@@ -10,7 +10,7 @@ use crate::{
 
 /// Parser event.
 #[derive(Debug)]
-pub enum Event<'a, R: 'a> {
+pub enum Event<'a, R> {
     /// Start of a node.
     StartNode(StartNode<'a, R>),
     /// End of a node.

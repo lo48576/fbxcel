@@ -82,7 +82,7 @@ impl<'a> NodeHandle<'a> {
             .node_name_sym(name)
             .map(|sym| self.children().filter(move |child| child.name_sym() == sym))
             .into_iter()
-            .flat_map(|iter| iter)
+            .flatten()
     }
 
     /// Compares nodes strictly.
