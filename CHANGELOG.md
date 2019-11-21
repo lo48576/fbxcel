@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+* `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.
+    + This would make some of future changes non-breaking.
+
+### Breaking changes
+
+* `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.
+    + This would make some of future changes non-breaking.
+
 ## [0.4.4]
 
 * Documents are improved a little.
