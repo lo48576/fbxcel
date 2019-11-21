@@ -13,6 +13,8 @@ pub enum OperationError {
     AlreadyFinished,
     /// Attempt to create a parser with unsupported FBX version.
     UnsupportedFbxVersion(ParserVersion, FbxVersion),
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 impl error::Error for OperationError {}
@@ -32,6 +34,7 @@ impl fmt::Display for OperationError {
                 "Unsupported FBX version: parser={:?}, fbx={:?}",
                 parser, fbx
             ),
+            OperationError::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
     }
 }
