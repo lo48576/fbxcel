@@ -7,6 +7,8 @@ use std::{error, fmt};
 pub enum Warning {
     /// Node name is empty.
     EmptyNodeName,
+    /// Extra (unexpected) node end marker found.
+    ExtraNodeEndMarker,
     /// Incorrect boolean representation.
     ///
     /// Boolean value in node attributes should be some prescribed value
@@ -31,6 +33,7 @@ impl fmt::Display for Warning {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Warning::EmptyNodeName => write!(f, "Node name is empty"),
+            Warning::ExtraNodeEndMarker => write!(f, "Extra (unexpected) node end marker found"),
             Warning::IncorrectBooleanRepresentation => {
                 write!(f, "Incorrect boolean representation")
             }

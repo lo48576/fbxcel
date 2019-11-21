@@ -326,6 +326,11 @@ impl<R: ParserSource> Parser<R> {
                         )
                         .into());
                     }
+                    if closing.attributes_count != 0 && closing.known_children_count == 0 {
+                        // It's odd, the current node should not have a node end
+                        // marker at the ending, but found.
+                        self.warn(Warning::ExtraNodeEndMarker, self.position())?;
+                    }
                     Ok(EventKind::EndNode)
                 }
                 None => Ok(EventKind::EndFbx),
