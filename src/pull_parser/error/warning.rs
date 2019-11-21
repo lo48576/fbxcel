@@ -17,6 +17,8 @@ pub enum Warning {
     IncorrectBooleanRepresentation,
     /// Footer padding length is invalid.
     InvalidFooterPaddingLength(usize, usize),
+    /// Missing a node end marker where the marker is expected.
+    MissingNodeEndMarker,
     /// Unexpected value for footer fields (mainly for unknown fields).
     UnexpectedFooterFieldValue,
     #[doc(hidden)]
@@ -37,6 +39,7 @@ impl fmt::Display for Warning {
                 "Invalid footer padding length: expected {} bytes, got {} bytes",
                 expected, got
             ),
+            Warning::MissingNodeEndMarker => write!(f, "Missing node end marker"),
             Warning::UnexpectedFooterFieldValue => write!(f, "Unexpected footer field value"),
             Warning::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
