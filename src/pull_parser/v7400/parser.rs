@@ -2,8 +2,6 @@
 
 use std::{fmt, io};
 
-use log::debug;
-
 use crate::{
     low::{
         v7400::{FbxFooter, NodeHeader},
@@ -304,13 +302,9 @@ impl<R: ParserSource> Parser<R> {
                     // It's odd, the current node should have a node end marker
                     // at the ending, but `node_end_offset` data tells that the
                     // node ends without node end marker.
-                    debug!(
-                        "DataError::NodeLengthMismatch, node_end_offset={}, event_start_offset={}",
-                        current_node.node_end_offset, event_start_offset
-                    );
-                    return Err(
-                        DataError::NodeLengthMismatch(current_node.node_end_offset, None).into(),
-                    );
+                    self.warn(Warning::MissingNodeEndMarker, self.position())?;
+                    self.state.started_nodes.pop();
+                    return Ok(EventKind::EndNode);
                 }
             }
         }
@@ -331,6 +325,11 @@ impl<R: ParserSource> Parser<R> {
                             Some(header_end_offset),
                         )
                         .into());
+                    }
+                    if closing.attributes_count != 0 && closing.known_children_count == 0 {
+                        // It's odd, the current node should not have a node end
+                        // marker at the ending, but found.
+                        self.warn(Warning::ExtraNodeEndMarker, self.position())?;
                     }
                     Ok(EventKind::EndNode)
                 }

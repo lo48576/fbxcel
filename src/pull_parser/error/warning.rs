@@ -7,6 +7,8 @@ use std::{error, fmt};
 pub enum Warning {
     /// Node name is empty.
     EmptyNodeName,
+    /// Extra (unexpected) node end marker found.
+    ExtraNodeEndMarker,
     /// Incorrect boolean representation.
     ///
     /// Boolean value in node attributes should be some prescribed value
@@ -17,6 +19,8 @@ pub enum Warning {
     IncorrectBooleanRepresentation,
     /// Footer padding length is invalid.
     InvalidFooterPaddingLength(usize, usize),
+    /// Missing a node end marker where the marker is expected.
+    MissingNodeEndMarker,
     /// Unexpected value for footer fields (mainly for unknown fields).
     UnexpectedFooterFieldValue,
     #[doc(hidden)]
@@ -29,6 +33,7 @@ impl fmt::Display for Warning {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Warning::EmptyNodeName => write!(f, "Node name is empty"),
+            Warning::ExtraNodeEndMarker => write!(f, "Extra (unexpected) node end marker found"),
             Warning::IncorrectBooleanRepresentation => {
                 write!(f, "Incorrect boolean representation")
             }
@@ -37,6 +42,7 @@ impl fmt::Display for Warning {
                 "Invalid footer padding length: expected {} bytes, got {} bytes",
                 expected, got
             ),
+            Warning::MissingNodeEndMarker => write!(f, "Missing node end marker"),
             Warning::UnexpectedFooterFieldValue => write!(f, "Unexpected footer field value"),
             Warning::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
