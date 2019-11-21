@@ -43,6 +43,8 @@ pub enum DataError {
     ///
     /// The former is the expected, the latter is a description of the actual value.
     UnexpectedAttribute(String, String),
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 impl error::Error for DataError {
@@ -86,6 +88,7 @@ impl fmt::Display for DataError {
                 "Unexpected attribute value or type: expected {}, got {}",
                 expected, got
             ),
+            DataError::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
     }
 }

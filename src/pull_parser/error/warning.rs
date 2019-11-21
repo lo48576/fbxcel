@@ -19,6 +19,8 @@ pub enum Warning {
     InvalidFooterPaddingLength(usize, usize),
     /// Unexpected value for footer fields (mainly for unknown fields).
     UnexpectedFooterFieldValue,
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 impl error::Error for Warning {}
@@ -36,6 +38,7 @@ impl fmt::Display for Warning {
                 expected, got
             ),
             Warning::UnexpectedFooterFieldValue => write!(f, "Unexpected footer field value"),
+            Warning::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
     }
 }
