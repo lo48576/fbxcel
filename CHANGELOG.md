@@ -4,11 +4,25 @@
 
 * `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.
     + This would make some of future changes non-breaking.
+* Support parsing nodes with missing or extra node end markers.
+    + Previously, they are ignored or causing critical errors.
+      Now they are notified as warnings, and users can continue parsing.
+    + Two new variants `Warning::{ExtraNodeEndMarker, MissingNodeEndMarker}` are added to
+      `pull_parser::error::Warning` type.
+        - Note that `Warning` have been nonexhaustive since this release.
 
 ### Breaking changes
 
 * `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.
     + This would make some of future changes non-breaking.
+* Support parsing nodes with missing or extra node end markers.
+    + Previously, missing node end markers caused errors, and extra node end markers were silently
+      ignored.
+      Now they are notified as warnings.
+      Users can choose whether to continue or abort processing.
+    + Two new variants `Warning::{ExtraNodeEndMarker, MissingNodeEndMarker}` are added to
+      `pull_parser::error::Warning` type.
+        - Note that `Warning` have been nonexhaustive since this release.
 
 ## [0.4.4]
 
