@@ -30,7 +30,7 @@ string-interner = { version = "0.7", optional = true, default-features = false }
 env_logger = "0.7"
 
 [badges]
-maintenance = { status = "actively-developed" }
+maintenance = { status = "passively-maintained" }
 travis-ci = { repository = "lo48576/fbxcel" }
 
 [[example]]
