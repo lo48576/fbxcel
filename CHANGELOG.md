@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+* Minimum supported Rust version is bumped to 1.41.0.
+
+### Non-breaking changes
+* Use `#[nonexhaustive]` instead of hidden dummy variants for enums.
+    + Users won't affected by this internal change.
+
 ## [0.5.0]
 
 * `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.

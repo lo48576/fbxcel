@@ -6,6 +6,7 @@ use std::{error, fmt, string::FromUtf8Error};
 
 /// Data error.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum DataError {
     /// Data with broken compression.
     BrokenCompression(Compression, Box<dyn std::error::Error + Send + Sync>),
@@ -43,8 +44,6 @@ pub enum DataError {
     ///
     /// The former is the expected, the latter is a description of the actual value.
     UnexpectedAttribute(String, String),
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl error::Error for DataError {
@@ -88,7 +87,6 @@ impl fmt::Display for DataError {
                 "Unexpected attribute value or type: expected {}, got {}",
                 expected, got
             ),
-            DataError::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
     }
 }

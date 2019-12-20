@@ -14,14 +14,13 @@ use crate::{
 mod error;
 
 /// FBX tree type with any supported version.
+#[non_exhaustive]
 pub enum AnyTree {
     /// FBX 7.4 or later.
     V7400(
         tree::v7400::Tree,
         std::result::Result<Box<low::v7400::FbxFooter>, pull_parser::Error>,
     ),
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl AnyTree {
@@ -41,7 +40,6 @@ impl AnyTree {
                 let (tree, footer) = tree_loader.load(&mut parser)?;
                 Ok(AnyTree::V7400(tree, footer))
             }
-            AnyParser::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
         }
     }
 
@@ -57,7 +55,6 @@ impl AnyTree {
                 let (tree, footer) = tree_loader.load(&mut parser)?;
                 Ok(AnyTree::V7400(tree, footer))
             }
-            AnyParser::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
         }
     }
 }

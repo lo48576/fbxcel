@@ -16,11 +16,10 @@ pub use self::error::{Error, Result};
 mod error;
 
 /// FBX tree type with any supported version.
+#[non_exhaustive]
 pub enum AnyParser<R> {
     /// FBX 7.4 or later.
     V7400(pull_parser::v7400::Parser<R>),
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl<R: ParserSource> AnyParser<R> {
@@ -28,7 +27,6 @@ impl<R: ParserSource> AnyParser<R> {
     pub fn parser_version(&self) -> ParserVersion {
         match self {
             AnyParser::V7400(_) => pull_parser::v7400::Parser::<R>::PARSER_VERSION,
-            AnyParser::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
 
@@ -36,7 +34,6 @@ impl<R: ParserSource> AnyParser<R> {
     pub fn fbx_version(&self) -> FbxVersion {
         match self {
             AnyParser::V7400(parser) => parser.fbx_version(),
-            AnyParser::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
 }
@@ -69,7 +66,6 @@ pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<PlainSource<R>>> 
             });
             Ok(AnyParser::V7400(parser))
         }
-        ParserVersion::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
     }
 }
 
@@ -88,6 +84,5 @@ pub fn from_seekable_reader<R: Read + Seek>(mut reader: R) -> Result<AnyParser<S
                 });
             Ok(AnyParser::V7400(parser))
         }
-        ParserVersion::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never be used"),
     }
 }
