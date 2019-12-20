@@ -9,6 +9,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 /// Error.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Error {
     /// Parser creation error.
     ParserCreation(pull_parser::any::Error),
@@ -16,8 +17,6 @@ pub enum Error {
     Parser(pull_parser::Error),
     /// Tree load error.
     Tree(Box<dyn error::Error + Send + Sync + 'static>),
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl error::Error for Error {
@@ -26,7 +25,6 @@ impl error::Error for Error {
             Error::ParserCreation(e) => Some(e),
             Error::Parser(e) => Some(e),
             Error::Tree(e) => Some(&**e),
-            Error::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
 }
@@ -37,7 +35,6 @@ impl fmt::Display for Error {
             Error::ParserCreation(e) => write!(f, "Failed to create a parser: {}", e),
             Error::Parser(e) => write!(f, "Parser error: {}", e),
             Error::Tree(e) => write!(f, "Tree load error: {}", e),
-            Error::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
 }

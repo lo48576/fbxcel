@@ -6,6 +6,7 @@ use crate::pull_parser::Error as ParserError;
 
 /// FBX data tree load error.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum LoadError {
     /// Bad parser.
     ///
@@ -13,8 +14,6 @@ pub enum LoadError {
     BadParser,
     /// Parser error.
     Parser(ParserError),
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl fmt::Display for LoadError {
@@ -22,7 +21,6 @@ impl fmt::Display for LoadError {
         match self {
             LoadError::BadParser => f.write_str("Attempt to use a bad parser"),
             LoadError::Parser(e) => write!(f, "Parser error: {}", e),
-            LoadError::__Nonexhaustive => panic!("`__Nonexhaustive` should not be used"),
         }
     }
 }

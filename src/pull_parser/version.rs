@@ -9,11 +9,10 @@ use crate::low::FbxVersion;
 /// Some parser supports multiple versions of FBX binary.
 /// Each variants of this type corresponds to a parser implementation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
 pub enum ParserVersion {
     /// FBX 7.4 and 7.5.
     V7400,
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl ParserVersion {

@@ -6,6 +6,7 @@ use crate::{low::FbxVersion, pull_parser::ParserVersion};
 
 /// Invalid operation.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum OperationError {
     /// Attempt to parse more data while the parsing is aborted.
     AlreadyAborted,
@@ -13,8 +14,6 @@ pub enum OperationError {
     AlreadyFinished,
     /// Attempt to create a parser with unsupported FBX version.
     UnsupportedFbxVersion(ParserVersion, FbxVersion),
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl error::Error for OperationError {}
@@ -34,7 +33,6 @@ impl fmt::Display for OperationError {
                 "Unsupported FBX version: parser={:?}, fbx={:?}",
                 parser, fbx
             ),
-            OperationError::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
     }
 }
