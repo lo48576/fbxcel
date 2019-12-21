@@ -4,6 +4,7 @@ use std::{error, fmt};
 
 /// Warning.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Warning {
     /// Node name is empty.
     EmptyNodeName,
@@ -23,8 +24,6 @@ pub enum Warning {
     MissingNodeEndMarker,
     /// Unexpected value for footer fields (mainly for unknown fields).
     UnexpectedFooterFieldValue,
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl error::Error for Warning {}
@@ -44,7 +43,6 @@ impl fmt::Display for Warning {
             ),
             Warning::MissingNodeEndMarker => write!(f, "Missing node end marker"),
             Warning::UnexpectedFooterFieldValue => write!(f, "Unexpected footer field value"),
-            Warning::__Nonexhaustive => unreachable!("`__Nonexhaustive` should never used"),
         }
     }
 }

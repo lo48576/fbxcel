@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## [0.6.0]
+
+* Minimum supported Rust version is bumped to 1.40.0.
+* Add an FBX version field to `any::AnyTree::V7400` variant
+  (372a2f6e0314eed86cc2c493d2e2fc86aa226781).
+* Add `any::AnyTree::fbx_version()` method (372a2f6e0314eed86cc2c493d2e2fc86aa226781).
+
+### Breaking changes
+* Add an FBX version field to `any::AnyTree::V7400` variant
+  (372a2f6e0314eed86cc2c493d2e2fc86aa226781).
+    + This is mainly used by newly added `any::AnyTree::fbx_version()`, but also useful for users to
+      know FBX version.
+        - For example, when users want to re-export the tree, they might want to know FBX version of
+          the source document.
+
+### Added
+* Add `any::AnyTree::fbx_version()` method (372a2f6e0314eed86cc2c493d2e2fc86aa226781).
+    + Using this, users can get FBX version of the tree even if the `AnyTree` variant is unknown for
+      users.
+    + By this method, users can emit meaningful error message if the tree is returned as unknown
+      variant.
+
+### Non-breaking changes
+* Use `#[non_exhaustive]` instead of hidden dummy variants for enums
+  (b4c0cf53fcefb2dc13850e09ac1ff15bc57a68e5).
+    + Users won't affected by this internal change.
+
 ## [0.5.0]
 
 * `pull_parser::error::{DataError, OperationError, Warning}` is now nonexhaustive.
@@ -242,8 +269,9 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.5.0...develop>
-[0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.5.0>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.6.0...develop>
+[0.6.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.6.0>
+[0.5.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.5.0>
 [0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.4>
 [0.4.3]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.3>
 [0.4.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.2>
