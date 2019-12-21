@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-* Minimum supported Rust version is bumped to 1.41.0.
+* Minimum supported Rust version is bumped to 1.40.0.
 * Add an FBX version field to `any::AnyTree::V7400` variant.
 * Add `any::AnyTree::fbx_version()` method.
 
@@ -21,7 +21,7 @@
       variant.
 
 ### Non-breaking changes
-* Use `#[nonexhaustive]` instead of hidden dummy variants for enums.
+* Use `#[non_exhaustive]` instead of hidden dummy variants for enums.
     + Users won't affected by this internal change.
 
 ## [0.5.0]
