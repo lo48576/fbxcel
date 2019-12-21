@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.0]
+
 * Minimum supported Rust version is bumped to 1.40.0.
 * Add an FBX version field to `any::AnyTree::V7400` variant.
 * Add `any::AnyTree::fbx_version()` method.
@@ -264,8 +266,9 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.5.0...develop>
-[0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.5.0>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.6.0...develop>
+[0.6.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.6.0>
+[0.5.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.5.0>
 [0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.4>
 [0.4.3]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.3>
 [0.4.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.2>
