@@ -3,6 +3,22 @@
 ## [Unreleased]
 
 * Minimum supported Rust version is bumped to 1.41.0.
+* Add an FBX version field to `any::AnyTree::V7400` variant.
+* Add `any::AnyTree::fbx_version()` method.
+
+### Breaking changes
+* Add an FBX version field to `any::AnyTree::V7400` variant.
+    + This is mainly used by newly added `any::AnyTree::fbx_version()`, but also useful for users to
+      know FBX version.
+        - For example, when users want to re-export the tree, they might want to know FBX version of
+          the source document.
+
+### Added
+* Add `any::AnyTree::fbx_version()` method.
+    + Using this, users can get FBX version of the tree even if the `AnyTree` variant is unknown for
+      users.
+    + By this method, users can emit meaningful error message if the tree is returned as unknown
+      variant.
 
 ### Non-breaking changes
 * Use `#[nonexhaustive]` instead of hidden dummy variants for enums.
