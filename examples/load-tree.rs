@@ -16,7 +16,8 @@ pub fn main() {
     let reader = BufReader::new(file);
 
     match AnyTree::from_seekable_reader(reader).expect("Failed to load tree") {
-        AnyTree::V7400(tree, footer) => {
+        AnyTree::V7400(fbx_version, tree, footer) => {
+            println!("FBX version = {:#?}", fbx_version);
             println!("tree = {:#?}", tree);
             println!("footer = {:#?}", footer);
         }

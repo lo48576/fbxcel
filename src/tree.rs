@@ -25,7 +25,7 @@
 //! // To use readers without `std::io::Seek` implementation, use `from_reader`
 //! // instead.
 //! match AnyTree::from_seekable_reader(reader).expect("Failed to load tree") {
-//!     AnyTree::V7400(tree, footer) => {
+//!     AnyTree::V7400(fbx_version, tree, footer) => {
 //!         // You got a tree (and footer)! Do what you want!
 //!     }
 //!     // `AnyTree` is nonexhaustive.
