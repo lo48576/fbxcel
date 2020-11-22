@@ -55,7 +55,7 @@ impl FromReader for ArrayAttributeEncoding {
     fn from_reader(reader: &mut impl io::Read) -> Result<Self, ParserError> {
         let raw_encoding = u32::from_reader(reader)?;
         let encoding = ArrayAttributeEncoding::from_u32(raw_encoding)
-            .ok_or_else(|| DataError::InvalidArrayAttributeEncoding(raw_encoding))?;
+            .ok_or(DataError::InvalidArrayAttributeEncoding(raw_encoding))?;
         Ok(encoding)
     }
 }
