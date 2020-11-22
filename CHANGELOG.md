@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Bump MSRV to 1.48.
+* Bump dependencies.
 
 ## [0.6.0]
 
