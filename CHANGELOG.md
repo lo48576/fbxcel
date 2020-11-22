@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Bump MSRV to 1.48.
+
 ## [0.6.0]
 
 * Minimum supported Rust version is bumped to 1.40.0.
