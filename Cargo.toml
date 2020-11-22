@@ -22,12 +22,12 @@ writer = []
 [dependencies]
 byteorder = "1"
 indextree = { version = "4", optional = true }
-libflate = "0.1"
+libflate = "1"
 log = "0.4.4"
-string-interner = { version = "0.7", optional = true, default-features = false }
+string-interner = { version = "0.12", optional = true, default-features = false, features = ["backends", "inline-more", "std"] }
 
 [dev-dependencies]
-env_logger = "0.7"
+env_logger = "0.8"
 
 [badges]
 maintenance = { status = "passively-maintained" }
