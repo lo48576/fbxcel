@@ -324,7 +324,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(&[v])?;
             len = len
                 .checked_add(1)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;
@@ -350,7 +350,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(&[v])?;
             len = len
                 .checked_add(1)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;
@@ -371,7 +371,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(buf)?;
             len = len
                 .checked_add(char_len)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;
@@ -399,7 +399,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(buf)?;
             len = len
                 .checked_add(char_len)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;

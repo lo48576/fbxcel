@@ -116,7 +116,7 @@ fn tree_write_v7500() -> Result<(), Box<dyn std::error::Error>> {
                 Node0_1: {},
             },
             Node1: [true] {
-                Node1_0: (vec![42i32.into(), 3.14f64.into()]) {}
+                Node1_0: (vec![42i32.into(), 1.234f64.into()]) {}
                 Node1_1: [&[1u8, 2, 4, 8, 16][..], "Hello, world"] {}
             },
         },
@@ -191,7 +191,7 @@ fn macro_v7400_idempotence() -> Result<(), Box<dyn std::error::Error>> {
                 Node0_1: {},
             },
             Node1: [true] {
-                Node1_0: (vec![42i32.into(), 3.14f64.into()]) {}
+                Node1_0: (vec![42i32.into(), 1.234f64.into()]) {}
                 Node1_1: [&[1u8, 2, 4, 8, 16][..], "Hello, world"] {}
             },
         },
@@ -243,7 +243,7 @@ fn macro_v7400_idempotence() -> Result<(), Box<dyn std::error::Error>> {
         );
         assert!(attrs
             .load_next(DirectLoader)?
-            .map_or(false, |attr| attr.strict_eq(&3.14f64.into())));
+            .map_or(false, |attr| attr.strict_eq(&1.234f64.into())));
         assert_eq!(attrs.total_count(), 2);
     }
     expect_node_end(&mut parser)?;

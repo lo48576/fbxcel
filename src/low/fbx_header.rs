@@ -116,10 +116,10 @@ mod tests {
         let mut cursor = Cursor::new(wrong_header);
         // `HeaderError` may contain `io::Error` and is not comparable.
         assert!(
-            match FbxHeader::load(cursor.by_ref()).unwrap_err() {
-                HeaderError::MagicNotDetected => true,
-                _ => false,
-            },
+            matches!(
+                FbxHeader::load(cursor.by_ref()),
+                Err(HeaderError::MagicNotDetected)
+            ),
             "Invalid magic should be reported by `MagicNotDetected`"
         );
         assert!(

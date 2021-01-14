@@ -1,7 +1,5 @@
 //! Node type.
 
-use indextree;
-
 use crate::tree::v7400::{NodeHandle, Tree};
 
 pub(crate) use self::{data::NodeData, name::NodeNameSym};
