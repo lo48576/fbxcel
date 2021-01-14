@@ -173,7 +173,7 @@ impl Tree {
     /// Pretty-print the tree for debugging purpose.
     ///
     /// Be careful, this output format may change in future.
-    pub fn debug_tree<'a>(&'a self) -> impl fmt::Debug + 'a {
+    pub fn debug_tree(&self) -> impl fmt::Debug + '_ {
         DebugTree { tree: self }
     }
 }
