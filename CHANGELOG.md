@@ -4,8 +4,8 @@
 
 ## [0.7.0]
 
-* Bump MSRV to 1.49.
-* Bump dependencies.
+* Bump minimum supported Rust version to 1.49.
+* Bump internal dependencies.
 
 ## [0.6.0]
 
