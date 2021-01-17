@@ -4,8 +4,8 @@
 
 ## [0.7.0]
 
-* Bump MSRV to 1.49.
-* Bump dependencies.
+* Bump minimum supported Rust version to 1.49.
+* Bump internal dependencies.
 
 ## [0.6.0]
 
@@ -274,7 +274,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.6.1...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.7.0...develop>
+[0.6.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.7.0>
 [0.6.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.6.1>
 [0.6.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.6.0>
 [0.5.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.5.0>
