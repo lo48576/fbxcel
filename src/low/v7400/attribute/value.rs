@@ -63,7 +63,7 @@ macro_rules! impl_val_getter {
                 _ => Err(self.type_()),
             }
         }
-    }
+    };
 }
 
 macro_rules! impl_ref_getter {
@@ -83,7 +83,7 @@ macro_rules! impl_ref_getter {
                 _ => Err(self.type_()),
             }
         }
-    }
+    };
 }
 
 impl AttributeValue {
