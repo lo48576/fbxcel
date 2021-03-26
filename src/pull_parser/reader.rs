@@ -35,7 +35,7 @@ pub trait ParserSource: Sized + io::Read {
     /// as possible.
     ///
     /// Reader types with [`std::io::Seek`] can implement this as
-    /// `self.seek(SeekFrom::Current(0)).unwrap()`, but this is fallible and
+    /// `self.stream_position().unwrap()`, but this is fallible and
     /// can be inefficient.
     /// Use of [`PositionCacheReader`] is reccomended.
     ///
