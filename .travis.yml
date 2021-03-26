@@ -3,12 +3,12 @@ cache: cargo
 rust:
   - stable
   - beta
-  - 1.49.0
+  - 1.51.0
 jobs:
   include:
-    - rust: 1.49.0
+    - rust: 1.51.0
       env: TEST_MINIMAL_VERSIONS=1
-    - rust: 1.49.0
+    - rust: 1.51.0
       env: LINT=1
 before_install:
   - |
