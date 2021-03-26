@@ -37,7 +37,7 @@ Currently there is no plan to support FBX ASCII format.
 
 ## Rust version
 
-Latest stable compiler (currently 1.49) is supported.
+Latest stable compiler (currently 1.51) is supported.
 
 ## License
 
