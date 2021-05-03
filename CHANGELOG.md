@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+* Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
+  now have a name.
+
+## Non-breaking changes
+* Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
+  now have a name.
+    + `NodeHandle::children()` returns `ChildrenIter<'_>`.
+    + `NodeHandle::children_by_name()` returns `ChildrenByNameIter<'_>`.
+    + By this change, now these iterators can be included in other types as a field.
+
 ## [0.7.0]
 
 * Bump minimum supported Rust version to 1.49.

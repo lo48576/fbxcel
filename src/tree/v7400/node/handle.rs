@@ -65,24 +65,23 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns an iterator of children with the given name.
-    pub fn children(&self) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
-        let tree = self.tree;
-        self.node_id
-            .raw()
-            .children(&tree.arena)
-            .map(move |child_id| NodeId::new(child_id).to_handle(tree))
+    #[inline]
+    #[must_use]
+    pub fn children(&self) -> ChildrenIter<'a> {
+        ChildrenIter {
+            tree: self.tree,
+            iter: self.node_id.raw().children(&self.tree.arena),
+        }
     }
 
     /// Returns an iterator of children with the given name.
-    pub fn children_by_name(&self, name: &str) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
-        // Using `flat_map` for `Option<impl Iterator>`, the iterator can return
-        // `None` before without traversing the tree if `target_name` is not
-        // registered.
-        self.tree
-            .node_name_sym(name)
-            .map(|sym| self.children().filter(move |child| child.name_sym() == sym))
-            .into_iter()
-            .flatten()
+    #[inline]
+    #[must_use]
+    pub fn children_by_name(&self, name: &str) -> ChildrenByNameIter<'a> {
+        ChildrenByNameIter {
+            name_sym: self.tree.node_name_sym(name),
+            children_iter: self.children(),
+        }
     }
 
     /// Compares nodes strictly.
@@ -168,4 +167,41 @@ fn nodes_strict_eq(left: NodeHandle<'_>, right: NodeHandle<'_>) -> bool {
         }
     }
     true
+}
+
+/// An iterator of children of a node.
+#[derive(Clone)]
+pub struct ChildrenIter<'a> {
+    /// Tree.
+    tree: &'a Tree,
+    /// Raw node children iterator.
+    iter: indextree::Children<'a, NodeData>,
+}
+
+impl<'a> Iterator for ChildrenIter<'a> {
+    type Item = NodeHandle<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let child_id = self.iter.next()?;
+        Some(NodeId::new(child_id).to_handle(self.tree))
+    }
+}
+
+/// An iterator of children of a node, with a specific name.
+#[derive(Clone)]
+pub struct ChildrenByNameIter<'a> {
+    /// Name symbol.
+    name_sym: Option<NodeNameSym>,
+    /// Children node iterator.
+    children_iter: ChildrenIter<'a>,
+}
+
+impl<'a> Iterator for ChildrenByNameIter<'a> {
+    type Item = NodeHandle<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let name_sym = self.name_sym?;
+        self.children_iter
+            .find(|child| child.name_sym() == name_sym)
+    }
 }
