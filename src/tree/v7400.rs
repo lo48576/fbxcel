@@ -11,7 +11,10 @@ use self::node::{NodeData, NodeNameSym};
 pub use self::{
     error::LoadError,
     loader::Loader,
-    node::{handle::NodeHandle, NodeId},
+    node::{
+        handle::{ChildrenByNameIter, ChildrenIter, NodeHandle},
+        NodeId,
+    },
 };
 
 mod macros;
