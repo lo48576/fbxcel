@@ -4,6 +4,12 @@
 
 * Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
   now have a name.
+* `tree::v7400::NodeHandle::first_child_by_name()` is added.
+
+## Added
+* `tree::v7400::NodeHandle::first_child_by_name()` is added.
+    + `node.first_child_by_name(name)` returns the same result as
+      `node.children_by_name(name).next()`.
 
 ## Non-breaking changes
 * Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
