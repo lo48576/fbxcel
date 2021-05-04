@@ -84,6 +84,12 @@ impl<'a> NodeHandle<'a> {
         }
     }
 
+    /// Returns the first child with the given name.
+    #[must_use]
+    pub fn first_child_by_name(&self, name: &str) -> Option<Self> {
+        self.children_by_name(name).next()
+    }
+
     /// Compares nodes strictly.
     ///
     /// Returns `true` if the two trees are same.
