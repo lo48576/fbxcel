@@ -1,5 +1,7 @@
 //! Node handle.
 
+use std::fmt;
+
 use crate::{
     low::v7400::AttributeValue,
     tree::v7400::{NodeData, NodeId, NodeNameSym, Tree},
@@ -193,6 +195,12 @@ impl<'a> Iterator for ChildrenIter<'a> {
     }
 }
 
+impl<'a> fmt::Debug for ChildrenIter<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("ChildrenIter").finish()
+    }
+}
+
 /// An iterator of children of a node, with a specific name.
 #[derive(Clone)]
 pub struct ChildrenByNameIter<'a> {
@@ -209,5 +217,13 @@ impl<'a> Iterator for ChildrenByNameIter<'a> {
         let name_sym = self.name_sym?;
         self.children_iter
             .find(|child| child.name_sym() == name_sym)
+    }
+}
+
+impl<'a> fmt::Debug for ChildrenByNameIter<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("ChildrenByNameIter")
+            .field("name_sym", &self.name_sym)
+            .finish()
     }
 }
