@@ -29,9 +29,9 @@ impl NodeId {
     ///
     /// This may panic if the given node ID is not used in the given tree.
     ///
-    /// Even if `new()` does not panic, subsequent operations through
-    /// `NodeHandle` object may panic if the given node ID is not used in the
-    /// given tree.
+    /// Even if creation of an invalid node ID does not panic, subsequent
+    /// operations through `NodeHandle` object may panic if the given node ID is
+    /// not used in the given tree.
     pub fn to_handle(self, tree: &Tree) -> NodeHandle<'_> {
         NodeHandle::new(tree, self)
     }

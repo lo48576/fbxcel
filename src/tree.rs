@@ -43,9 +43,6 @@
 //!
 //! About tree loaders, see [`v7400::Loader`].
 //! (Currently, only `v7400` tree is supported.)
-//!
-//! [`any`]: any/index.html
-//! [`v7400::Loader`]: v7400/struct.Loader.html
 
 pub mod any;
 pub mod v7400;

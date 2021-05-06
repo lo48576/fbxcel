@@ -56,6 +56,7 @@ impl Tree {
     /// Returns internally managed node data.
     ///
     /// # Panics
+    ///
     /// Panics if a node with the given node ID does not exist in the tree.
     pub(crate) fn node(&self, node_id: NodeId) -> &indextree::Node<NodeData> {
         self.arena.get(node_id.raw()).unwrap_or_else(|| {
