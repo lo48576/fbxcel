@@ -58,6 +58,7 @@ impl AttributeType {
 
     /// Returns the type code.
     #[cfg(feature = "writer")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
     pub(crate) fn type_code(self) -> u8 {
         match self {
             AttributeType::Bool => b'C',
