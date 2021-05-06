@@ -65,7 +65,7 @@ where
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
-    /// Creates a new `Iter`.
+    /// Creates a new iterator.
     pub(crate) fn new(attributes: &'a mut Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -106,7 +106,7 @@ where
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
-    /// Creates a new `IterBuffered`.
+    /// Creates a new iterator.
     pub(crate) fn new(attributes: &'a mut Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -188,7 +188,7 @@ where
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
-    /// Creates a new `IterBuffered`.
+    /// Creates a new iterator.
     pub(crate) fn new(attributes: Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
