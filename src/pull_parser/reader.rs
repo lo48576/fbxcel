@@ -25,9 +25,7 @@ mod source;
 /// A trait for types which can be data sources.
 ///
 /// Users can implement this manually, but usually it is enough to use wrappers
-/// in the [`reader`] module.
-///
-/// [`reader`]: index.html
+/// in the [`reader`][`self`] module.
 pub trait ParserSource: Sized + io::Read {
     /// Returns the offset of a byte which would be read next.
     ///
@@ -38,9 +36,6 @@ pub trait ParserSource: Sized + io::Read {
     /// `self.stream_position().unwrap()`, but this is fallible and
     /// can be inefficient.
     /// Use of [`PositionCacheReader`] is reccomended.
-    ///
-    /// [`std::io::Seek`]: https://doc.rust-lang.org/stable/std/io/trait.Seek.html
-    /// [`PositionCacheReader`]: struct.PositionCacheReader.html
     fn position(&self) -> u64;
 
     /// Skips (seeks formward) the given size.
@@ -62,9 +57,6 @@ pub trait ParserSource: Sized + io::Read {
     /// reader.skip_distance(7).expect("Failed to skip");
     /// assert_eq!(reader.position(), 7);
     /// ```
-    ///
-    /// [`std::io::Seek::seek`]:
-    /// https://doc.rust-lang.org/stable/std/io/trait.Seek.html#tymethod.seek
     fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
         // NOTE: `let mut limited = self.by_ref().take(distance);` is E0507.
         let mut limited = io::Read::take(self.by_ref(), distance);
@@ -95,9 +87,6 @@ pub trait ParserSource: Sized + io::Read {
     /// reader.skip_to(7).expect("Failed to skip");
     /// assert_eq!(reader.position(), 7);
     /// ```
-    ///
-    /// [`std::io::Seek::seek`]:
-    /// https://doc.rust-lang.org/stable/std/io/trait.Seek.html#tymethod.seek
     fn skip_to(&mut self, pos: u64) -> io::Result<()> {
         let distance = pos
             .checked_sub(self.position())

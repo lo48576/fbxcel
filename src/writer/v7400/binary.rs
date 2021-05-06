@@ -89,13 +89,6 @@
 //!
 //! # Ok::<_, fbxcel::writer::v7400::binary::Error>(())
 //! ```
-//!
-//! [`AttributesWriter`]: struct.AttributesWriter.html
-//! [`Writer::close_node`]: struct.Writer.html#method.close_node
-//! [`Writer::finalize`]: struct.Writer.html#method.finalize
-//! [`Writer::finalize_and_flush`]: struct.Writer.html#method.finalize_and_flush
-//! [`Writer::new`]: struct.Writer.html#method.new
-//! [`Writer::new_node`]: struct.Writer.html#method.new_node
 
 use std::{
     convert::TryFrom,
@@ -120,7 +113,7 @@ mod footer;
 
 /// Binary writer.
 ///
-/// See [module documentation](index.html) for usage.
+/// See [module documentation][`self`] for usage.
 #[derive(Debug, Clone)]
 pub struct Writer<W: Write> {
     /// Writer destination.
@@ -371,9 +364,7 @@ impl<W: Write + Seek> Writer<W> {
 
     /// Finalizes the FBX binary and returns the inner sink.
     ///
-    /// You may want to use [`finalize_and_flush()`].
-    ///
-    /// [`finalize_and_flush()`]: #method.finalize_and_flush
+    /// You may want to use [`finalize_and_flush()`][`Self::finalize_and_flush()`].
     pub fn finalize(mut self, footer: &FbxFooter<'_>) -> Result<W> {
         self.finalize_impl(footer)?;
 
