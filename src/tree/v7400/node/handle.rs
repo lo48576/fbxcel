@@ -69,8 +69,8 @@ impl<'a> NodeHandle<'a> {
     /// Returns an iterator of children with the given name.
     #[inline]
     #[must_use]
-    pub fn children(&self) -> ChildrenIter<'a> {
-        ChildrenIter {
+    pub fn children(&self) -> Children<'a> {
+        Children {
             tree: self.tree,
             iter: self.node_id.raw().children(&self.tree.arena),
         }
@@ -79,8 +79,8 @@ impl<'a> NodeHandle<'a> {
     /// Returns an iterator of children with the given name.
     #[inline]
     #[must_use]
-    pub fn children_by_name(&self, name: &str) -> ChildrenByNameIter<'a> {
-        ChildrenByNameIter {
+    pub fn children_by_name(&self, name: &str) -> ChildrenByName<'a> {
+        ChildrenByName {
             name_sym: self.tree.node_name_sym(name),
             children_iter: self.children(),
         }
@@ -179,14 +179,14 @@ fn nodes_strict_eq(left: NodeHandle<'_>, right: NodeHandle<'_>) -> bool {
 
 /// An iterator of children of a node.
 #[derive(Clone)]
-pub struct ChildrenIter<'a> {
+pub struct Children<'a> {
     /// Tree.
     tree: &'a Tree,
     /// Raw node children iterator.
     iter: indextree::Children<'a, NodeData>,
 }
 
-impl<'a> Iterator for ChildrenIter<'a> {
+impl<'a> Iterator for Children<'a> {
     type Item = NodeHandle<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -195,22 +195,22 @@ impl<'a> Iterator for ChildrenIter<'a> {
     }
 }
 
-impl<'a> fmt::Debug for ChildrenIter<'a> {
+impl<'a> fmt::Debug for Children<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("ChildrenIter").finish()
+        f.debug_struct("Children").finish()
     }
 }
 
 /// An iterator of children of a node, with a specific name.
 #[derive(Clone)]
-pub struct ChildrenByNameIter<'a> {
+pub struct ChildrenByName<'a> {
     /// Name symbol.
     name_sym: Option<NodeNameSym>,
     /// Children node iterator.
-    children_iter: ChildrenIter<'a>,
+    children_iter: Children<'a>,
 }
 
-impl<'a> Iterator for ChildrenByNameIter<'a> {
+impl<'a> Iterator for ChildrenByName<'a> {
     type Item = NodeHandle<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -220,9 +220,9 @@ impl<'a> Iterator for ChildrenByNameIter<'a> {
     }
 }
 
-impl<'a> fmt::Debug for ChildrenByNameIter<'a> {
+impl<'a> fmt::Debug for ChildrenByName<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("ChildrenByNameIter")
+        f.debug_struct("ChildrenByName")
             .field("name_sym", &self.name_sym)
             .finish()
     }
