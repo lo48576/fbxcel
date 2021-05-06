@@ -12,7 +12,7 @@ pub use self::{
     error::LoadError,
     loader::Loader,
     node::{
-        handle::{ChildrenByNameIter, ChildrenIter, NodeHandle},
+        handle::{Children, ChildrenByName, NodeHandle},
         NodeId,
     },
 };
