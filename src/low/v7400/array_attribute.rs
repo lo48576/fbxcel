@@ -31,6 +31,7 @@ impl ArrayAttributeEncoding {
 
     /// Returns the raw value.
     #[cfg(feature = "writer")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
     pub(crate) fn to_u32(self) -> u32 {
         match self {
             ArrayAttributeEncoding::Direct => 0,

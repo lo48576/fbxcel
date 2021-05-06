@@ -5,6 +5,10 @@
 * Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
   now have a name.
 * `tree::v7400::NodeHandle::first_child_by_name()` is added.
+* Now some items on docs.rs have pretty badges indicating the items is only
+  enabled with some features.
+    + This won't affect any builds by other users. `cargo doc --all-features`
+      and other commands should still run successfully with stable toolchain.
 
 ## Added
 * `tree::v7400::NodeHandle::first_child_by_name()` is added.

@@ -12,6 +12,14 @@ categories = ["parser-implementations"]
 
 [package.metadata.docs.rs]
 all-features = true
+# See <https://docs.rs/about/builds>.
+#
+# Didn't create `docsrs` feature, since this (`#[doc(cfg(feature = ...))]`)
+# depends on nightly feature and it prevents `cargo doc --all-features` from
+# running with stable rust toolchain.
+# See <https://doc.rust-lang.org/rustdoc/unstable-features.html#extensions-to-the-doc-attribute>
+# for unstable `#[doc(cfg(...))]` attribute.
+rustc-args = ["--cfg", "docsrs"]
 
 [features]
 default = []
