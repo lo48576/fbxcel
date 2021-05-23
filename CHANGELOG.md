@@ -4,6 +4,7 @@
 
 * Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
   now have a name.
+* All iterator types now have `std::iter::FusedIterator` impl.
 * `tree::v7400::NodeHandle::first_child_by_name()` is added.
 * Now some items on docs.rs have pretty badges indicating the items is only
   enabled with some features.
@@ -21,6 +22,7 @@
     + `NodeHandle::children()` returns `Children<'_>`.
     + `NodeHandle::children_by_name()` returns `ChildrenByName<'_>`.
     + By this change, now these iterators can be included in other types as a field.
+* All iterator types defined by this crate now have `std::iter::FusedIterator` impl.
 
 ## [0.7.0]
 
