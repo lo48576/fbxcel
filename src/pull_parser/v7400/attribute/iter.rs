@@ -1,6 +1,7 @@
 //! Node attribute iterators.
 
 use std::io;
+use std::iter;
 
 use crate::pull_parser::{
     v7400::attribute::{loader::LoadAttribute, Attributes},
@@ -91,6 +92,14 @@ where
     }
 }
 
+impl<'a, 'r, R, I, V> iter::FusedIterator for BorrowedIter<'a, 'r, R, I>
+where
+    R: ParserSource,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
+}
+
 /// Node attributes iterator with buffered I/O.
 #[derive(Debug)]
 pub struct BorrowedIterBuffered<'a, 'r, R, I> {
@@ -130,6 +139,14 @@ where
     fn size_hint(&self) -> (usize, Option<usize>) {
         make_size_hint_for_attrs(&self.attributes, &self.loaders)
     }
+}
+
+impl<'a, 'r, R, I, V> iter::FusedIterator for BorrowedIterBuffered<'a, 'r, R, I>
+where
+    R: ParserSource + io::BufRead,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
 }
 
 /// Node attributes iterator.
@@ -173,6 +190,14 @@ where
     }
 }
 
+impl<'r, R, I, V> iter::FusedIterator for OwnedIter<'r, R, I>
+where
+    R: ParserSource,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
+}
+
 /// Node attributes iterator with buffered I/O.
 #[derive(Debug)]
 pub struct OwnedIterBuffered<'r, R, I> {
@@ -212,4 +237,12 @@ where
     fn size_hint(&self) -> (usize, Option<usize>) {
         make_size_hint_for_attrs(&self.attributes, &self.loaders)
     }
+}
+
+impl<'r, R, I, V> iter::FusedIterator for OwnedIterBuffered<'r, R, I>
+where
+    R: ParserSource + io::BufRead,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
 }

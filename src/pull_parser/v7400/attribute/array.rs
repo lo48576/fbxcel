@@ -108,6 +108,8 @@ macro_rules! impl_array_attr_values {
                 (0, Some(self.rest_elements as usize))
             }
         }
+
+        impl<R: io::Read> std::iter::FusedIterator for ArrayAttributeValues<R, $ty_elem> {}
     };
 }
 
@@ -187,3 +189,5 @@ impl<R: io::Read> Iterator for BooleanArrayAttributeValues<R> {
         (0, Some(self.rest_elements as usize))
     }
 }
+
+impl<R: io::Read> std::iter::FusedIterator for BooleanArrayAttributeValues<R> {}

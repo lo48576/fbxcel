@@ -195,6 +195,8 @@ impl<'a> Iterator for Children<'a> {
     }
 }
 
+impl std::iter::FusedIterator for Children<'_> {}
+
 impl<'a> fmt::Debug for Children<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Children").finish()
@@ -219,6 +221,8 @@ impl<'a> Iterator for ChildrenByName<'a> {
             .find(|child| child.name_sym() == name_sym)
     }
 }
+
+impl std::iter::FusedIterator for ChildrenByName<'_> {}
 
 impl<'a> fmt::Debug for ChildrenByName<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
