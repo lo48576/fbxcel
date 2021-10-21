@@ -88,7 +88,7 @@ where
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        make_size_hint_for_attrs(&self.attributes, &self.loaders)
+        make_size_hint_for_attrs(self.attributes, &self.loaders)
     }
 }
 
@@ -137,7 +137,7 @@ where
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        make_size_hint_for_attrs(&self.attributes, &self.loaders)
+        make_size_hint_for_attrs(self.attributes, &self.loaders)
     }
 }
 
