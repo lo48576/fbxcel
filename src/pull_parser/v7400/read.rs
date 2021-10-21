@@ -18,6 +18,7 @@ impl FromReader for u8 {
     }
 }
 
+/// Implement `FromReader` trait for primitive types.
 macro_rules! impl_from_reader_for_primitives {
     ($ty:ty, $read_method:ident) => {
         impl FromReader for $ty {

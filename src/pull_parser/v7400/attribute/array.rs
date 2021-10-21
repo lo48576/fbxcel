@@ -78,6 +78,7 @@ where
     }
 }
 
+/// Implement common traits for `ArrayAttributeValues`.
 macro_rules! impl_array_attr_values {
     ($ty_elem:ty, $read_elem:ident) => {
         impl<R: io::Read> Iterator for ArrayAttributeValues<R, $ty_elem> {

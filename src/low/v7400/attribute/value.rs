@@ -44,6 +44,7 @@ pub enum AttributeValue {
     Binary(Vec<u8>),
 }
 
+/// Implement direct value getters.
 macro_rules! impl_val_getter {
     ($variant:ident, $ty_ret:ty, $opt_getter:ident, $opt_doc:expr, $res_getter:ident, $res_doc:expr,) => {
         #[doc = $opt_doc]
@@ -64,6 +65,7 @@ macro_rules! impl_val_getter {
     };
 }
 
+/// Implement value reference getters.
 macro_rules! impl_ref_getter {
     ($variant:ident, $ty_ret:ty, $opt_getter:ident, $opt_doc:expr, $res_getter:ident, $res_doc:expr,) => {
         #[doc = $opt_doc]
@@ -252,6 +254,7 @@ impl AttributeValue {
     }
 }
 
+/// Implement `From` trait.
 macro_rules! impl_from {
     (direct: $ty:ty, $variant:ident) => {
         impl From<$ty> for AttributeValue {

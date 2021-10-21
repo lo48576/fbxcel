@@ -37,7 +37,7 @@ pub struct Tree {
 impl Tree {
     /// Returns the root node.
     pub fn root(&self) -> NodeHandle<'_> {
-        NodeHandle::new(&self, self.root_id)
+        NodeHandle::new(self, self.root_id)
     }
 
     /// Creates a new `Tree`.
