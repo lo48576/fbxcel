@@ -286,19 +286,14 @@ impl<R: ParserSource> Parser<R> {
                 let has_children = self.state.last_event_kind() == Some(EventKind::EndNode);
                 let has_attributes = current_node.attributes_count != 0;
 
-                if !has_children && has_attributes {
-                    // Ok, the current node implicitly ends here without node
-                    // end marker.
-                    self.state.started_nodes.pop();
-                    return Ok(EventKind::EndNode);
-                } else {
+                if has_children || !has_attributes {
                     // It's odd, the current node should have a node end marker
                     // at the ending, but `node_end_offset` data tells that the
                     // node ends without node end marker.
                     self.warn(Warning::MissingNodeEndMarker, self.position())?;
-                    self.state.started_nodes.pop();
-                    return Ok(EventKind::EndNode);
                 }
+                self.state.started_nodes.pop();
+                return Ok(EventKind::EndNode);
             }
         }
 
