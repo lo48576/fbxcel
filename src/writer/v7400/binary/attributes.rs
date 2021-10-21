@@ -72,6 +72,7 @@ pub struct AttributesWriter<'a, W: Write> {
     writer: &'a mut Writer<W>,
 }
 
+/// Implement `append_*` methods for single value.
 macro_rules! impl_single_attr_append {
     ($(
         $(#[$meta:meta])*
@@ -89,6 +90,7 @@ macro_rules! impl_single_attr_append {
     }
 }
 
+/// Implement `append_*` methods for array values.
 macro_rules! impl_arr_from_iter {
     ($(
         $(#[$meta:meta])*

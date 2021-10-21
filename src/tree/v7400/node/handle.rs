@@ -105,6 +105,7 @@ impl<'a> NodeHandle<'a> {
     }
 }
 
+/// Implement accessors to neighbor nodes.
 macro_rules! impl_related_node_accessor {
     (
         $(
