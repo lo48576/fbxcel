@@ -2,7 +2,8 @@
 name = "fbxcel"
 version = "0.7.0"
 authors = ["YOSHIOKA Takuma <lo48576@hard-wi.red>"]
-edition = "2018"
+edition = "2021"
+rust-version = "1.56"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Excellent FBX library"

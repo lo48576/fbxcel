@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Bump minimum supported Rust version to 1.56.0.
 * Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
   now have a name.
 * All iterator types now have `std::iter::FusedIterator` impl.
@@ -18,6 +19,9 @@
 
 ## Fixed
 * Fixed incorrect attribute type value being written by the writer.
+
+## Breaking changes
+* Bump minimum supported Rust version to 1.56.0.
 
 ## Non-breaking changes
 * Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`

@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/lo48576/fbxcel.svg?branch=develop)](https://travis-ci.com/lo48576/fbxcel)
 [![Latest version](https://img.shields.io/crates/v/fbxcel.svg)](https://crates.io/crates/fbxcel)
 [![Documentation](https://docs.rs/fbxcel/badge.svg)](https://docs.rs/fbxcel)
-![Minimum rustc version: 1.52](https://img.shields.io/badge/rustc-1.52+-lightgray.svg)
+![Minimum rustc version: 1.56](https://img.shields.io/badge/rustc-1.56+-lightgray.svg)
 
 `fbxcel` is an FBX library for Rust programming language.
 
