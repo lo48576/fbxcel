@@ -84,7 +84,7 @@ where
     type Item = Result<V::Output>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        load_next(&mut self.attributes, &mut self.loaders)
+        load_next(self.attributes, &mut self.loaders)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -133,7 +133,7 @@ where
     type Item = Result<V::Output>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        load_next_buffered(&mut self.attributes, &mut self.loaders)
+        load_next_buffered(self.attributes, &mut self.loaders)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {

@@ -157,10 +157,13 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             .writer
             .current_node_header()
             .expect("Should never fail: some nodes must be open if `AttributesWriter` exists");
-        node_header.num_attributes = node_header
-            .num_attributes
-            .checked_add(1)
-            .ok_or_else(|| Error::TooManyAttributes(node_header.num_attributes as usize))?;
+        node_header.num_attributes =
+            node_header
+                .num_attributes
+                .checked_add(1)
+                .ok_or(Error::TooManyAttributes(
+                    node_header.num_attributes as usize,
+                ))?;
 
         Ok(())
     }
