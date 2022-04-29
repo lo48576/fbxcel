@@ -11,6 +11,7 @@
   enabled with some features.
     + This won't affect any builds by other users. `cargo doc --all-features`
       and other commands should still run successfully with stable toolchain.
+* Bump internal dependencies.
 
 ## Added
 * `tree::v7400::NodeHandle::first_child_by_name()` is added.
