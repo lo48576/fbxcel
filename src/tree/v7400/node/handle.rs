@@ -1,5 +1,7 @@
 //! Node handle.
 
+use std::fmt;
+
 use crate::{
     low::v7400::AttributeValue,
     tree::v7400::{NodeData, NodeId, NodeNameSym, Tree},
@@ -65,24 +67,29 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns an iterator of children with the given name.
-    pub fn children(&self) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
-        let tree = self.tree;
-        self.node_id
-            .raw()
-            .children(&tree.arena)
-            .map(move |child_id| NodeId::new(child_id).to_handle(tree))
+    #[inline]
+    #[must_use]
+    pub fn children(&self) -> Children<'a> {
+        Children {
+            tree: self.tree,
+            iter: self.node_id.raw().children(&self.tree.arena),
+        }
     }
 
     /// Returns an iterator of children with the given name.
-    pub fn children_by_name(&self, name: &str) -> impl Iterator<Item = NodeHandle<'a>> + 'a {
-        // Using `flat_map` for `Option<impl Iterator>`, the iterator can return
-        // `None` before without traversing the tree if `target_name` is not
-        // registered.
-        self.tree
-            .node_name_sym(name)
-            .map(|sym| self.children().filter(move |child| child.name_sym() == sym))
-            .into_iter()
-            .flatten()
+    #[inline]
+    #[must_use]
+    pub fn children_by_name(&self, name: &str) -> ChildrenByName<'a> {
+        ChildrenByName {
+            name_sym: self.tree.node_name_sym(name),
+            children_iter: self.children(),
+        }
+    }
+
+    /// Returns the first child with the given name.
+    #[must_use]
+    pub fn first_child_by_name(&self, name: &str) -> Option<Self> {
+        self.children_by_name(name).next()
     }
 
     /// Compares nodes strictly.
@@ -98,6 +105,7 @@ impl<'a> NodeHandle<'a> {
     }
 }
 
+/// Implement accessors to neighbor nodes.
 macro_rules! impl_related_node_accessor {
     (
         $(
@@ -168,4 +176,59 @@ fn nodes_strict_eq(left: NodeHandle<'_>, right: NodeHandle<'_>) -> bool {
         }
     }
     true
+}
+
+/// An iterator of children of a node.
+#[derive(Clone)]
+pub struct Children<'a> {
+    /// Tree.
+    tree: &'a Tree,
+    /// Raw node children iterator.
+    iter: indextree::Children<'a, NodeData>,
+}
+
+impl<'a> Iterator for Children<'a> {
+    type Item = NodeHandle<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let child_id = self.iter.next()?;
+        Some(NodeId::new(child_id).to_handle(self.tree))
+    }
+}
+
+impl std::iter::FusedIterator for Children<'_> {}
+
+impl<'a> fmt::Debug for Children<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Children").finish()
+    }
+}
+
+/// An iterator of children of a node, with a specific name.
+#[derive(Clone)]
+pub struct ChildrenByName<'a> {
+    /// Name symbol.
+    name_sym: Option<NodeNameSym>,
+    /// Children node iterator.
+    children_iter: Children<'a>,
+}
+
+impl<'a> Iterator for ChildrenByName<'a> {
+    type Item = NodeHandle<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let name_sym = self.name_sym?;
+        self.children_iter
+            .find(|child| child.name_sym() == name_sym)
+    }
+}
+
+impl std::iter::FusedIterator for ChildrenByName<'_> {}
+
+impl<'a> fmt::Debug for ChildrenByName<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("ChildrenByName")
+            .field("name_sym", &self.name_sym)
+            .finish()
+    }
 }

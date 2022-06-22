@@ -47,8 +47,9 @@ impl<R: io::Read> io::Read for AttributeStreamDecoder<R> {
 pub(crate) struct ArrayAttributeValues<R, E> {
     /// Decoded reader.
     reader: R,
-    /// Number of total elements.
-    total_elements: u32,
+    // `total_elements`: unused.
+    ///// Number of total elements.
+    //total_elements: u32,
     /// Number of rest elements.
     rest_elements: u32,
     /// Whether an error is happened.
@@ -65,7 +66,7 @@ where
     pub(crate) fn new(reader: R, total_elements: u32) -> Self {
         Self {
             reader,
-            total_elements,
+            //total_elements,
             rest_elements: total_elements,
             has_error: false,
             _element_type: PhantomData,
@@ -78,6 +79,7 @@ where
     }
 }
 
+/// Implement common traits for `ArrayAttributeValues`.
 macro_rules! impl_array_attr_values {
     ($ty_elem:ty, $read_elem:ident) => {
         impl<R: io::Read> Iterator for ArrayAttributeValues<R, $ty_elem> {
@@ -108,6 +110,8 @@ macro_rules! impl_array_attr_values {
                 (0, Some(self.rest_elements as usize))
             }
         }
+
+        impl<R: io::Read> std::iter::FusedIterator for ArrayAttributeValues<R, $ty_elem> {}
     };
 }
 
@@ -121,8 +125,9 @@ impl_array_attr_values! { f64, read_f64 }
 pub(crate) struct BooleanArrayAttributeValues<R> {
     /// Decoded reader.
     reader: R,
-    /// Number of total elements.
-    total_elements: u32,
+    // `total_elements`: unused.
+    ///// Number of total elements.
+    //total_elements: u32,
     /// Number of rest elements.
     rest_elements: u32,
     /// Whether an error is happened.
@@ -136,7 +141,7 @@ impl<R: io::Read> BooleanArrayAttributeValues<R> {
     pub(crate) fn new(reader: R, total_elements: u32) -> Self {
         Self {
             reader,
-            total_elements,
+            //total_elements,
             rest_elements: total_elements,
             has_error: false,
             has_incorrect_boolean_value: false,
@@ -187,3 +192,5 @@ impl<R: io::Read> Iterator for BooleanArrayAttributeValues<R> {
         (0, Some(self.rest_elements as usize))
     }
 }
+
+impl<R: io::Read> std::iter::FusedIterator for BooleanArrayAttributeValues<R> {}

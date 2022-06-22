@@ -2,7 +2,7 @@
 
 use indextree::Arena;
 use log::{debug, error, trace};
-use string_interner::StringInterner;
+use string_interner::{DefaultBackend, StringInterner};
 
 use crate::{
     low::v7400::FbxFooter,
@@ -19,7 +19,7 @@ pub struct Loader {
     /// Tree data.
     arena: Arena<NodeData>,
     /// Node name interner.
-    node_names: StringInterner<NodeNameSym>,
+    node_names: StringInterner<DefaultBackend<NodeNameSym>>,
     /// (Implicit) root node ID.
     root_id: NodeId,
 }
@@ -40,9 +40,6 @@ impl Loader {
     ///
     /// If the tree is successfully read but FBX footer is not,
     /// `Ok(tree, Err(parser_error))` is returned.
-    ///
-    /// [`LoadError::BadParser`]: enum.LoadError.html#variant.BadParser
-    /// [`Parser::is_used()`]: ../../pull_parser/v7400/struct.Parser.html#method.is_used
     pub fn load<R: ParserSource>(
         mut self,
         parser: &mut Parser<R>,

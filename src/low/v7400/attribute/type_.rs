@@ -58,6 +58,7 @@ impl AttributeType {
 
     /// Returns the type code.
     #[cfg(feature = "writer")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
     pub(crate) fn type_code(self) -> u8 {
         match self {
             AttributeType::Bool => b'C',
@@ -81,7 +82,7 @@ impl FromReader for AttributeType {
     fn from_reader(reader: &mut impl io::Read) -> Result<Self, ParserError> {
         let type_code = u8::from_reader(reader)?;
         let attr_type = Self::from_type_code(type_code)
-            .ok_or_else(|| DataError::InvalidAttributeTypeCode(type_code))?;
+            .ok_or(DataError::InvalidAttributeTypeCode(type_code))?;
         Ok(attr_type)
     }
 }

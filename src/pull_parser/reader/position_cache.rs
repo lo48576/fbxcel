@@ -62,7 +62,7 @@ impl<R: io::Read> PositionCacheReader<R> {
     ///
     /// A seek beyond the end of a stream is allowed, but behavior is defined by
     /// the implementation.
-    /// See the document for [`std::io::Seek::seek()`][`std::io::Seek::seek`].
+    /// See the document for [`std::io::Seek::seek()`].
     ///
     /// # Examples
     ///
@@ -79,9 +79,6 @@ impl<R: io::Read> PositionCacheReader<R> {
     /// reader.skip_distance(7).expect("Failed to skip");
     /// assert_eq!(reader.position(), 7);
     /// ```
-    ///
-    /// [`std::io::Seek::seek`]:
-    /// https://doc.rust-lang.org/stable/std/io/trait.Seek.html#tymethod.seek
     pub fn skip_distance(&mut self, mut distance: u64) -> io::Result<()>
     where
         R: io::Seek,

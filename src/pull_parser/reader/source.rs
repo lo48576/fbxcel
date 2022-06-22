@@ -12,10 +12,6 @@ use crate::pull_parser::{reader::PositionCacheReader, ParserSource};
 ///
 /// This internally uses `PositionCacheReader`, so users don't need to wrap
 /// readers by `PositionCacheReader` manually.
-///
-/// [`std::io::Seek`]: https://doc.rust-lang.org/stable/std/io/trait.Seek.html
-/// [`PositionCacheReader`]: struct.PositionCacheReader.html
-/// [`SeekableSource`]: struct.SeekableSource.html
 #[derive(Debug, Clone, Copy)]
 pub struct PlainSource<R> {
     /// Inner reader.
@@ -93,9 +89,6 @@ impl<R: io::Read> ParserSource for PlainSource<R> {
 ///
 /// This internally uses [`PositionCacheReader`], so users don't need to wrap
 /// readers by [`PositionCacheReader`] manually.
-///
-/// [`PlainSource`]: struct.PlainSource.html
-/// [`PositionCacheReader`]: struct.PositionCacheReader.html
 #[derive(Debug, Clone, Copy)]
 pub struct SeekableSource<R> {
     /// Inner reader.

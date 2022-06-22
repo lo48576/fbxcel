@@ -2,6 +2,43 @@
 
 ## [Unreleased]
 
+## [0.8.0]
+
+* Bump minimum supported Rust version to 1.56.0.
+* Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
+  now have a name.
+* All iterator types now have `std::iter::FusedIterator` impl.
+* `tree::v7400::NodeHandle::first_child_by_name()` is added.
+* Now some items on docs.rs have pretty badges indicating the items is only
+  enabled with some features.
+    + This won't affect any builds by other users. `cargo doc --all-features`
+      and other commands should still run successfully with stable toolchain.
+* Bump internal dependencies.
+
+## Added
+* `tree::v7400::NodeHandle::first_child_by_name()` is added.
+    + `node.first_child_by_name(name)` returns the same result as
+      `node.children_by_name(name).next()`.
+
+## Fixed
+* Fixed incorrect attribute type value being written by the writer.
+
+## Breaking changes
+* Bump minimum supported Rust version to 1.56.0.
+
+## Non-breaking changes
+* Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
+  now have a name.
+    + `NodeHandle::children()` returns `Children<'_>`.
+    + `NodeHandle::children_by_name()` returns `ChildrenByName<'_>`.
+    + By this change, now these iterators can be included in other types as a field.
+* All iterator types defined by this crate now have `std::iter::FusedIterator` impl.
+
+## [0.7.0]
+
+* Bump minimum supported Rust version to 1.49.
+* Bump internal dependencies.
+
 ## [0.6.0]
 
 * Minimum supported Rust version is bumped to 1.40.0.
@@ -269,7 +306,10 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.6.0...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.0...develop>
+[0.8.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.0>
+[0.7.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.7.0>
+[0.6.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.6.1>
 [0.6.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.6.0>
 [0.5.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.5.0>
 [0.4.4]: <https://github.com/lo48576/fbxcel/releases/tag/v0.4.4>

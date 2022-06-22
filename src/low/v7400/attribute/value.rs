@@ -13,9 +13,7 @@ use crate::low::v7400::AttributeType;
 /// * `get_*_or_type()` returns `Result<_, AttributeType>`.
 ///     + If a value of the expected type available, returns `Ok(_)`.
 ///     + If not, returns `Ok(ty)` where `ty` is value type (same value as
-///       returned by [`type_()`][`type_`].
-///
-/// [`type_`]: #method.type_
+///       returned by [`type_`][`Self::type_()`] method.
 #[derive(Debug, Clone, PartialEq)]
 pub enum AttributeValue {
     /// Single `bool`.
@@ -46,6 +44,7 @@ pub enum AttributeValue {
     Binary(Vec<u8>),
 }
 
+/// Implement direct value getters.
 macro_rules! impl_val_getter {
     ($variant:ident, $ty_ret:ty, $opt_getter:ident, $opt_doc:expr, $res_getter:ident, $res_doc:expr,) => {
         #[doc = $opt_doc]
@@ -63,9 +62,10 @@ macro_rules! impl_val_getter {
                 _ => Err(self.type_()),
             }
         }
-    }
+    };
 }
 
+/// Implement value reference getters.
 macro_rules! impl_ref_getter {
     ($variant:ident, $ty_ret:ty, $opt_getter:ident, $opt_doc:expr, $res_getter:ident, $res_doc:expr,) => {
         #[doc = $opt_doc]
@@ -83,7 +83,7 @@ macro_rules! impl_ref_getter {
                 _ => Err(self.type_()),
             }
         }
-    }
+    };
 }
 
 impl AttributeValue {
@@ -254,6 +254,7 @@ impl AttributeValue {
     }
 }
 
+/// Implement `From` trait.
 macro_rules! impl_from {
     (direct: $ty:ty, $variant:ident) => {
         impl From<$ty> for AttributeValue {

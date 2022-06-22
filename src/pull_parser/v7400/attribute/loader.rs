@@ -16,10 +16,8 @@ use crate::pull_parser::{error::DataError, Result};
 /// attribute".
 /// Users should implement them manually for types they want to interpret.
 ///
-/// For simple types, [`pull_parser::v7400::attribute::loaders`] module contains
+/// For simple types, [`pull_parser::v7400::attribute::loaders`][`super::loaders`] module contains
 /// useful loaders.
-///
-/// [`pull_parser::v7400::attribute::loaders`]: loaders/index.html
 pub trait LoadAttribute: Sized + fmt::Debug {
     /// Result type on successful read.
     type Output;

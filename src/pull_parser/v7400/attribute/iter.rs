@@ -1,6 +1,7 @@
 //! Node attribute iterators.
 
 use std::io;
+use std::iter;
 
 use crate::pull_parser::{
     v7400::attribute::{loader::LoadAttribute, Attributes},
@@ -65,7 +66,7 @@ where
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
-    /// Creates a new `Iter`.
+    /// Creates a new iterator.
     pub(crate) fn new(attributes: &'a mut Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -83,12 +84,20 @@ where
     type Item = Result<V::Output>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        load_next(&mut self.attributes, &mut self.loaders)
+        load_next(self.attributes, &mut self.loaders)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        make_size_hint_for_attrs(&self.attributes, &self.loaders)
+        make_size_hint_for_attrs(self.attributes, &self.loaders)
     }
+}
+
+impl<'a, 'r, R, I, V> iter::FusedIterator for BorrowedIter<'a, 'r, R, I>
+where
+    R: ParserSource,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
 }
 
 /// Node attributes iterator with buffered I/O.
@@ -106,7 +115,7 @@ where
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
-    /// Creates a new `IterBuffered`.
+    /// Creates a new iterator.
     pub(crate) fn new(attributes: &'a mut Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -124,12 +133,20 @@ where
     type Item = Result<V::Output>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        load_next_buffered(&mut self.attributes, &mut self.loaders)
+        load_next_buffered(self.attributes, &mut self.loaders)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        make_size_hint_for_attrs(&self.attributes, &self.loaders)
+        make_size_hint_for_attrs(self.attributes, &self.loaders)
     }
+}
+
+impl<'a, 'r, R, I, V> iter::FusedIterator for BorrowedIterBuffered<'a, 'r, R, I>
+where
+    R: ParserSource + io::BufRead,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
 }
 
 /// Node attributes iterator.
@@ -173,6 +190,14 @@ where
     }
 }
 
+impl<'r, R, I, V> iter::FusedIterator for OwnedIter<'r, R, I>
+where
+    R: ParserSource,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
+}
+
 /// Node attributes iterator with buffered I/O.
 #[derive(Debug)]
 pub struct OwnedIterBuffered<'r, R, I> {
@@ -188,7 +213,7 @@ where
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
-    /// Creates a new `IterBuffered`.
+    /// Creates a new iterator.
     pub(crate) fn new(attributes: Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -212,4 +237,12 @@ where
     fn size_hint(&self) -> (usize, Option<usize>) {
         make_size_hint_for_attrs(&self.attributes, &self.loaders)
     }
+}
+
+impl<'r, R, I, V> iter::FusedIterator for OwnedIterBuffered<'r, R, I>
+where
+    R: ParserSource + io::BufRead,
+    I: Iterator<Item = V>,
+    V: LoadAttribute,
+{
 }

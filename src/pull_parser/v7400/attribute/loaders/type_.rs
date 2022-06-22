@@ -11,8 +11,6 @@ use crate::{
 ///
 /// This returns only node attribute type ([`AttributeType`]) and discands
 /// its real value.
-///
-/// [`AttributeType`]: ../../../../low/v7400/enum.AttributeType.html
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TypeLoader;
 

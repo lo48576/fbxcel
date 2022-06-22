@@ -22,7 +22,7 @@ fn tree_write_parse_idempotence_v7500() -> Result<(), Box<dyn std::error::Error>
             Node0_1: {},
         },
         Node1: [true] {
-            Node1_0: (vec![42i32.into(), 3.14f64.into()]) {}
+            Node1_0: (vec![42i32.into(), 1.234f64.into()]) {}
             Node1_1: [&[1u8, 2, 4, 8, 16][..], "Hello, world"] {}
         },
     };

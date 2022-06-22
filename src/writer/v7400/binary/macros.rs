@@ -29,12 +29,13 @@
 ///         // `IntoIterator<Item = AttributeValue>`.
 ///         Node2: (vec!["hello".into(), "world".into(), 42i32.into()]) {}
 ///         // Use brackets to specify attributes one by one.
-///         Node3: ["hello", "world", 3.14f32, &b"BINARY"[..]] {}
+///         Node3: ["hello", "world", 1.234f32, &b"BINARY"[..]] {}
 ///     },
 /// )?;
 /// let _buf = writer.finalize_and_flush(&Default::default())?;
 /// # Ok::<_, Box<dyn std::error::Error>>(())
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
 #[macro_export]
 macro_rules! write_v7400_binary {
     (
@@ -181,7 +182,7 @@ mod tests {
             tree={
                 Hello: {
                     Hello1: (vec!["string".into()]) {},
-                    Hello2: [3.14f32, 42i64] {}
+                    Hello2: [1.234f32, 42i64] {}
                 }
                 World: {
                     World1: {

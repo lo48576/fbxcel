@@ -28,9 +28,10 @@
 ///     // `IntoIterator<Item = AttributeValue>`.
 ///     Node2: (vec!["hello".into(), "world".into(), 42i32.into()]) {}
 ///     // Use brackets to specify attributes one by one.
-///     Node3: ["hello", "world", 3.14f32, &b"BINARY"[..]] {}
+///     Node3: ["hello", "world", 1.234f32, &b"BINARY"[..]] {}
 /// };
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "tree")))]
 #[macro_export]
 macro_rules! tree_v7400 {
     (@__node, $tree:ident, $parent:ident,) => {};
@@ -131,7 +132,7 @@ mod tests {
         let _ = tree_v7400! {
             Hello: {
                 Hello1: (vec!["string".into()]) {},
-                Hello2: [3.14f32, 42i64] {}
+                Hello2: [1.234f32, 42i64] {}
             }
             World: {
                 World1: {
@@ -156,7 +157,7 @@ mod tests {
                         Node1_2_child: {},
                     },
                 },
-                Node2: [true, 42i16, 42i32, 42i64, 1.414f32, 3.14f64] {
+                Node2: [true, 42i16, 42i32, 42i64, 1.414f32, 1.234f64] {
                     Node2_0: (vec![vec![true, false].into(), vec![0i32, 42i32].into()]) {},
                     Node2_1: [
                         vec![std::f32::NAN, std::f32::INFINITY],
@@ -188,7 +189,7 @@ mod tests {
             tree.append_attribute(node1_id, true);
             let node1_0_id = tree.append_new(node1_id, "Node1_0");
             tree.append_attribute(node1_0_id, 42i32);
-            tree.append_attribute(node1_0_id, 3.14f64);
+            tree.append_attribute(node1_0_id, 1.234f64);
             let node1_1_id = tree.append_new(node1_id, "Node1_1");
             tree.append_attribute(node1_1_id, &[1u8, 2, 4, 8, 16] as &[_]);
             tree.append_attribute(node1_1_id, "Hello, world");
@@ -202,7 +203,7 @@ mod tests {
                 Node0_1: {},
             },
             Node1: [true] {
-                Node1_0: (vec![42i32.into(), 3.14f64.into()]) {}
+                Node1_0: (vec![42i32.into(), 1.234f64.into()]) {}
                 Node1_1: [&[1u8, 2, 4, 8, 16][..], "Hello, world"] {}
             },
         };

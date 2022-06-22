@@ -8,8 +8,6 @@ use crate::{
 };
 
 /// Loader for [`AttributeValue`].
-///
-/// [`AttributeValue`]: ../../../../low/v7400/enum.AttributeValue.html
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DirectLoader;
 

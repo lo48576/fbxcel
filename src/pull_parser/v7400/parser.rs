@@ -21,8 +21,6 @@ type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;
 /// Creates a new [`Parser`] from the given reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
-///
-/// [`Parser`]: struct.Parser.html
 pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<PlainSource<R>>>
 where
     R: io::Read,
@@ -36,8 +34,6 @@ where
 /// Creates a new [`Parser`] from the given seekable reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
-///
-/// [`Parser`]: struct.Parser.html
 pub fn from_seekable_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<SeekableSource<R>>>
 where
     R: io::Read + io::Seek,
@@ -107,7 +103,7 @@ impl<R: ParserSource> Parser<R> {
     /// });
     /// ```
     ///
-    /// [syntactic position]: ../struct.SyntacticPosition.html
+    /// [syntactic position]: `SyntacticPosition`
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
         F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
@@ -187,9 +183,6 @@ impl<R: ParserSource> Parser<R> {
     /// already failed and returned error.
     /// If you call `next_event()` with failed parser, error created from
     /// [`OperationError::AlreadyAborted`] will be returned.
-    ///
-    /// [`OperationError::AlreadyAborted`]:
-    /// ../error/enum.OperationError.html#variant.AlreadyAborted
     pub fn next_event(&mut self) -> Result<Event<'_, R>> {
         let previous_depth = self.current_depth();
 
@@ -293,19 +286,14 @@ impl<R: ParserSource> Parser<R> {
                 let has_children = self.state.last_event_kind() == Some(EventKind::EndNode);
                 let has_attributes = current_node.attributes_count != 0;
 
-                if !has_children && has_attributes {
-                    // Ok, the current node implicitly ends here without node
-                    // end marker.
-                    self.state.started_nodes.pop();
-                    return Ok(EventKind::EndNode);
-                } else {
+                if has_children || !has_attributes {
                     // It's odd, the current node should have a node end marker
                     // at the ending, but `node_end_offset` data tells that the
                     // node ends without node end marker.
                     self.warn(Warning::MissingNodeEndMarker, self.position())?;
-                    self.state.started_nodes.pop();
-                    return Ok(EventKind::EndNode);
                 }
+                self.state.started_nodes.pop();
+                return Ok(EventKind::EndNode);
             }
         }
 
@@ -411,12 +399,12 @@ impl<R: ParserSource> Parser<R> {
     /// Because of this, some errors can be overlooked, or detected at the
     /// different position from the true error position.
     ///
-    /// To detect errors correctly, you should use [`next_event`] manually.
+    /// To detect errors correctly, you should use [`next_event`][`Self::next_event`] manually.
     /// See an example to how to do this.
     ///
     /// # Panics
     ///
-    /// Panics if there are no open nodes, i.e. when [`current_depth()`][`current_depth`]
+    /// Panics if there are no open nodes, i.e. when [`current_depth()`][`Self::current_depth`]
     /// returns 0.
     ///
     /// # Examples
@@ -452,9 +440,7 @@ impl<R: ParserSource> Parser<R> {
     /// }
     /// ```
     ///
-    /// [`next_event`]: #method.next_event
-    /// [`current_depth`]: #method.current_depth
-    /// [`EndNode`]: enum.Event.html#variant.EndNode
+    /// [`EndNode`]: `Event::EndNode`
     pub fn skip_current_node(&mut self) -> Result<()> {
         let end_pos = self
             .state

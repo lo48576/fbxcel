@@ -27,8 +27,8 @@ pub enum AnyTree {
 impl AnyTree {
     /// Loads a tree from the given reader.
     ///
-    /// This works for seekable readers (which implement `std::io::Seek`), but
-    /// `from_seekable_reader` should be used for them, because it is more
+    /// This works for seekable readers (which implement [`std::io::Seek`]), but
+    /// [`from_seekable_reader`][`Self::from_seekable_reader`] should be used for them, because it is more
     /// efficent.
     pub fn from_reader(reader: impl Read) -> Result<Self> {
         match pull_parser::any::from_reader(reader)? {

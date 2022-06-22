@@ -3,7 +3,7 @@
 use std::fmt;
 
 use indextree::Arena;
-use string_interner::StringInterner;
+use string_interner::{DefaultBackend, StringInterner};
 
 use crate::low::v7400::AttributeValue;
 
@@ -11,7 +11,10 @@ use self::node::{NodeData, NodeNameSym};
 pub use self::{
     error::LoadError,
     loader::Loader,
-    node::{handle::NodeHandle, NodeId},
+    node::{
+        handle::{Children, ChildrenByName, NodeHandle},
+        NodeId,
+    },
 };
 
 mod macros;
@@ -26,7 +29,7 @@ pub struct Tree {
     /// Tree data.
     arena: Arena<NodeData>,
     /// Node name interner.
-    node_names: StringInterner<NodeNameSym>,
+    node_names: StringInterner<DefaultBackend<NodeNameSym>>,
     /// (Implicit) root node ID.
     root_id: NodeId,
 }
@@ -34,13 +37,13 @@ pub struct Tree {
 impl Tree {
     /// Returns the root node.
     pub fn root(&self) -> NodeHandle<'_> {
-        NodeHandle::new(&self, self.root_id)
+        NodeHandle::new(self, self.root_id)
     }
 
     /// Creates a new `Tree`.
     fn new(
         arena: Arena<NodeData>,
-        node_names: StringInterner<NodeNameSym>,
+        node_names: StringInterner<DefaultBackend<NodeNameSym>>,
         root_id: NodeId,
     ) -> Self {
         Self {
@@ -53,6 +56,7 @@ impl Tree {
     /// Returns internally managed node data.
     ///
     /// # Panics
+    ///
     /// Panics if a node with the given node ID does not exist in the tree.
     pub(crate) fn node(&self, node_id: NodeId) -> &indextree::Node<NodeData> {
         self.arena.get(node_id.raw()).unwrap_or_else(|| {
@@ -173,7 +177,7 @@ impl Tree {
     /// Pretty-print the tree for debugging purpose.
     ///
     /// Be careful, this output format may change in future.
-    pub fn debug_tree<'a>(&'a self) -> impl fmt::Debug + 'a {
+    pub fn debug_tree(&self) -> impl fmt::Debug + '_ {
         DebugTree { tree: self }
     }
 }

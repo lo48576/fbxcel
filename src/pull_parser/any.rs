@@ -50,9 +50,6 @@ fn parser_version(header: FbxHeader) -> Result<ParserVersion> {
 /// This works for seekable readers (which implement [`std::io::Seek`]), but
 /// [`from_seekable_reader`] should be used for them, because it is more
 /// efficent.
-///
-/// [`std::io::Seek`]: https://doc.rust-lang.org/stable/std/io/trait.Seek.html
-/// [`from_seekable_reader`]: fn.from_seekable_reader.html
 pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<PlainSource<R>>> {
     let header = FbxHeader::load(&mut reader)?;
     match parser_version(header)? {

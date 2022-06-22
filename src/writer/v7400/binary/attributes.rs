@@ -72,6 +72,7 @@ pub struct AttributesWriter<'a, W: Write> {
     writer: &'a mut Writer<W>,
 }
 
+/// Implement `append_*` methods for single value.
 macro_rules! impl_single_attr_append {
     ($(
         $(#[$meta:meta])*
@@ -89,6 +90,7 @@ macro_rules! impl_single_attr_append {
     }
 }
 
+/// Implement `append_*` methods for array values.
 macro_rules! impl_arr_from_iter {
     ($(
         $(#[$meta:meta])*
@@ -155,10 +157,13 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             .writer
             .current_node_header()
             .expect("Should never fail: some nodes must be open if `AttributesWriter` exists");
-        node_header.num_attributes = node_header
-            .num_attributes
-            .checked_add(1)
-            .ok_or_else(|| Error::TooManyAttributes(node_header.num_attributes as usize))?;
+        node_header.num_attributes =
+            node_header
+                .num_attributes
+                .checked_add(1)
+                .ok_or(Error::TooManyAttributes(
+                    node_header.num_attributes as usize,
+                ))?;
 
         Ok(())
     }
@@ -193,7 +198,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
 
         // Write attribute header.
         self.write_type_code(ty)?;
-        let header_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let header_pos = self.writer.sink().stream_position()?;
 
         // Write array header placeholder.
         self.write_array_header(&ArrayAttributeHeader {
@@ -210,7 +215,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
     /// Note that this should be called at the end of the array attribute.
     fn finalize_array(&mut self, header_pos: u64, header: &ArrayAttributeHeader) -> Result<()> {
         // Write real array header.
-        let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let end_pos = self.writer.sink().stream_position()?;
         self.writer.sink().seek(SeekFrom::Start(header_pos))?;
         self.write_array_header(header)?;
         self.writer.sink().seek(SeekFrom::Start(end_pos))?;
@@ -240,13 +245,13 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         /// Writes an `f32` array attribute.
         append_arr_f32_from_iter: f32 {
             from_result_iter: append_arr_f32_from_result_iter,
-            tyval: ArrI32,
+            tyval: ArrF32,
         },
 
         /// Writes an `f64` array attribute.
         append_arr_f64_from_iter: f64 {
             from_result_iter: append_arr_f64_from_result_iter,
-            tyval: ArrI64,
+            tyval: ArrF64,
         },
     }
 
@@ -259,7 +264,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         self.write_type_code(ty)?;
 
         // Write special attribute header (dummy).
-        let header_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let header_pos = self.writer.sink().stream_position()?;
         self.writer.sink().write_all(&0u32.to_le_bytes())?;
 
         Ok(header_pos)
@@ -273,7 +278,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         let bytelen = u32::try_from(bytelen).map_err(|_| Error::AttributeTooLong(bytelen))?;
 
         // Write real special attribute header.
-        let end_pos = self.writer.sink().seek(SeekFrom::Current(0))?;
+        let end_pos = self.writer.sink().stream_position()?;
         self.writer.sink().seek(SeekFrom::Start(header_pos))?;
         self.writer.sink().write_all(&bytelen.to_le_bytes())?;
         self.writer.sink().seek(SeekFrom::Start(end_pos))?;
@@ -324,7 +329,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(&[v])?;
             len = len
                 .checked_add(1)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;
@@ -350,7 +355,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(&[v])?;
             len = len
                 .checked_add(1)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;
@@ -371,7 +376,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(buf)?;
             len = len
                 .checked_add(char_len)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;
@@ -399,7 +404,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
             self.writer.sink().write_all(buf)?;
             len = len
                 .checked_add(char_len)
-                .ok_or_else(|| Error::AttributeTooLong(std::usize::MAX))?;
+                .ok_or(Error::AttributeTooLong(std::usize::MAX))?;
 
             Ok(())
         })?;
