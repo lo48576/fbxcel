@@ -245,13 +245,13 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
         /// Writes an `f32` array attribute.
         append_arr_f32_from_iter: f32 {
             from_result_iter: append_arr_f32_from_result_iter,
-            tyval: ArrI32,
+            tyval: ArrF32,
         },
 
         /// Writes an `f64` array attribute.
         append_arr_f64_from_iter: f64 {
             from_result_iter: append_arr_f64_from_result_iter,
-            tyval: ArrI64,
+            tyval: ArrF64,
         },
     }
 
