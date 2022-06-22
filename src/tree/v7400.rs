@@ -3,7 +3,7 @@
 use std::fmt;
 
 use indextree::Arena;
-use string_interner::StringInterner;
+use string_interner::{DefaultBackend, StringInterner};
 
 use crate::low::v7400::AttributeValue;
 
@@ -29,7 +29,7 @@ pub struct Tree {
     /// Tree data.
     arena: Arena<NodeData>,
     /// Node name interner.
-    node_names: StringInterner<NodeNameSym>,
+    node_names: StringInterner<DefaultBackend<NodeNameSym>>,
     /// (Implicit) root node ID.
     root_id: NodeId,
 }
@@ -43,7 +43,7 @@ impl Tree {
     /// Creates a new `Tree`.
     fn new(
         arena: Arena<NodeData>,
-        node_names: StringInterner<NodeNameSym>,
+        node_names: StringInterner<DefaultBackend<NodeNameSym>>,
         root_id: NodeId,
     ) -> Self {
         Self {
