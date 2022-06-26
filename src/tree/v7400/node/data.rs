@@ -30,6 +30,18 @@ impl NodeData {
         self.attributes.push(v)
     }
 
+    /// Appends the given value to the attributes.
+    #[inline]
+    pub(crate) fn get_attribute_mut(&mut self, i: usize) -> Option<&mut AttributeValue> {
+        self.attributes.get_mut(i)
+    }
+
+    /// Replaces all attributes by the given one, and returns the old.
+    #[inline]
+    pub(crate) fn replace_attributes(&mut self, new: Vec<AttributeValue>) -> Vec<AttributeValue> {
+        std::mem::replace(&mut self.attributes, new)
+    }
+
     /// Creates a new `NodeData`.
     pub(crate) fn new(name_sym: NodeNameSym, attributes: Vec<AttributeValue>) -> Self {
         Self {

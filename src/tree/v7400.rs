@@ -162,6 +162,41 @@ impl Tree {
         node.get_mut().append_attribute(v)
     }
 
+    /// Returns a mutable reference to the node attribute at the given index.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given node ID is invalid (i.e. not used or root node).
+    pub fn get_attribute_mut(&mut self, node_id: NodeId, i: usize) -> Option<&mut AttributeValue> {
+        let node = self.arena.get_mut(node_id.raw()).expect("Invalid node ID");
+        node.get_mut().get_attribute_mut(i)
+    }
+
+    /// Takes all attributes as a `Vec`.
+    ///
+    /// After calling this, the node will have no attributes (until other values are set).
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given node ID is invalid (i.e. not used or root node).
+    pub fn take_attributes_vec(&mut self, node_id: NodeId) -> Vec<AttributeValue> {
+        let node = self.arena.get_mut(node_id.raw()).expect("Invalid node ID");
+        node.get_mut().replace_attributes(Default::default())
+    }
+
+    /// Sets the given `Vec` of attribute values as the node attributes.
+    ///
+    /// After calling this, the node will have only the given attributes.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given node ID is invalid (i.e. not used or root node).
+    pub fn set_attributes_vec(&mut self, node_id: NodeId, new: Vec<AttributeValue>) {
+        let node = self.arena.get_mut(node_id.raw()).expect("Invalid node ID");
+        // Ignore the returned value.
+        node.get_mut().replace_attributes(new);
+    }
+
     /// Compares trees strictly.
     ///
     /// Returns `true` if the two trees are same.
