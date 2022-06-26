@@ -245,3 +245,111 @@ impl fmt::Debug for DebugNodeHandleChildren<'_> {
             .finish()
     }
 }
+
+/// Event of depth-first traversal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DepthFirstTraversed {
+    /// Opening of a node.
+    Open(NodeId),
+    /// Closing of a node.
+    Close(NodeId),
+}
+
+impl DepthFirstTraversed {
+    /// Returns the node ID.
+    #[inline]
+    #[must_use]
+    pub fn node_id(self) -> NodeId {
+        match self {
+            Self::Open(id) => id,
+            Self::Close(id) => id,
+        }
+    }
+
+    /// Returns true if the event is node open.
+    #[inline]
+    #[must_use]
+    pub fn is_open(self) -> bool {
+        matches!(self, Self::Open(_))
+    }
+
+    /// Returns true if the event is node close.
+    #[inline]
+    #[must_use]
+    pub fn is_close(self) -> bool {
+        matches!(self, Self::Close(_))
+    }
+
+    /// Returns the opened node ID.
+    #[inline]
+    #[must_use]
+    pub fn node_id_open(self) -> Option<NodeId> {
+        match self {
+            Self::Open(id) => Some(id),
+            Self::Close(_) => None,
+        }
+    }
+
+    /// Returns the closed node ID.
+    #[inline]
+    #[must_use]
+    pub fn node_id_close(self) -> Option<NodeId> {
+        match self {
+            Self::Open(_) => None,
+            Self::Close(id) => Some(id),
+        }
+    }
+
+    /// Returns next (forward) event.
+    ///
+    /// Returns `None` for `Close(root_id)`.
+    #[must_use]
+    pub fn next(self, tree: &Tree) -> Option<Self> {
+        let next = match self {
+            Self::Open(current) => {
+                // Dive into the first child if available, or otherwise leave the node.
+                match current.to_handle(tree).first_child() {
+                    Some(child) => Self::Open(child.node_id()),
+                    None => Self::Close(current),
+                }
+            }
+            Self::Close(current) => {
+                // Dive into the next sibling if available, or leave the parent.
+                let node = current.to_handle(tree);
+                match node.next_sibling() {
+                    Some(next_sib) => Self::Open(next_sib.node_id()),
+                    None => Self::Close(node.parent()?.node_id()),
+                }
+            }
+        };
+        Some(next)
+    }
+
+    /// Returns previous (backward next) event.
+    ///
+    /// Note that this backward traversal returns `Clone` first, and `Open`
+    /// later for every node.
+    ///
+    /// Returns `None` for `Open(root_id)`.
+    #[must_use]
+    pub fn prev(self, tree: &Tree) -> Option<Self> {
+        let prev = match self {
+            Self::Close(current) => {
+                // Dive into the last child if available, or otherwise leave the node.
+                match current.to_handle(tree).last_child() {
+                    Some(child) => Self::Close(child.node_id()),
+                    None => Self::Open(current),
+                }
+            }
+            Self::Open(current) => {
+                // Dive into the previous sibling if available, or leave the parent.
+                let node = current.to_handle(tree);
+                match node.previous_sibling() {
+                    Some(prev_sib) => Self::Close(prev_sib.node_id()),
+                    None => Self::Open(node.parent()?.node_id()),
+                }
+            }
+        };
+        Some(prev)
+    }
+}
