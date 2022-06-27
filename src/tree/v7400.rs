@@ -436,7 +436,6 @@ impl DepthFirstTraverseSubtree {
 
     /// Returns the forward next traversal event and advances the forward cursor.
     #[inline]
-    #[must_use]
     pub fn next_forward(&mut self, tree: &Tree) -> Option<DepthFirstTraversed> {
         let (forward, backward) = self.cursors?;
         if forward == backward {
@@ -452,7 +451,6 @@ impl DepthFirstTraverseSubtree {
 
     /// Returns the backward next traversal event and advances the backward cursor.
     #[inline]
-    #[must_use]
     pub fn next_backward(&mut self, tree: &Tree) -> Option<DepthFirstTraversed> {
         let (forward, backward) = self.cursors?;
         if forward == backward {
@@ -483,7 +481,6 @@ impl DepthFirstTraverseSubtree {
     /// Returns the forward next `Open` traversal event and advances the forward cursor.
     ///
     /// This makes it easy to forward-traverse the subtree in preorder.
-    #[must_use]
     pub fn next_open_forward(&mut self, tree: &Tree) -> Option<NodeId> {
         loop {
             let next = self.next_forward(tree)?;
@@ -496,7 +493,6 @@ impl DepthFirstTraverseSubtree {
     /// Returns the forward next `Close` traversal event and advances the forward cursor.
     ///
     /// This makes it easy to forward-traverse the subtree in postorder.
-    #[must_use]
     pub fn next_close_forward(&mut self, tree: &Tree) -> Option<NodeId> {
         loop {
             let next = self.next_forward(tree)?;
