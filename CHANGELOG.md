@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+* Add a type and methods to traverse nodes in depth-first order.
+* Add methods to `Tree` to modify node attributes (not only appending).
+
+### Added
+* Add a type and methods to traverse nodes in depth-first order.
+    + `tree::v7400::DepthFirstTraversed` type is added.
+* Add methods to `Tree` to modify node attributes (not only appending).
+    + `tree::v7400::Tree` has now three new methods: `get_attribute_mut()`,
+      `take_attributes_vec()`, and `set_attributes_vec()`.
+
 ## [0.8.0]
 
 * Bump minimum supported Rust version to 1.56.0.
