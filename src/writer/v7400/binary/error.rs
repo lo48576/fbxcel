@@ -68,12 +68,14 @@ impl fmt::Display for Error {
 }
 
 impl From<io::Error> for Error {
+    #[inline]
     fn from(e: io::Error) -> Self {
         Error::Io(e)
     }
 }
 
 impl From<CompressionError> for Error {
+    #[inline]
     fn from(e: CompressionError) -> Self {
         Error::Compression(e)
     }
@@ -87,6 +89,7 @@ pub enum CompressionError {
 }
 
 impl error::Error for CompressionError {
+    #[inline]
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             CompressionError::Zlib(e) => Some(e),
@@ -95,6 +98,7 @@ impl error::Error for CompressionError {
 }
 
 impl fmt::Display for CompressionError {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CompressionError::Zlib(e) => write!(f, "Zlib compression error: {}", e),

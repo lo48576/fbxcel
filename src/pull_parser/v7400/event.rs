@@ -31,16 +31,22 @@ pub struct StartNode<'a, R> {
 
 impl<'a, R: 'a + ParserSource> StartNode<'a, R> {
     /// Creates a new `StartNode`.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(parser: &'a mut Parser<R>) -> Self {
         Self { parser }
     }
 
     /// Returns the node name.
+    #[inline]
+    #[must_use]
     pub fn name(&self) -> &str {
         self.parser.current_node_name()
     }
 
     /// Returns node attributes reader.
+    #[inline]
+    #[must_use]
     pub fn attributes(self) -> Attributes<'a, R> {
         Attributes::from_parser(self.parser)
     }

@@ -48,6 +48,8 @@ pub enum AttributeValue {
 macro_rules! impl_val_getter {
     ($variant:ident, $ty_ret:ty, $opt_getter:ident, $opt_doc:expr, $res_getter:ident, $res_doc:expr,) => {
         #[doc = $opt_doc]
+        #[inline]
+        #[must_use]
         pub fn $opt_getter(&self) -> Option<$ty_ret> {
             match self {
                 AttributeValue::$variant(v) => Some(*v),
@@ -69,6 +71,8 @@ macro_rules! impl_val_getter {
 macro_rules! impl_ref_getter {
     ($variant:ident, $ty_ret:ty, $opt_getter:ident, $opt_doc:expr, $res_getter:ident, $res_doc:expr,) => {
         #[doc = $opt_doc]
+        #[inline]
+        #[must_use]
         pub fn $opt_getter(&self) -> Option<&$ty_ret> {
             match self {
                 AttributeValue::$variant(v) => Some(v),
@@ -88,6 +92,7 @@ macro_rules! impl_ref_getter {
 
 impl AttributeValue {
     /// Returns the value type.
+    #[must_use]
     pub fn type_(&self) -> AttributeType {
         match self {
             AttributeValue::Bool(_) => AttributeType::Bool,
@@ -258,6 +263,7 @@ impl AttributeValue {
 macro_rules! impl_from {
     (direct: $ty:ty, $variant:ident) => {
         impl From<$ty> for AttributeValue {
+            #[inline]
             fn from(v: $ty) -> Self {
                 AttributeValue::$variant(v.into())
             }
@@ -265,6 +271,7 @@ macro_rules! impl_from {
     };
     (map: $ty:ty, $variant:ident, $arg:ident, $v:expr) => {
         impl From<$ty> for AttributeValue {
+            #[inline]
             fn from($arg: $ty) -> Self {
                 AttributeValue::$variant($v)
             }

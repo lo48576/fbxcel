@@ -13,6 +13,7 @@ pub(crate) trait FromReader: Sized {
 }
 
 impl FromReader for u8 {
+    #[inline]
     fn from_reader(reader: &mut impl io::Read) -> Result<Self> {
         Ok(reader.read_u8()?)
     }
@@ -22,6 +23,7 @@ impl FromReader for u8 {
 macro_rules! impl_from_reader_for_primitives {
     ($ty:ty, $read_method:ident) => {
         impl FromReader for $ty {
+            #[inline]
             fn from_reader(reader: &mut impl io::Read) -> Result<Self> {
                 Ok(reader.$read_method::<LittleEndian>()?)
             }
@@ -45,6 +47,7 @@ pub(crate) trait FromParser: Sized {
 }
 
 impl<T: FromReader> FromParser for T {
+    #[inline]
     fn read_from_parser<R: ParserSource>(parser: &mut Parser<R>) -> Result<Self> {
         FromReader::from_reader(parser.reader())
     }

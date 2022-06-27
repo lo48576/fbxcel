@@ -21,6 +21,8 @@ pub struct PositionCacheReader<R> {
 
 impl<R: io::Read> PositionCacheReader<R> {
     /// Creates a new `PositionCacheReader`.
+    #[inline]
+    #[must_use]
     pub fn new(inner: R) -> Self {
         Self { inner, position: 0 }
     }
@@ -41,6 +43,8 @@ impl<R: io::Read> PositionCacheReader<R> {
     ///     .expect("Should never fail");
     /// assert_eq!(reader.position(), len + 42);
     /// ```
+    #[inline]
+    #[must_use]
     pub fn with_offset(inner: R, offset: usize) -> Self {
         Self {
             inner,
@@ -49,11 +53,15 @@ impl<R: io::Read> PositionCacheReader<R> {
     }
 
     /// Unwraps the wrapper and returns the inner reader.
+    #[inline]
+    #[must_use]
     pub fn into_inner(self) -> R {
         self.inner
     }
 
     /// Returns the current position.
+    #[inline]
+    #[must_use]
     pub fn position(&self) -> usize {
         self.position
     }
@@ -108,10 +116,12 @@ impl<R: io::Read> io::Read for PositionCacheReader<R> {
 }
 
 impl<R: io::BufRead> io::BufRead for PositionCacheReader<R> {
+    #[inline]
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
         self.inner.fill_buf()
     }
 
+    #[inline]
     fn consume(&mut self, amt: usize) {
         self.inner.consume(amt);
         self.advance(amt);
@@ -119,6 +129,7 @@ impl<R: io::BufRead> io::BufRead for PositionCacheReader<R> {
 }
 
 impl<R: io::Read> ParserSource for PositionCacheReader<R> {
+    #[inline]
     fn position(&self) -> u64 {
         self.position() as u64
     }

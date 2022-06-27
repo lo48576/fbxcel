@@ -40,18 +40,21 @@ impl fmt::Display for Error {
 }
 
 impl From<pull_parser::any::Error> for Error {
+    #[inline]
     fn from(e: pull_parser::any::Error) -> Self {
         Error::ParserCreation(e)
     }
 }
 
 impl From<pull_parser::Error> for Error {
+    #[inline]
     fn from(e: pull_parser::Error) -> Self {
         Error::Parser(e)
     }
 }
 
 impl From<tree::v7400::LoadError> for Error {
+    #[inline]
     fn from(e: tree::v7400::LoadError) -> Self {
         Error::Tree(e.into())
     }

@@ -26,6 +26,8 @@ pub struct Loader {
 
 impl Loader {
     /// Creates a new `Loader`.
+    #[inline]
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }

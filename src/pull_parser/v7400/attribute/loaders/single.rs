@@ -20,6 +20,7 @@ macro_rules! impl_load_attribute_for_primitives {
                 $expecting_type.into()
             }
 
+            #[inline]
             fn $method_name(self, v: $ty) -> Result<Self::Output> {
                 Ok(v)
             }
@@ -50,6 +51,7 @@ macro_rules! impl_load_attribute_for_arrays {
                 $expecting_type.into()
             }
 
+            #[inline]
             fn $method_name(
                 self,
                 iter: impl Iterator<Item = Result<$ty>>,
@@ -78,6 +80,7 @@ impl LoadAttribute for BinaryLoader {
         "binary".into()
     }
 
+    #[inline]
     fn load_binary(self, mut reader: impl io::Read, len: u64) -> Result<Self::Output> {
         let mut buf = Vec::with_capacity(len as usize);
         reader.read_to_end(&mut buf)?;
@@ -96,6 +99,7 @@ impl LoadAttribute for StringLoader {
         "string".into()
     }
 
+    #[inline]
     fn load_string(self, mut reader: impl io::Read, len: u64) -> Result<Self::Output> {
         let mut buf = String::with_capacity(len as usize);
         reader.read_to_string(&mut buf)?;
