@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.8.1]
+
 * Add types and methods to traverse nodes in depth-first order.
 * Add methods to `Tree` to modify node attributes (not only appending).
 * Make many (but not all) small methods `#[inline]`.
@@ -323,7 +325,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.0...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.1...develop>
+[0.8.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.1>
 [0.8.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.0>
 [0.7.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.7.0>
 [0.6.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.6.1>
