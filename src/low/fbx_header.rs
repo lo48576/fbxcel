@@ -80,7 +80,7 @@ impl FbxHeader {
     }
 
     /// Returns header length in bytes.
-    pub(crate) fn len(self) -> usize {
+    pub(crate) const fn len(self) -> usize {
         /// FBX version length.
         const VERSION_LEN: usize = 4;
 
