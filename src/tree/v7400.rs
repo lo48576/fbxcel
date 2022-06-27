@@ -502,7 +502,7 @@ impl DepthFirstTraverseSubtree {
         }
     }
 
-    /// Returns the backward next `Open` traversal event and advances the forward cursor.
+    /// Returns the backward next `Open` traversal event and advances the backward cursor.
     ///
     /// This makes it easy to backward-traverse the subtree in postorder.
     #[must_use]
@@ -515,7 +515,7 @@ impl DepthFirstTraverseSubtree {
         }
     }
 
-    /// Returns the backward next `Close` traversal event and advances the forward cursor.
+    /// Returns the backward next `Close` traversal event and advances the backward cursor.
     ///
     /// This makes it easy to backward-traverse the subtree in preorder.
     #[must_use]
