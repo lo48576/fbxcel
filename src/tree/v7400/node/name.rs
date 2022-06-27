@@ -14,10 +14,12 @@ impl Symbol for NodeNameSym {
     /// As of writing this, string-interner 0.7.0 panics if the given value is
     /// greater than `u32::max_value() - 1`.
     /// See [`string_interner::Sym`] for detail.
+    #[inline]
     fn try_from_usize(v: usize) -> Option<Self> {
         SymbolU32::try_from_usize(v).map(Self)
     }
 
+    #[inline]
     fn to_usize(self) -> usize {
         self.0.to_usize()
     }

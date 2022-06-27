@@ -24,6 +24,8 @@ pub enum AnyParser<R> {
 
 impl<R: ParserSource> AnyParser<R> {
     /// Returns the parser version.
+    #[inline]
+    #[must_use]
     pub fn parser_version(&self) -> ParserVersion {
         match self {
             AnyParser::V7400(_) => pull_parser::v7400::Parser::<R>::PARSER_VERSION,
@@ -31,6 +33,8 @@ impl<R: ParserSource> AnyParser<R> {
     }
 
     /// Returns the FBX version.
+    #[inline]
+    #[must_use]
     pub fn fbx_version(&self) -> FbxVersion {
         match self {
             AnyParser::V7400(parser) => parser.fbx_version(),

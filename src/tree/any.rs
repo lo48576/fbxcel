@@ -62,6 +62,8 @@ impl AnyTree {
     }
 
     /// Returns the FBX version of the document the tree came from.
+    #[inline]
+    #[must_use]
     pub fn fbx_version(&self) -> FbxVersion {
         match self {
             Self::V7400(ver, _, _) => *ver,

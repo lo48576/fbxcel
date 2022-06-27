@@ -17,6 +17,7 @@ pub enum ParserVersion {
 
 impl ParserVersion {
     /// Returns the parser version corresponding to the given FBX version.
+    #[must_use]
     pub fn from_fbx_version(fbx_version: FbxVersion) -> Option<Self> {
         let raw = fbx_version.raw();
         match raw {

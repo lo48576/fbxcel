@@ -20,6 +20,8 @@ pub(crate) struct NodeHeader {
 
 impl NodeHeader {
     /// Checks whether the entry indicates end of a node.
+    #[inline]
+    #[must_use]
     pub(crate) fn is_node_end(&self) -> bool {
         self.end_offset == 0
             && self.num_attributes == 0
@@ -30,6 +32,8 @@ impl NodeHeader {
     /// Returns node end marker.
     #[cfg(feature = "writer")]
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
+    #[inline]
+    #[must_use]
     pub(crate) fn node_end() -> Self {
         Self {
             end_offset: 0,

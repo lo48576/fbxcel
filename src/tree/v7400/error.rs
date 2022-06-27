@@ -26,6 +26,7 @@ impl fmt::Display for LoadError {
 }
 
 impl error::Error for LoadError {
+    #[inline]
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             LoadError::Parser(e) => Some(e),
@@ -35,6 +36,7 @@ impl error::Error for LoadError {
 }
 
 impl From<ParserError> for LoadError {
+    #[inline]
     fn from(e: ParserError) -> Self {
         LoadError::Parser(e)
     }

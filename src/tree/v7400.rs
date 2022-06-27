@@ -36,11 +36,15 @@ pub struct Tree {
 
 impl Tree {
     /// Returns the root node.
+    #[inline]
+    #[must_use]
     pub fn root(&self) -> NodeHandle<'_> {
         NodeHandle::new(self, self.root_id)
     }
 
     /// Creates a new `Tree`.
+    #[inline]
+    #[must_use]
     fn new(
         arena: Arena<NodeData>,
         node_names: StringInterner<DefaultBackend<NodeNameSym>>,
@@ -58,6 +62,7 @@ impl Tree {
     /// # Panics
     ///
     /// Panics if a node with the given node ID does not exist in the tree.
+    #[must_use]
     pub(crate) fn node(&self, node_id: NodeId) -> &indextree::Node<NodeData> {
         self.arena.get(node_id.raw()).unwrap_or_else(|| {
             panic!(
@@ -72,6 +77,7 @@ impl Tree {
     /// # Panics
     ///
     /// Panics if the given symbol is not used in the tree.
+    #[must_use]
     pub(crate) fn resolve_node_name(&self, sym: NodeNameSym) -> &str {
         self.node_names
             .resolve(sym)
@@ -79,11 +85,13 @@ impl Tree {
     }
 
     /// Returns node name symbol if available.
+    #[must_use]
     pub(crate) fn node_name_sym(&self, name: &str) -> Option<NodeNameSym> {
         self.node_names.get(name)
     }
 
     /// Checks whether or not the given node ID is used in the tree.
+    #[must_use]
     pub(crate) fn contains_node(&self, node_id: NodeId) -> bool {
         self.arena.get(node_id.raw()).is_some()
     }
@@ -167,6 +175,7 @@ impl Tree {
     /// # Panics
     ///
     /// Panics if the given node ID is invalid (i.e. not used or root node).
+    #[must_use]
     pub fn get_attribute_mut(&mut self, node_id: NodeId, i: usize) -> Option<&mut AttributeValue> {
         let node = self.arena.get_mut(node_id.raw()).expect("Invalid node ID");
         node.get_mut().get_attribute_mut(i)
@@ -205,6 +214,8 @@ impl Tree {
     ///
     /// Note that this method compares tree data, not internal states of the
     /// objects.
+    #[inline]
+    #[must_use]
     pub fn strict_eq(&self, other: &Self) -> bool {
         self.root().strict_eq(&other.root())
     }
@@ -212,6 +223,8 @@ impl Tree {
     /// Pretty-print the tree for debugging purpose.
     ///
     /// Be careful, this output format may change in future.
+    #[inline]
+    #[must_use]
     pub fn debug_tree(&self) -> impl fmt::Debug + '_ {
         DebugTree { tree: self }
     }
@@ -239,6 +252,7 @@ struct DebugTree<'a> {
 }
 
 impl fmt::Debug for DebugTree<'_> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let v = DebugNodeHandle {
             node: self.tree.root(),
@@ -469,7 +483,6 @@ impl DepthFirstTraverseSubtree {
     /// Returns the forward next `Open` traversal event and advances the forward cursor.
     ///
     /// This makes it easy to forward-traverse the subtree in preorder.
-    #[inline]
     #[must_use]
     pub fn next_open_forward(&mut self, tree: &Tree) -> Option<NodeId> {
         loop {
@@ -483,7 +496,6 @@ impl DepthFirstTraverseSubtree {
     /// Returns the forward next `Close` traversal event and advances the forward cursor.
     ///
     /// This makes it easy to forward-traverse the subtree in postorder.
-    #[inline]
     #[must_use]
     pub fn next_close_forward(&mut self, tree: &Tree) -> Option<NodeId> {
         loop {
@@ -497,7 +509,6 @@ impl DepthFirstTraverseSubtree {
     /// Returns the backward next `Open` traversal event and advances the forward cursor.
     ///
     /// This makes it easy to backward-traverse the subtree in postorder.
-    #[inline]
     #[must_use]
     pub fn next_open_backward(&mut self, tree: &Tree) -> Option<NodeId> {
         loop {
@@ -511,7 +522,6 @@ impl DepthFirstTraverseSubtree {
     /// Returns the backward next `Close` traversal event and advances the forward cursor.
     ///
     /// This makes it easy to backward-traverse the subtree in preorder.
-    #[inline]
     #[must_use]
     pub fn next_close_backward(&mut self, tree: &Tree) -> Option<NodeId> {
         loop {

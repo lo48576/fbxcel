@@ -21,6 +21,8 @@ pub enum ArrayAttributeEncoding {
 
 impl ArrayAttributeEncoding {
     /// Creates a new `ArrayEncoding` from the given raw value.
+    #[inline]
+    #[must_use]
     pub(crate) fn from_u32(v: u32) -> Option<Self> {
         match v {
             0 => Some(ArrayAttributeEncoding::Direct),
@@ -32,6 +34,8 @@ impl ArrayAttributeEncoding {
     /// Returns the raw value.
     #[cfg(feature = "writer")]
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
+    #[inline]
+    #[must_use]
     pub(crate) fn to_u32(self) -> u32 {
         match self {
             ArrayAttributeEncoding::Direct => 0,
@@ -42,6 +46,7 @@ impl ArrayAttributeEncoding {
 
 impl From<ArrayAttributeEncoding> for Compression {
     // Panics if the encoding is `Direct` (i.e. not compressed).
+    #[inline]
     fn from(v: ArrayAttributeEncoding) -> Self {
         match v {
             ArrayAttributeEncoding::Direct => unreachable!(

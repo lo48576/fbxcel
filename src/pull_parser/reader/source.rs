@@ -20,6 +20,8 @@ pub struct PlainSource<R> {
 
 impl<R: io::Read> PlainSource<R> {
     /// Creates a new `PlainSource`.
+    #[inline]
+    #[must_use]
     pub fn new(inner: R) -> Self {
         Self {
             inner: PositionCacheReader::new(inner),
@@ -44,6 +46,8 @@ impl<R: io::Read> PlainSource<R> {
     ///     .expect("Should never fail");
     /// assert_eq!(reader.position(), len + 42);
     /// ```
+    #[inline]
+    #[must_use]
     pub fn with_offset(inner: R, offset: usize) -> Self {
         Self {
             inner: PositionCacheReader::with_offset(inner, offset),
@@ -52,26 +56,31 @@ impl<R: io::Read> PlainSource<R> {
 }
 
 impl<R: io::Read> io::Read for PlainSource<R> {
+    #[inline]
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.inner.read(buf)
     }
 }
 
 impl<R: io::BufRead> io::BufRead for PlainSource<R> {
+    #[inline]
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
         self.inner.fill_buf()
     }
 
+    #[inline]
     fn consume(&mut self, amt: usize) {
         self.inner.consume(amt)
     }
 }
 
 impl<R: io::Read> ParserSource for PlainSource<R> {
+    #[inline]
     fn position(&self) -> u64 {
         self.inner.position() as u64
     }
 
+    #[inline]
     fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
         // NOTE: `self.inner.take(distance)` is E0507.
         io::copy(
@@ -97,6 +106,8 @@ pub struct SeekableSource<R> {
 
 impl<R: io::Read + io::Seek> SeekableSource<R> {
     /// Creates a new `SeekableSource`.
+    #[inline]
+    #[must_use]
     pub fn new(inner: R) -> Self {
         Self {
             inner: PositionCacheReader::new(inner),
@@ -121,6 +132,8 @@ impl<R: io::Read + io::Seek> SeekableSource<R> {
     ///     .expect("Should never fail");
     /// assert_eq!(reader.position(), len + 42);
     /// ```
+    #[inline]
+    #[must_use]
     pub fn with_offset(inner: R, offset: usize) -> Self {
         Self {
             inner: PositionCacheReader::with_offset(inner, offset),
@@ -129,26 +142,31 @@ impl<R: io::Read + io::Seek> SeekableSource<R> {
 }
 
 impl<R: io::Read> io::Read for SeekableSource<R> {
+    #[inline]
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.inner.read(buf)
     }
 }
 
 impl<R: io::BufRead> io::BufRead for SeekableSource<R> {
+    #[inline]
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
         self.inner.fill_buf()
     }
 
+    #[inline]
     fn consume(&mut self, amt: usize) {
         self.inner.consume(amt)
     }
 }
 
 impl<R: io::Read + io::Seek> ParserSource for SeekableSource<R> {
+    #[inline]
     fn position(&self) -> u64 {
         self.inner.position() as u64
     }
 
+    #[inline]
     fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
         // `PositionCacheReader<R>::skip_distance` will be available only when
         // `R: io::Seek`, and it will use `io::Seek::seek` efficiently.

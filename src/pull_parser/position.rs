@@ -24,11 +24,15 @@ pub struct SyntacticPosition {
 
 impl SyntacticPosition {
     /// Returns the byte position.
+    #[inline]
+    #[must_use]
     pub fn byte_pos(&self) -> u64 {
         self.byte_pos
     }
 
     /// Returns the beginning byte position of the node or attribute.
+    #[inline]
+    #[must_use]
     pub fn component_byte_pos(&self) -> u64 {
         self.component_byte_pos
     }
@@ -37,11 +41,15 @@ impl SyntacticPosition {
     ///
     /// This is a vector of pairs of node indices in siblings (i.e. the number
     /// of preceding siblings) and node names.
+    #[inline]
+    #[must_use]
     pub fn node_path(&self) -> &[(usize, String)] {
         &self.node_path
     }
 
     /// Returns the node attribute index (if the position points an attribute).
+    #[inline]
+    #[must_use]
     pub fn attribute_index(&self) -> Option<usize> {
         self.attribute_index
     }

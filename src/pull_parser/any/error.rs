@@ -18,6 +18,7 @@ pub enum Error {
 }
 
 impl error::Error for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             Error::Header(e) => Some(e),
@@ -36,6 +37,7 @@ impl fmt::Display for Error {
 }
 
 impl From<HeaderError> for Error {
+    #[inline]
     fn from(e: HeaderError) -> Self {
         Error::Header(e)
     }

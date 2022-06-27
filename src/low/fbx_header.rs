@@ -34,6 +34,7 @@ impl fmt::Display for HeaderError {
 }
 
 impl From<io::Error> for HeaderError {
+    #[inline]
     fn from(e: io::Error) -> Self {
         HeaderError::Io(e)
     }
@@ -68,6 +69,8 @@ impl FbxHeader {
     }
 
     /// Returns FBX version.
+    #[inline]
+    #[must_use]
     pub fn version(self) -> FbxVersion {
         self.version
     }
@@ -75,11 +78,15 @@ impl FbxHeader {
     /// Returns FBX parser version.
     ///
     /// Returns `None` if no parser supports the FBX version.
+    #[inline]
+    #[must_use]
     pub fn parser_version(self) -> Option<ParserVersion> {
         ParserVersion::from_fbx_version(self.version())
     }
 
     /// Returns header length in bytes.
+    #[inline]
+    #[must_use]
     pub(crate) const fn len(self) -> usize {
         /// FBX version length.
         const VERSION_LEN: usize = 4;

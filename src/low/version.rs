@@ -12,6 +12,8 @@ impl FbxVersion {
     pub const V7_5: Self = FbxVersion(7500);
 
     /// Creates a new `FbxVersion`.
+    #[inline]
+    #[must_use]
     pub(crate) const fn new(version: u32) -> Self {
         FbxVersion(version)
     }
@@ -19,6 +21,8 @@ impl FbxVersion {
     /// Returns the raw value.
     ///
     /// For example, `7400` for FBX 7.4.
+    #[inline]
+    #[must_use]
     pub(crate) const fn raw(self) -> u32 {
         self.0
     }
@@ -26,6 +30,8 @@ impl FbxVersion {
     /// Returns the major version.
     ///
     /// For example, `7` for FBX 7.4.
+    #[inline]
+    #[must_use]
     pub const fn major(self) -> u32 {
         self.raw() / 1000
     }
@@ -33,6 +39,8 @@ impl FbxVersion {
     /// Returns the minor version.
     ///
     /// For example, `4` for FBX 7.4.
+    #[inline]
+    #[must_use]
     pub const fn minor(self) -> u32 {
         (self.raw() % 1000) / 100
     }
@@ -40,6 +48,8 @@ impl FbxVersion {
     /// Returns a tuple of the major and minor verison.
     ///
     /// For example, `(7, 4)` for FBX 7.4.
+    #[inline]
+    #[must_use]
     pub const fn major_minor(self) -> (u32, u32) {
         let major = self.major();
         let minor = self.minor();
