@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+* Add a type and methods to traverse nodes in depth-first order.
+* Add methods to `Tree` to modify node attributes (not only appending).
+
+### Added
+* Add a type and methods to traverse nodes in depth-first order.
+    + `tree::v7400::DepthFirstTraversed` type is added.
+* Add methods to `Tree` to modify node attributes (not only appending).
+    + `tree::v7400::Tree` has now three new methods: `get_attribute_mut()`,
+      `take_attributes_vec()`, and `set_attributes_vec()`.
+
 ## [0.8.0]
 
 * Bump minimum supported Rust version to 1.56.0.
@@ -15,18 +25,18 @@
       and other commands should still run successfully with stable toolchain.
 * Bump internal dependencies.
 
-## Added
+### Added
 * `tree::v7400::NodeHandle::first_child_by_name()` is added.
     + `node.first_child_by_name(name)` returns the same result as
       `node.children_by_name(name).next()`.
 
-## Fixed
+### Fixed
 * Fixed incorrect attribute type value being written by the writer.
 
-## Breaking changes
+### Breaking changes
 * Bump minimum supported Rust version to 1.56.0.
 
-## Non-breaking changes
+### Non-breaking changes
 * Iterator types returned by `tree::v7400::NodeHandle::{children, children_by_name}`
   now have a name.
     + `NodeHandle::children()` returns `Children<'_>`.
