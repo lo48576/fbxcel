@@ -1,6 +1,6 @@
 //! Node type.
 
-use crate::tree::v7400::{NodeHandle, Tree};
+use crate::tree::v7400::{DepthFirstTraverseSubtree, NodeHandle, Tree};
 
 pub(crate) use self::{data::NodeData, name::NodeNameSym};
 
@@ -34,5 +34,12 @@ impl NodeId {
     /// not used in the given tree.
     pub fn to_handle(self, tree: &Tree) -> NodeHandle<'_> {
         NodeHandle::new(tree, self)
+    }
+
+    /// Returns the helper object to traverse the subtree (the node itself and its descendant).
+    #[inline]
+    #[must_use]
+    pub fn traverse_depth_first(&self) -> DepthFirstTraverseSubtree {
+        DepthFirstTraverseSubtree::with_root_id(*self)
     }
 }
