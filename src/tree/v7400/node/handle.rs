@@ -26,6 +26,8 @@ impl<'a> NodeHandle<'a> {
     /// Even if `new()` does not panic, subsequent operations through
     /// `NodeHandle` object may panic if the given node ID is not used in the
     /// given tree.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(tree: &'a Tree, node_id: NodeId) -> Self {
         assert!(
             tree.contains_node(node_id),
@@ -37,31 +39,43 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns a reference to the tree.
+    #[inline]
+    #[must_use]
     pub fn tree(&self) -> &'a Tree {
         self.tree
     }
 
     /// Returns the node ID.
+    #[inline]
+    #[must_use]
     pub fn node_id(&self) -> NodeId {
         self.node_id
     }
 
     /// Returns the internally managed node data.
+    #[inline]
+    #[must_use]
     pub(crate) fn node(&self) -> &'a indextree::Node<NodeData> {
         self.tree.node(self.node_id)
     }
 
     /// Returns the node name symbol.
+    #[inline]
+    #[must_use]
     pub(crate) fn name_sym(&self) -> NodeNameSym {
         self.node().get().name_sym()
     }
 
     /// Returns the node name.
+    #[inline]
+    #[must_use]
     pub fn name(&self) -> &'a str {
         self.tree.resolve_node_name(self.name_sym())
     }
 
     /// Returns the node attributes.
+    #[inline]
+    #[must_use]
     pub fn attributes(&self) -> &'a [AttributeValue] {
         self.node().get().attributes()
     }
@@ -87,6 +101,7 @@ impl<'a> NodeHandle<'a> {
     }
 
     /// Returns the first child with the given name.
+    #[inline]
     #[must_use]
     pub fn first_child_by_name(&self, name: &str) -> Option<Self> {
         self.children_by_name(name).next()
@@ -100,6 +115,8 @@ impl<'a> NodeHandle<'a> {
     ///
     /// Note that this method compares tree data, not internal states of the
     /// trees.
+    #[inline]
+    #[must_use]
     pub fn strict_eq(&self, other: &Self) -> bool {
         nodes_strict_eq(*self, *other)
     }
@@ -121,6 +138,7 @@ macro_rules! impl_related_node_accessor {
     };
     (@single, $(#[$meta:meta])* $accessor:ident;) => {
         $(#[$meta])*
+        #[must_use]
         pub fn $accessor(&self) -> Option<NodeHandle<'a>> {
             self.node()
                 .$accessor()
@@ -143,6 +161,7 @@ impl_related_node_accessor! {
 }
 
 /// Compares nodes strictly.
+#[must_use]
 fn nodes_strict_eq(left: NodeHandle<'_>, right: NodeHandle<'_>) -> bool {
     // Compare name.
     if left.name() != right.name() {
@@ -199,6 +218,7 @@ impl<'a> Iterator for Children<'a> {
 impl std::iter::FusedIterator for Children<'_> {}
 
 impl<'a> fmt::Debug for Children<'a> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Children").finish()
     }

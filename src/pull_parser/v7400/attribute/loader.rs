@@ -110,6 +110,7 @@ pub trait LoadAttribute: Sized + fmt::Debug {
     /// Loads binary value on buffered reader.
     ///
     /// This method should return error when the given reader returned error.
+    #[inline]
     fn load_binary_buffered(self, reader: impl io::BufRead, len: u64) -> Result<Self::Output> {
         self.load_binary(reader, len)
     }
@@ -124,6 +125,7 @@ pub trait LoadAttribute: Sized + fmt::Debug {
     /// Loads string value on buffered reader.
     ///
     /// This method should return error when the given reader returned error.
+    #[inline]
     fn load_string_buffered(self, reader: impl io::BufRead, len: u64) -> Result<Self::Output> {
         self.load_string(reader, len)
     }

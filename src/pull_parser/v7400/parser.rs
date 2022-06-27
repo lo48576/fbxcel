@@ -21,6 +21,7 @@ type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;
 /// Creates a new [`Parser`] from the given reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
+#[inline]
 pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<PlainSource<R>>>
 where
     R: io::Read,
@@ -34,6 +35,7 @@ where
 /// Creates a new [`Parser`] from the given seekable reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
+#[inline]
 pub fn from_seekable_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<SeekableSource<R>>>
 where
     R: io::Read + io::Seek,
@@ -104,6 +106,7 @@ impl<R: ParserSource> Parser<R> {
     /// ```
     ///
     /// [syntactic position]: `SyntacticPosition`
+    #[inline]
     pub fn set_warning_handler<F>(&mut self, warning_handler: F)
     where
         F: 'static + FnMut(Warning, &SyntacticPosition) -> Result<()>,
@@ -112,11 +115,15 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Returns a mutable reference to the inner reader.
+    #[inline]
+    #[must_use]
     pub(crate) fn reader(&mut self) -> &mut R {
         &mut self.reader
     }
 
     /// Returns FBX version.
+    #[inline]
+    #[must_use]
     pub fn fbx_version(&self) -> FbxVersion {
         self.state.fbx_version
     }
@@ -126,6 +133,8 @@ impl<R: ParserSource> Parser<R> {
     /// # Panics
     ///
     /// This panics if there are no open nodes.
+    #[inline]
+    #[must_use]
     pub fn current_node_name(&self) -> &str {
         self.state
             .current_node()
@@ -135,6 +144,8 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Returns the number of attributes of the current node.
+    #[inline]
+    #[must_use]
     pub(crate) fn current_attributes_count(&self) -> u64 {
         self.state
             .current_node()
@@ -145,6 +156,8 @@ impl<R: ParserSource> Parser<R> {
     /// Returns current node depth.
     ///
     /// Implicit root node is considered to be depth 0.
+    #[inline]
+    #[must_use]
     pub fn current_depth(&self) -> usize {
         self.state.started_nodes.len()
     }
@@ -162,6 +175,7 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Reads the given type from the underlying reader.
+    #[inline]
     pub(crate) fn parse<T: FromParser>(&mut self) -> Result<T> {
         T::read_from_parser(self)
     }
@@ -384,6 +398,7 @@ impl<R: ParserSource> Parser<R> {
     }
 
     /// Sets the parser to aborted state.
+    #[inline]
     pub(crate) fn set_aborted(&mut self, pos: SyntacticPosition) {
         self.state.health = Health::Aborted(pos);
     }
@@ -456,6 +471,7 @@ impl<R: ParserSource> Parser<R> {
     /// Returns the syntactic position of the current node.
     ///
     /// Note that this allocates memory.
+    #[inline]
     pub fn position(&self) -> SyntacticPosition {
         let byte_pos = self.reader.position();
         if self.state.current_node().is_none() {
@@ -522,6 +538,8 @@ impl<R: ParserSource> Parser<R> {
     /// let _ = parser.next_event();
     /// assert!(parser.is_used(), "Parser emitted an event");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn is_used(&self) -> bool {
         self.state.last_event_kind.is_some()
     }
@@ -575,6 +593,8 @@ struct State {
 
 impl State {
     /// Creates a new `State` for the given FBX version.
+    #[inline]
+    #[must_use]
     fn new(fbx_version: FbxVersion) -> Self {
         Self {
             fbx_version,
@@ -586,16 +606,22 @@ impl State {
     }
 
     /// Returns health of the parser.
+    #[inline]
+    #[must_use]
     fn health(&self) -> &Health {
         &self.health
     }
 
     /// Returns info about current node (except for implicit root node).
+    #[inline]
+    #[must_use]
     fn current_node(&self) -> Option<&StartedNode> {
         self.started_nodes.last()
     }
 
     /// Returns the last event kind.
+    #[inline]
+    #[must_use]
     fn last_event_kind(&self) -> Option<EventKind> {
         self.last_event_kind
     }

@@ -37,6 +37,7 @@ pub struct Attributes<'a, R> {
 
 impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     /// Creates a new `Attributes`.
+    #[must_use]
     pub(crate) fn from_parser(parser: &'a mut Parser<R>) -> Self {
         let total_count = parser.current_attributes_count();
         let pos = parser.reader().position();
@@ -49,11 +50,15 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     }
 
     /// Returns the total number of attributes.
+    #[inline]
+    #[must_use]
     pub fn total_count(&self) -> u64 {
         self.total_count
     }
 
     /// Returns the number of the rest attributes.
+    #[inline]
+    #[must_use]
     pub fn rest_count(&self) -> u64 {
         self.rest_count
     }
@@ -319,6 +324,8 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     }
 
     /// Returns the syntactic position of the attribute currently reading.
+    #[inline]
+    #[must_use]
     fn position(&self, start_pos: u64, index: usize) -> SyntacticPosition {
         SyntacticPosition {
             component_byte_pos: start_pos,
@@ -328,6 +335,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     }
 
     /// Creates an iterator emitting attribute values.
+    #[inline]
     pub fn iter<V, I>(&mut self, loaders: I) -> iter::BorrowedIter<'_, 'a, R, I::IntoIter>
     where
         V: LoadAttribute,
@@ -337,6 +345,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     }
 
     /// Creates an iterator emitting attribute values with buffered I/O.
+    #[inline]
     pub fn iter_buffered<V, I>(
         &mut self,
         loaders: I,
@@ -350,6 +359,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     }
 
     /// Creates an iterator emitting attribute values.
+    #[inline]
     pub fn into_iter<V, I>(self, loaders: I) -> iter::OwnedIter<'a, R, I::IntoIter>
     where
         V: LoadAttribute,
@@ -359,6 +369,7 @@ impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
     }
 
     /// Creates an iterator emitting attribute values with buffered I/O.
+    #[inline]
     pub fn into_iter_buffered<V, I>(self, loaders: I) -> iter::OwnedIterBuffered<'a, R, I::IntoIter>
     where
         R: io::BufRead,

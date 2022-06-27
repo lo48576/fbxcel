@@ -28,26 +28,36 @@ pub struct Error {
 
 impl Error {
     /// Returns the error kind.
+    #[inline]
+    #[must_use]
     pub fn kind(&self) -> ErrorKind {
         self.repr.error.kind()
     }
 
     /// Returns a reference to the inner error container.
+    #[inline]
+    #[must_use]
     pub fn get_ref(&self) -> &ErrorContainer {
         &self.repr.error
     }
 
     /// Returns a reference to the inner error if the type matches.
+    #[inline]
+    #[must_use]
     pub fn downcast_ref<T: 'static + error::Error>(&self) -> Option<&T> {
         self.repr.error.as_error().downcast_ref::<T>()
     }
 
     /// Returns the syntactic position if available.
+    #[inline]
+    #[must_use]
     pub fn position(&self) -> Option<&SyntacticPosition> {
         self.repr.position.as_ref()
     }
 
     /// Creates a new `Error` with the given syntactic position info.
+    #[inline]
+    #[must_use]
     pub(crate) fn with_position(error: ErrorContainer, position: SyntacticPosition) -> Self {
         Self {
             repr: Box::new(Repr::with_position(error, position)),
@@ -55,6 +65,8 @@ impl Error {
     }
 
     /// Sets the syntactic position and returns the new error.
+    #[inline]
+    #[must_use]
     pub(crate) fn and_position(mut self, position: SyntacticPosition) -> Self {
         self.repr.position = Some(position);
         self
@@ -62,12 +74,14 @@ impl Error {
 }
 
 impl fmt::Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.repr.error.fmt(f)
     }
 }
 
 impl error::Error for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         self.repr.error.source()
     }
@@ -77,6 +91,7 @@ impl<T> From<T> for Error
 where
     T: Into<ErrorContainer>,
 {
+    #[inline]
     fn from(e: T) -> Self {
         Error {
             repr: Box::new(Repr::new(e.into())),
@@ -95,6 +110,8 @@ struct Repr {
 
 impl Repr {
     /// Creates a new `Repr`.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(error: ErrorContainer) -> Self {
         Self {
             error,
@@ -103,6 +120,8 @@ impl Repr {
     }
 
     /// Creates a new `Repr` with the given syntactic position info.
+    #[inline]
+    #[must_use]
     pub(crate) fn with_position(error: ErrorContainer, position: SyntacticPosition) -> Self {
         Self {
             error,
@@ -156,6 +175,7 @@ pub enum ErrorContainer {
 
 impl ErrorContainer {
     /// Returns the error kind of the error.
+    #[must_use]
     pub fn kind(&self) -> ErrorKind {
         match self {
             ErrorContainer::Data(_) => ErrorKind::Data,
@@ -166,6 +186,7 @@ impl ErrorContainer {
     }
 
     /// Returns `&dyn std::error::Error`.
+    #[must_use]
     pub fn as_error(&self) -> &(dyn 'static + error::Error) {
         match self {
             ErrorContainer::Data(e) => e,
@@ -177,6 +198,8 @@ impl ErrorContainer {
 }
 
 impl error::Error for ErrorContainer {
+    #[inline]
+    #[must_use]
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         Some(self.as_error())
     }
@@ -194,24 +217,28 @@ impl fmt::Display for ErrorContainer {
 }
 
 impl From<io::Error> for ErrorContainer {
+    #[inline]
     fn from(e: io::Error) -> Self {
         ErrorContainer::Io(e)
     }
 }
 
 impl From<DataError> for ErrorContainer {
+    #[inline]
     fn from(e: DataError) -> Self {
         ErrorContainer::Data(e)
     }
 }
 
 impl From<OperationError> for ErrorContainer {
+    #[inline]
     fn from(e: OperationError) -> Self {
         ErrorContainer::Operation(e)
     }
 }
 
 impl From<Warning> for ErrorContainer {
+    #[inline]
     fn from(e: Warning) -> Self {
         ErrorContainer::Warning(e)
     }

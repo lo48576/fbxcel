@@ -4,6 +4,8 @@
 
 * Add types and methods to traverse nodes in depth-first order.
 * Add methods to `Tree` to modify node attributes (not only appending).
+* Make many (but not all) small methods `#[inline]`.
+* Make some funcitions `#[must_use]`.
 
 ### Added
 * Add types and methods to traverse nodes in depth-first order.
@@ -12,6 +14,10 @@
 * Add methods to `Tree` to modify node attributes (not only appending).
     + `tree::v7400::Tree` has now three new methods: `get_attribute_mut()`,
       `take_attributes_vec()`, and `set_attributes_vec()`.
+
+### Changed (non-breaking)
+* Make many (but not all) small methods `#[inline]`.
+* Make some funcitions `#[must_use]`.
 
 ## [0.8.0]
 

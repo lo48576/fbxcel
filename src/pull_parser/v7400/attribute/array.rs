@@ -63,6 +63,8 @@ where
     R: io::Read,
 {
     /// Creates a new `ArrayAttributeValues`.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(reader: R, total_elements: u32) -> Self {
         Self {
             reader,
@@ -74,6 +76,8 @@ where
     }
 
     /// Returns whether an error happened or not.
+    #[inline]
+    #[must_use]
     pub(crate) fn has_error(&self) -> bool {
         self.has_error
     }
@@ -106,6 +110,7 @@ macro_rules! impl_array_attr_values {
                 }
             }
 
+            #[inline]
             fn size_hint(&self) -> (usize, Option<usize>) {
                 (0, Some(self.rest_elements as usize))
             }
@@ -138,6 +143,8 @@ pub(crate) struct BooleanArrayAttributeValues<R> {
 
 impl<R: io::Read> BooleanArrayAttributeValues<R> {
     /// Creates a new `BooleanArrayAttributeValues`.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(reader: R, total_elements: u32) -> Self {
         Self {
             reader,
@@ -150,11 +157,15 @@ impl<R: io::Read> BooleanArrayAttributeValues<R> {
 
     /// Returns whether the attribute has incorrect boolean value
     /// representation.
+    #[inline]
+    #[must_use]
     pub(crate) fn has_incorrect_boolean_value(&self) -> bool {
         self.has_incorrect_boolean_value
     }
 
     /// Returns whether an error happened or not.
+    #[inline]
+    #[must_use]
     pub(crate) fn has_error(&self) -> bool {
         self.has_error
     }
@@ -188,6 +199,7 @@ impl<R: io::Read> Iterator for BooleanArrayAttributeValues<R> {
         }
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         (0, Some(self.rest_elements as usize))
     }

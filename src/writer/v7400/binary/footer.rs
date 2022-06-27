@@ -10,6 +10,7 @@ pub enum FbxFooterPaddingLength {
 }
 
 impl Default for FbxFooterPaddingLength {
+    #[inline]
     fn default() -> Self {
         FbxFooterPaddingLength::Default
     }
@@ -46,6 +47,8 @@ pub struct FbxFooter<'a> {
 
 impl<'a> FbxFooter<'a> {
     /// Returns the first unknown field or default.
+    #[inline]
+    #[must_use]
     pub(crate) fn unknown1(&self) -> &'a [u8; 16] {
         /// Default value.
         const DEFAULT: [u8; 16] = [
@@ -56,6 +59,8 @@ impl<'a> FbxFooter<'a> {
     }
 
     /// Returns the second unknown field or default.
+    #[inline]
+    #[must_use]
     pub(crate) fn unknown2(&self) -> [u8; 4] {
         /// Default value.
         const DEFAULT: [u8; 4] = [0; 4];
@@ -63,6 +68,8 @@ impl<'a> FbxFooter<'a> {
     }
 
     /// Returns the third unknown field or default.
+    #[inline]
+    #[must_use]
     pub(crate) fn unknown3(&self) -> &'a [u8; 16] {
         /// Default value.
         const DEFAULT: [u8; 16] = [

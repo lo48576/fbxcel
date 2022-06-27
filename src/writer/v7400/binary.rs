@@ -145,16 +145,22 @@ impl<W: Write + Seek> Writer<W> {
     }
 
     /// Returns a mutable reference to the sink.
+    #[inline]
+    #[must_use]
     fn sink(&mut self) -> &mut W {
         &mut self.sink
     }
 
     /// Returns a mutable reference to the node header of the current node.
+    #[inline]
+    #[must_use]
     fn current_node(&mut self) -> Option<&mut OpenNode> {
         self.open_nodes.last_mut()
     }
 
     /// Returns a mutable reference to the node header of the current node.
+    #[inline]
+    #[must_use]
     fn current_node_header(&mut self) -> Option<&mut NodeHeader> {
         self.current_node().map(|v| &mut v.header)
     }

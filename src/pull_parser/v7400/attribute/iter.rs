@@ -9,6 +9,7 @@ use crate::pull_parser::{
 };
 
 /// Creates size hint from the given attributes and loaders.
+#[must_use]
 fn make_size_hint_for_attrs<R, V>(
     attributes: &Attributes<'_, R>,
     loaders: &impl Iterator<Item = V>,
@@ -26,6 +27,7 @@ where
 }
 
 /// Loads the next attrbute.
+#[must_use]
 fn load_next<R, V>(
     attributes: &mut Attributes<'_, R>,
     loaders: &mut impl Iterator<Item = V>,
@@ -39,6 +41,7 @@ where
 }
 
 /// Loads the next attrbute with buffered I/O.
+#[must_use]
 fn load_next_buffered<R, V>(
     attributes: &mut Attributes<'_, R>,
     loaders: &mut impl Iterator<Item = V>,
@@ -67,6 +70,8 @@ where
     V: LoadAttribute,
 {
     /// Creates a new iterator.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(attributes: &'a mut Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -83,10 +88,12 @@ where
 {
     type Item = Result<V::Output>;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         load_next(self.attributes, &mut self.loaders)
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         make_size_hint_for_attrs(self.attributes, &self.loaders)
     }
@@ -116,6 +123,8 @@ where
     V: LoadAttribute,
 {
     /// Creates a new iterator.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(attributes: &'a mut Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -132,10 +141,12 @@ where
 {
     type Item = Result<V::Output>;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         load_next_buffered(self.attributes, &mut self.loaders)
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         make_size_hint_for_attrs(self.attributes, &self.loaders)
     }
@@ -165,6 +176,8 @@ where
     V: LoadAttribute,
 {
     /// Creates a new `Iter`.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(attributes: Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -181,10 +194,12 @@ where
 {
     type Item = Result<V::Output>;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         load_next(&mut self.attributes, &mut self.loaders)
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         make_size_hint_for_attrs(&self.attributes, &self.loaders)
     }
@@ -214,6 +229,8 @@ where
     V: LoadAttribute,
 {
     /// Creates a new iterator.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(attributes: Attributes<'r, R>, loaders: I) -> Self {
         Self {
             attributes,
@@ -230,10 +247,12 @@ where
 {
     type Item = Result<V::Output>;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         load_next_buffered(&mut self.attributes, &mut self.loaders)
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         make_size_hint_for_attrs(&self.attributes, &self.loaders)
     }

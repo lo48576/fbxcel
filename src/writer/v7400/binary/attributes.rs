@@ -28,6 +28,7 @@ pub(crate) trait IntoBytes: Sized {
 }
 
 impl IntoBytes for bool {
+    #[inline]
     fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
         let v = if self { b'Y' } else { b'T' };
         f(&v.to_le_bytes())
@@ -35,30 +36,35 @@ impl IntoBytes for bool {
 }
 
 impl IntoBytes for i16 {
+    #[inline]
     fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
         f(&self.to_le_bytes())
     }
 }
 
 impl IntoBytes for i32 {
+    #[inline]
     fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
         f(&self.to_le_bytes())
     }
 }
 
 impl IntoBytes for i64 {
+    #[inline]
     fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
         f(&self.to_le_bytes())
     }
 }
 
 impl IntoBytes for f32 {
+    #[inline]
     fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
         f(&self.to_bits().to_le_bytes())
     }
 }
 
 impl IntoBytes for f64 {
+    #[inline]
     fn call_with_le_bytes<R>(self, f: impl FnOnce(&[u8]) -> R) -> R {
         f(&self.to_bits().to_le_bytes())
     }
@@ -100,6 +106,7 @@ macro_rules! impl_arr_from_iter {
         },
     )*) => {$(
         $(#[$meta])*
+        #[inline]
         pub fn $name(
             &mut self,
             encoding: impl Into<Option<ArrayAttributeEncoding>>,
@@ -114,6 +121,7 @@ macro_rules! impl_arr_from_iter {
         }
 
         $(#[$meta])*
+        #[inline]
         pub fn $name_from_result_iter<E>(
             &mut self,
             encoding: impl Into<Option<ArrayAttributeEncoding>>,
@@ -134,11 +142,15 @@ macro_rules! impl_arr_from_iter {
 
 impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
     /// Creates a new `AttributesWriter`.
+    #[inline]
+    #[must_use]
     pub(crate) fn new(writer: &'a mut Writer<W>) -> Self {
         Self { writer }
     }
 
     /// Returns the inner writer.
+    #[inline]
+    #[must_use]
     pub(crate) fn sink(&mut self) -> &mut W {
         self.writer.sink()
     }
@@ -184,6 +196,7 @@ impl<'a, W: Write + Seek> AttributesWriter<'a, W> {
     }
 
     /// Writes the given array attribute header.
+    #[inline]
     fn write_array_header(&mut self, header: &ArrayAttributeHeader) -> Result<()> {
         array::write_array_header(self.writer.sink(), header).map_err(Into::into)
     }
