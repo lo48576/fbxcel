@@ -20,7 +20,7 @@ all-features = true
 # running with stable rust toolchain.
 # See <https://doc.rust-lang.org/rustdoc/unstable-features.html#extensions-to-the-doc-attribute>
 # for unstable `#[doc(cfg(...))]` attribute.
-rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = []
