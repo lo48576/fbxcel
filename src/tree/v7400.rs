@@ -37,6 +37,7 @@ mod node;
 ///     + [`prepend_new`][`Self::prepend_new`]
 ///     + [`insert_new_after`][`Self::insert_new_after`]
 ///     + [`insert_new_before`][`Self::insert_new_before`]
+///     + [`detach`][`Self::detach`]
 /// * Modify node
 ///     + [`append_attribute`][`Self::append_attribute`]
 ///     + [`get_attribute_mut`][`Self::get_attribute_mut`]
@@ -177,6 +178,16 @@ impl Tree {
         sibling.raw().insert_before(new_child, &mut self.arena);
 
         NodeId::new(new_child)
+    }
+
+    /// Detaches the subtree from the tree.
+    ///
+    /// If the subtree is the root node, does nothing.
+    ///
+    /// The detached node and its descendants are kept in the arena, so they can
+    /// be inserted nearby some other nodes (in the same arena) later.
+    pub fn detach(&mut self, subtree_root: NodeId) {
+        subtree_root.raw().detach(&mut self.arena);
     }
 
     /// Creates a new node and inserts before the given sibling node.
