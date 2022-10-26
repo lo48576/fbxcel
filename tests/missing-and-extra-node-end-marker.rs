@@ -28,7 +28,7 @@ fn missing_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
             // Magic.
             vec.extend(MAGIC);
             // Version.
-            vec.extend(&raw_ver.to_le_bytes());
+            vec.extend(raw_ver.to_le_bytes());
         }
         // Nodes.
         {
@@ -37,11 +37,11 @@ fn missing_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
                 const CONTAINER: &[u8] = b"Container";
                 let container_start = vec.len();
                 // End offset.
-                vec.extend(&[0; 4]);
+                vec.extend([0; 4]);
                 // Number of node properties.
-                vec.extend(&[0; 4]);
+                vec.extend([0; 4]);
                 // Length of node properties in bytes.
-                vec.extend(&[0; 4]);
+                vec.extend([0; 4]);
                 // Node name length.
                 vec.push(CONTAINER.len() as u8);
                 // Node name.
@@ -52,11 +52,11 @@ fn missing_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
                     const INVALID_NODE: &[u8] = b"InvalidNode";
                     let invalid_node_start = vec.len();
                     // End offset.
-                    vec.extend(&[0; 4]);
+                    vec.extend([0; 4]);
                     // Number of node properties.
-                    vec.extend(&[0; 4]);
+                    vec.extend([0; 4]);
                     // Length of node properties in bytes.
-                    vec.extend(&[0; 4]);
+                    vec.extend([0; 4]);
                     // Node name length.
                     vec.push(INVALID_NODE.len() as u8);
                     // Node name.
@@ -66,7 +66,7 @@ fn missing_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
                 }
 
                 // Node end marker.
-                vec.extend(&[0; 13]);
+                vec.extend([0; 13]);
                 let end_pos = (vec.len() as u32).to_le_bytes();
                 vec[container_start..(container_start + 4)].copy_from_slice(&end_pos);
             }
@@ -78,7 +78,7 @@ fn missing_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
         // Footer.
         {
             // Footer: unknown1.
-            vec.extend(&CUSTOM_UNKNOWN1);
+            vec.extend(CUSTOM_UNKNOWN1);
             // Footer: padding.
             {
                 let len = vec.len().wrapping_neg() % 16;
@@ -86,13 +86,13 @@ fn missing_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
                 vec.extend(iter::repeat(0).take(len));
             }
             // Footer: unknown2.
-            vec.extend(&[0; 4]);
+            vec.extend([0; 4]);
             // Footer: FBX version.
-            vec.extend(&raw_ver.to_le_bytes());
+            vec.extend(raw_ver.to_le_bytes());
             // Footer: 120 zeroes.
             vec.extend(iter::repeat(0).take(120));
             // Footer: unknown3.
-            vec.extend(&UNKNOWN3);
+            vec.extend(UNKNOWN3);
         }
         vec
     };
@@ -145,7 +145,7 @@ fn extra_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
             // Magic.
             vec.extend(MAGIC);
             // Version.
-            vec.extend(&raw_ver.to_le_bytes());
+            vec.extend(raw_ver.to_le_bytes());
         }
         // Nodes.
         {
@@ -154,11 +154,11 @@ fn extra_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
                 const CONTAINER: &[u8] = b"Container";
                 let container_start = vec.len();
                 // End offset.
-                vec.extend(&[0; 4]);
+                vec.extend([0; 4]);
                 // Number of node properties.
-                vec.extend(&[0; 4]);
+                vec.extend([0; 4]);
                 // Length of node properties in bytes.
-                vec.extend(&[0; 4]);
+                vec.extend([0; 4]);
                 // Node name length.
                 vec.push(CONTAINER.len() as u8);
                 // Node name.
@@ -169,25 +169,25 @@ fn extra_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
                     const INVALID_NODE: &[u8] = b"InvalidNode";
                     let invalid_node_start = vec.len();
                     // End offset.
-                    vec.extend(&[0; 4]);
+                    vec.extend([0; 4]);
                     // Number of node properties.
-                    vec.extend(&1_u32.to_le_bytes());
+                    vec.extend(1_u32.to_le_bytes());
                     // Length of node properties in bytes.
-                    vec.extend(&2_u32.to_le_bytes());
+                    vec.extend(2_u32.to_le_bytes());
                     // Node name length.
                     vec.push(INVALID_NODE.len() as u8);
                     // Node name.
                     vec.extend(INVALID_NODE);
                     // An attribute.
-                    vec.extend(&[b'C', b'T']);
+                    vec.extend([b'C', b'T']);
                     // Extra node end marker.
-                    vec.extend(&[0; 13]);
+                    vec.extend([0; 13]);
                     let end_pos = (vec.len() as u32).to_le_bytes();
                     vec[invalid_node_start..(invalid_node_start + 4)].copy_from_slice(&end_pos);
                 }
 
                 // Node end marker.
-                vec.extend(&[0; 13]);
+                vec.extend([0; 13]);
                 let end_pos = (vec.len() as u32).to_le_bytes();
                 vec[container_start..(container_start + 4)].copy_from_slice(&end_pos);
             }
@@ -199,7 +199,7 @@ fn extra_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
         // Footer.
         {
             // Footer: unknown1.
-            vec.extend(&CUSTOM_UNKNOWN1);
+            vec.extend(CUSTOM_UNKNOWN1);
             // Footer: padding.
             {
                 let len = vec.len().wrapping_neg() % 16;
@@ -207,13 +207,13 @@ fn extra_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
                 vec.extend(iter::repeat(0).take(len));
             }
             // Footer: unknown2.
-            vec.extend(&[0; 4]);
+            vec.extend([0; 4]);
             // Footer: FBX version.
-            vec.extend(&raw_ver.to_le_bytes());
+            vec.extend(raw_ver.to_le_bytes());
             // Footer: 120 zeroes.
             vec.extend(iter::repeat(0).take(120));
             // Footer: unknown3.
-            vec.extend(&UNKNOWN3);
+            vec.extend(UNKNOWN3);
         }
         vec
     };
