@@ -41,7 +41,7 @@ fn empty_write_v7400() -> Result<(), Box<dyn std::error::Error>> {
             // Magic.
             vec.extend(MAGIC);
             // Version.
-            vec.extend(&raw_ver.to_le_bytes());
+            vec.extend(raw_ver.to_le_bytes());
         }
         // No nodes.
         {
@@ -53,7 +53,7 @@ fn empty_write_v7400() -> Result<(), Box<dyn std::error::Error>> {
         // Footer.
         {
             // Footer: unknown1.
-            vec.extend(&CUSTOM_UNKNOWN1);
+            vec.extend(CUSTOM_UNKNOWN1);
             // Footer: padding.
             {
                 let len = vec.len().wrapping_neg() % 16;
@@ -61,13 +61,13 @@ fn empty_write_v7400() -> Result<(), Box<dyn std::error::Error>> {
                 vec.extend(iter::repeat(0).take(len));
             }
             // Footer: unknown2.
-            vec.extend(&[0; 4]);
+            vec.extend([0; 4]);
             // Footer: FBX version.
-            vec.extend(&raw_ver.to_le_bytes());
+            vec.extend(raw_ver.to_le_bytes());
             // Footer: 120 zeroes.
             vec.extend(iter::repeat(0).take(120));
             // Footer: unknown3.
-            vec.extend(&UNKNOWN3);
+            vec.extend(UNKNOWN3);
         }
         vec
     };
