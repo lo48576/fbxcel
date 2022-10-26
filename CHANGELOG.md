@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+* Add more tree manipulation methods.
+
+### Added
+* Add more tree manipulation methods.
+    + The methods below are added:
+        - `tree::v7400::Tree::create_node()`
+        - `tree::v7400::Tree::append()`
+        - `tree::v7400::Tree::prepend()`
+        - `tree::v7400::Tree::insert_after()`
+        - `tree::v7400::Tree::insert_before()`
+        - `tree::v7400::Tree::detach()`
+
 ## [0.8.1]
 
 * Add types and methods to traverse nodes in depth-first order.
