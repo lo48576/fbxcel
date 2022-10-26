@@ -1,6 +1,6 @@
 [package]
 name = "fbxcel"
-version = "0.8.1"
+version = "0.8.2"
 authors = ["YOSHIOKA Takuma <nop_thread@nops.red>"]
 edition = "2021"
 rust-version = "1.56"
@@ -20,7 +20,7 @@ all-features = true
 # running with stable rust toolchain.
 # See <https://doc.rust-lang.org/rustdoc/unstable-features.html#extensions-to-the-doc-attribute>
 # for unstable `#[doc(cfg(...))]` attribute.
-rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = []

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.8.2]
+
+* Add more tree manipulation methods.
+
+### Added
+* Add more tree manipulation methods.
+    + The methods below are added:
+        - `tree::v7400::Tree::create_node()`
+        - `tree::v7400::Tree::append()`
+        - `tree::v7400::Tree::prepend()`
+        - `tree::v7400::Tree::insert_after()`
+        - `tree::v7400::Tree::insert_before()`
+        - `tree::v7400::Tree::detach()`
+
 ## [0.8.1]
 
 * Add types and methods to traverse nodes in depth-first order.
@@ -325,7 +339,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.1...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.2...develop>
+[0.8.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.2>
 [0.8.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.1>
 [0.8.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.0>
 [0.7.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.7.0>
