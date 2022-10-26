@@ -32,6 +32,7 @@ mod node;
 /// * Access
 ///     + [`root`][`Self::root`]
 /// * Create nodes / modify tree
+///     + [`create_node`][`Self::create_node`]
 ///     + [`append_new`][`Self::append_new`]
 ///     + [`prepend_new`][`Self::prepend_new`]
 ///     + [`insert_new_after`][`Self::insert_new_after`]
@@ -111,6 +112,17 @@ impl Tree {
     #[must_use]
     pub(crate) fn contains_node(&self, node_id: NodeId) -> bool {
         self.arena.get(node_id.raw()).is_some()
+    }
+
+    /// Creates an orphan node in the arena.
+    ///
+    /// The created node can be inserted nearby some other nodes (in the same
+    /// arena) later.
+    pub fn create_node(&mut self, name: &str) -> NodeId {
+        let name_sym = self.node_names.get_or_intern(name);
+        let new_node = self.arena.new_node(NodeData::new(name_sym, Vec::new()));
+
+        NodeId::new(new_node)
     }
 
     /// Creates a new node and appends to the given parent node.
