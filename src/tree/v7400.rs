@@ -24,6 +24,23 @@ mod loader;
 mod node;
 
 /// FBX data tree.
+///
+/// # Tree manipulation methods
+///
+/// You can use the methods below to access and/or modify the tree.
+///
+/// * Access
+///     + [`root`][`Self::root`]
+/// * Create nodes / modify tree
+///     + [`append_new`][`Self::append_new`]
+///     + [`prepend_new`][`Self::prepend_new`]
+///     + [`insert_new_after`][`Self::insert_new_after`]
+///     + [`insert_new_before`][`Self::insert_new_before`]
+/// * Modify node
+///     + [`append_attribute`][`Self::append_attribute`]
+///     + [`get_attribute_mut`][`Self::get_attribute_mut`]
+///     + [`take_attributes_vec`][`Self::take_attributes_vec`]
+///     + [`set_attributes_vec`][`Self::set_attributes_vec`]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tree {
     /// Tree data.
