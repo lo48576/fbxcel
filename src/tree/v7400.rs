@@ -24,6 +24,29 @@ mod loader;
 mod node;
 
 /// FBX data tree.
+///
+/// # Tree manipulation methods
+///
+/// You can use the methods below to access and/or modify the tree.
+///
+/// * Access
+///     + [`root`][`Self::root`]
+/// * Create nodes / modify tree
+///     + [`create_node`][`Self::create_node`]
+///     + [`append_new`][`Self::append_new`]
+///     + [`prepend_new`][`Self::prepend_new`]
+///     + [`insert_new_after`][`Self::insert_new_after`]
+///     + [`insert_new_before`][`Self::insert_new_before`]
+///     + [`append`][`Self::append`]
+///     + [`prepend`][`Self::prepend`]
+///     + [`insert_after`][`Self::insert_after`]
+///     + [`insert_before`][`Self::insert_before`]
+///     + [`detach`][`Self::detach`]
+/// * Modify node
+///     + [`append_attribute`][`Self::append_attribute`]
+///     + [`get_attribute_mut`][`Self::get_attribute_mut`]
+///     + [`take_attributes_vec`][`Self::take_attributes_vec`]
+///     + [`set_attributes_vec`][`Self::set_attributes_vec`]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tree {
     /// Tree data.
@@ -96,6 +119,71 @@ impl Tree {
         self.arena.get(node_id.raw()).is_some()
     }
 
+    /// Creates an orphan node in the arena.
+    ///
+    /// The created node can be inserted nearby some other nodes (in the same
+    /// arena) later.
+    pub fn create_node(&mut self, name: &str) -> NodeId {
+        let name_sym = self.node_names.get_or_intern(name);
+        let new_node = self.arena.new_node(NodeData::new(name_sym, Vec::new()));
+
+        NodeId::new(new_node)
+    }
+
+    /// Detaches the node and appends it to the given parent node.
+    ///
+    /// # Panics
+    ///
+    /// Panics if:
+    ///
+    /// * any of the given node IDs are not used in the tree,
+    /// * the `new_last_child` is `parent`, or
+    /// * the `new_last_child` is an ancestor of `parent`.
+    pub fn append(&mut self, new_last_child: NodeId, parent: NodeId) {
+        parent.raw().append(new_last_child.raw(), &mut self.arena);
+    }
+
+    /// Detaches the node and prepends it to the given parent node.
+    ///
+    /// # Panics
+    ///
+    /// Panics if:
+    ///
+    /// * any of the given node IDs are not used in the tree,
+    /// * the `new_first_child` is `parent`, or
+    /// * the `new_first_child` is an ancestor of `parent`.
+    pub fn prepend(&mut self, new_first_child: NodeId, parent: NodeId) {
+        parent.raw().prepend(new_first_child.raw(), &mut self.arena);
+    }
+
+    /// Detaches the node and inserts it after the given base node.
+    ///
+    /// # Panics
+    ///
+    /// Panics if:
+    ///
+    /// * any of the given node IDs are not used in the tree,
+    /// * the `new_next_sibling` is `prev_sibling`.
+    pub fn insert_after(&mut self, new_next_sibling: NodeId, prev_sibling: NodeId) {
+        prev_sibling
+            .raw()
+            .insert_after(new_next_sibling.raw(), &mut self.arena);
+    }
+
+    /// Detaches the node and inserts it after the given base node.
+    ///
+    /// # Panics
+    ///
+    /// Panics if:
+    ///
+    /// * any of the given node IDs are not used in the tree,
+    /// * the `new_prev_sibling` is `next_sibling`.
+    pub fn insert_before(&mut self, new_prev_sibling: NodeId, next_sibling: NodeId) {
+        next_sibling
+            .raw()
+            .insert_after(new_prev_sibling.raw(), &mut self.arena);
+    }
+
     /// Creates a new node and appends to the given parent node.
     ///
     /// # Panics
@@ -148,6 +236,16 @@ impl Tree {
         sibling.raw().insert_before(new_child, &mut self.arena);
 
         NodeId::new(new_child)
+    }
+
+    /// Detaches the subtree from the tree.
+    ///
+    /// If the subtree is the root node, does nothing.
+    ///
+    /// The detached node and its descendants are kept in the arena, so they can
+    /// be inserted nearby some other nodes (in the same arena) later.
+    pub fn detach(&mut self, subtree_root: NodeId) {
+        subtree_root.raw().detach(&mut self.arena);
     }
 
     /// Creates a new node and inserts before the given sibling node.
