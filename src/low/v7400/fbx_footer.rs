@@ -105,7 +105,7 @@ impl FromParser for FbxFooter {
             let unknown3_pos = {
                 /// Start offset of search of unknown field 3.
                 const SEARCH_OFFSET: usize = BUF_LEN - 16;
-                let pos = (&buf[SEARCH_OFFSET..])
+                let pos = &buf[SEARCH_OFFSET..]
                     .iter()
                     .position(|&v| v != 0)
                     .ok_or(DataError::BrokenFbxFooter)?;
