@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.8.2]
+
 * Add more tree manipulation methods.
 
 ### Added
@@ -337,7 +339,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.1...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.2...develop>
+[0.8.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.2>
 [0.8.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.1>
 [0.8.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.0>
 [0.7.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.7.0>
