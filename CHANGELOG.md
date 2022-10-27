@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
+* Remove `pull_parser::reader` module and items inside.
 * Remove internal dependency to `byteorder` crate.
+
+### Changed (breaking)
+* Remove `pull_parser::reader` module and items inside.
+    + Trait bounds `R: ParserSource` are now replaced with `R: std::io::Read`.
+    + List of removed items:
+        - `pull_parser::reader::ParserSource` trait
+        - `pull_parser::reader::PlainSource` type
+        - `pull_parser::reader::PositionCacheReader` type
+        - `pull_parser::reader::SeekableSource` type
 
 ### Changed (non-breaking)
 * Remove internal dependency to `byteorder` crate.
