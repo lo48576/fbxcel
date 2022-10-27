@@ -4,11 +4,7 @@ use std::io::{Read, Seek};
 
 use crate::{
     low::{FbxHeader, FbxVersion},
-    pull_parser::{
-        self,
-        reader::{PlainSource, SeekableSource},
-        ParserSource, ParserVersion,
-    },
+    pull_parser::{self, reader::Reader, ParserSource, ParserVersion},
 };
 
 pub use self::error::{Error, Result};
@@ -54,7 +50,7 @@ fn parser_version(header: FbxHeader) -> Result<ParserVersion> {
 /// This works for seekable readers (which implement [`std::io::Seek`]), but
 /// [`from_seekable_reader`] should be used for them, because it is more
 /// efficent.
-pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<PlainSource<R>>> {
+pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<Reader<R>>> {
     let header = FbxHeader::load(&mut reader)?;
     match parser_version(header)? {
         ParserVersion::V7400 => {
@@ -71,7 +67,7 @@ pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<PlainSource<R>>> 
 }
 
 /// Loads a tree from the given seekable reader.
-pub fn from_seekable_reader<R: Read + Seek>(mut reader: R) -> Result<AnyParser<SeekableSource<R>>> {
+pub fn from_seekable_reader<R: Read + Seek>(mut reader: R) -> Result<AnyParser<Reader<R>>> {
     let header = FbxHeader::load(&mut reader)?;
     match parser_version(header)? {
         ParserVersion::V7400 => {

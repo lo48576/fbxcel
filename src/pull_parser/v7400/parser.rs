@@ -9,7 +9,7 @@ use crate::{
     },
     pull_parser::{
         error::{DataError, OperationError},
-        reader::{PlainSource, SeekableSource},
+        reader::Reader,
         v7400::{Event, FromParser, StartNode},
         Error, ParserSource, ParserVersion, Result, SyntacticPosition, Warning,
     },
@@ -22,27 +22,24 @@ type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;
 ///
 /// Returns an error if the given FBX version in unsupported.
 #[inline]
-pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<PlainSource<R>>>
+pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<Reader<R>>>
 where
     R: io::Read,
 {
-    Parser::create(
-        header.version(),
-        PlainSource::with_offset(reader, header.len()),
-    )
+    Parser::create(header.version(), Reader::new(reader, header.len()))
 }
 
 /// Creates a new [`Parser`] from the given seekable reader.
 ///
 /// Returns an error if the given FBX version in unsupported.
 #[inline]
-pub fn from_seekable_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<SeekableSource<R>>>
+pub fn from_seekable_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<Reader<R>>>
 where
     R: io::Read + io::Seek,
 {
     Parser::create(
         header.version(),
-        SeekableSource::with_offset(reader, header.len()),
+        Reader::with_seekable(reader, header.len()),
     )
 }
 
