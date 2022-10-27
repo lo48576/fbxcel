@@ -1,8 +1,10 @@
 //! Node header.
 
+use std::io;
+
 use crate::pull_parser::{
     v7400::{FromParser, Parser},
-    Error as ParserError, ParserSource,
+    Error as ParserError,
 };
 
 /// Node header.
@@ -47,7 +49,7 @@ impl NodeHeader {
 impl FromParser for NodeHeader {
     fn read_from_parser<R>(parser: &mut Parser<R>) -> Result<Self, ParserError>
     where
-        R: ParserSource,
+        R: io::Read,
     {
         let (end_offset, num_attributes, bytelen_attributes) = if parser.fbx_version().raw() < 7500
         {

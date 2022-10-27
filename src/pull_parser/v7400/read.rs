@@ -2,7 +2,7 @@
 
 use std::io;
 
-use crate::pull_parser::{v7400::Parser, ParserSource, Result};
+use crate::pull_parser::{v7400::Parser, Result};
 
 /// A trait for types readable from a reader.
 pub(crate) trait FromReader: Sized {
@@ -45,12 +45,12 @@ impl_from_reader_for_primitives! { f64 }
 /// A trait for types readable from a parser.
 pub(crate) trait FromParser: Sized {
     /// Reads the data from the given parser.
-    fn read_from_parser<R: ParserSource>(parser: &mut Parser<R>) -> Result<Self>;
+    fn read_from_parser<R: io::Read>(parser: &mut Parser<R>) -> Result<Self>;
 }
 
 impl<T: FromReader> FromParser for T {
     #[inline]
-    fn read_from_parser<R: ParserSource>(parser: &mut Parser<R>) -> Result<Self> {
+    fn read_from_parser<R: io::Read>(parser: &mut Parser<R>) -> Result<Self> {
         FromReader::from_reader(parser.reader())
     }
 }

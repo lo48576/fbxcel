@@ -1,5 +1,7 @@
 //! FBX 7.4 footer.
 
+use std::io::{self, Read};
+
 use log::debug;
 
 use crate::{
@@ -7,7 +9,7 @@ use crate::{
     pull_parser::{
         error::DataError,
         v7400::{FromParser, Parser},
-        Error as ParserError, ParserSource, SyntacticPosition, Warning,
+        Error as ParserError, SyntacticPosition, Warning,
     },
 };
 
@@ -50,7 +52,7 @@ pub struct FbxFooter {
 impl FromParser for FbxFooter {
     fn read_from_parser<R>(parser: &mut Parser<R>) -> Result<Self, ParserError>
     where
-        R: ParserSource,
+        R: io::Read,
     {
         let start_pos = parser.reader().position();
 
