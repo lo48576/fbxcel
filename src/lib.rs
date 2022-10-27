@@ -6,11 +6,15 @@
 //! [`pull_parser`] module provides pull parser for FBX binary format.
 //! ASCII format is not supported.
 //!
-//! [`tree`] module provides tree types, which allow users to access FBX data as
+#![cfg_attr(feature = "tree", doc = "[`tree`] ")]
+#![cfg_attr(not(feature = "tree"), doc = "`tree` ")]
+//! module provides tree types, which allow users to access FBX data as
 //! tree, not as stream of parser events.
 //! To use `tree` module, enable `tree` feature.
 //!
-//! [`writer`] module provides writer types.
+#![cfg_attr(feature = "writer", doc = "[`writer`] ")]
+#![cfg_attr(not(feature = "writer"), doc = "`writer` ")]
+//! module provides writer types.
 //! To use `writer` module, enable `writer` feature.
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![forbid(unsafe_code)]
