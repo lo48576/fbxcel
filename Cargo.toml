@@ -29,7 +29,6 @@ tree = ["indextree", "string-interner"]
 writer = []
 
 [dependencies]
-byteorder = "1"
 indextree = { version = "4", optional = true }
 libflate = "1.0.1"
 log = "0.4.4"

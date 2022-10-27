@@ -2,7 +2,6 @@
 
 use std::{io, marker::PhantomData};
 
-use byteorder::LittleEndian;
 use libflate::zlib::Decoder as ZlibDecoder;
 
 use crate::{
@@ -85,18 +84,18 @@ where
 
 /// Implement common traits for `ArrayAttributeValues`.
 macro_rules! impl_array_attr_values {
-    ($ty_elem:ty, $read_elem:ident) => {
+    ($ty_elem:ty) => {
         impl<R: io::Read> Iterator for ArrayAttributeValues<R, $ty_elem> {
             type Item = Result<$ty_elem>;
 
             fn next(&mut self) -> Option<Self::Item> {
-                use byteorder::ReadBytesExt;
-
                 if self.rest_elements == 0 {
                     return None;
                 }
-                match self.reader.$read_elem::<LittleEndian>() {
-                    Ok(v) => {
+                let mut buf = [0_u8; std::mem::size_of::<$ty_elem>()];
+                match self.reader.read_exact(&mut buf) {
+                    Ok(()) => {
+                        let v = <$ty_elem>::from_le_bytes(buf);
                         self.rest_elements = self
                             .rest_elements
                             .checked_sub(1)
@@ -120,10 +119,10 @@ macro_rules! impl_array_attr_values {
     };
 }
 
-impl_array_attr_values! { i32, read_i32 }
-impl_array_attr_values! { i64, read_i64 }
-impl_array_attr_values! { f32, read_f32 }
-impl_array_attr_values! { f64, read_f64 }
+impl_array_attr_values! { i32 }
+impl_array_attr_values! { i64 }
+impl_array_attr_values! { f32 }
+impl_array_attr_values! { f64 }
 
 /// Array attribute values iterator for `bool` array.
 #[derive(Debug, Clone, Copy)]
@@ -175,13 +174,12 @@ impl<R: io::Read> Iterator for BooleanArrayAttributeValues<R> {
     type Item = Result<bool>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        use byteorder::ReadBytesExt;
-
         if self.rest_elements == 0 {
             return None;
         }
-        match self.reader.read_u8() {
-            Ok(raw) => {
+        let mut raw = 0_u8;
+        match self.reader.read_exact(std::slice::from_mut(&mut raw)) {
+            Ok(()) => {
                 self.rest_elements = self
                     .rest_elements
                     .checked_sub(1)
