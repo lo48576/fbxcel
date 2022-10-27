@@ -1,5 +1,7 @@
 //! FBX data tree loader.
 
+use std::io;
+
 use indextree::Arena;
 use log::{debug, error, trace};
 use string_interner::{DefaultBackend, StringInterner};
@@ -8,7 +10,7 @@ use crate::{
     low::v7400::FbxFooter,
     pull_parser::{
         v7400::{attribute::loaders::DirectLoader, Event, Parser, StartNode},
-        Error as ParserError, ParserSource,
+        Error as ParserError,
     },
     tree::v7400::{LoadError, NodeData, NodeId, NodeNameSym, Tree},
 };
@@ -42,7 +44,7 @@ impl Loader {
     ///
     /// If the tree is successfully read but FBX footer is not,
     /// `Ok(tree, Err(parser_error))` is returned.
-    pub fn load<R: ParserSource>(
+    pub fn load<R: io::Read>(
         mut self,
         parser: &mut Parser<R>,
     ) -> Result<(Tree, Result<Box<FbxFooter>, ParserError>), LoadError> {
@@ -97,7 +99,7 @@ impl Loader {
     }
 
     /// Creates and adds a new node to the tree.
-    fn add_node<R: ParserSource>(
+    fn add_node<R: io::Read>(
         &mut self,
         parent: NodeId,
         start: StartNode<'_, R>,

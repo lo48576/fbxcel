@@ -1,80 +1,10 @@
 //! Parser data source.
 //!
 //! FBX parsers requires cursor position tracking and skipping.
-//! These features are used through `ParserSource` trait.
-//!
-//! For reader types which does not provide these features, `reader::*Source`
-//! wrappers are provided.
-//! Using those wrappers, any types implementing `std::io::Read` can be used as
-//! source reader for parsers.
-//!
-//! Usually users don't need to deal with these types and traits, because parser
-//! types or modules will provide simple functions to automatically wrap readers
-//! if necessary.
+//! These features are provided by the `Reader<R>` wrapper type.
 
 use std::fmt;
 use std::io::{self, SeekFrom};
-
-/// A trait for types which can be data sources.
-///
-/// Users can implement this manually, but usually it is enough to use wrappers
-/// in the [`reader`][`self`] module.
-pub trait ParserSource: Sized + io::Read {
-    /// Returns the offset of a byte which would be read next.
-    ///
-    /// This is called many times during parsing, so it is desirable to be fast
-    /// as possible.
-    ///
-    /// Reader types with [`std::io::Seek`] can implement this as
-    /// `self.stream_position().unwrap()`, but this is fallible and
-    /// can be inefficient.
-    /// Use of [`PositionCacheReader`] is reccomended.
-    #[must_use]
-    fn position(&self) -> u64;
-
-    /// Skips (seeks formward) the given size.
-    ///
-    /// Reader types can make this more efficient using [`std::io::Seek::seek`]
-    /// if possible.
-    fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
-        // NOTE: `let mut limited = self.by_ref().take(distance);` is E0507.
-        let mut limited = io::Read::take(self.by_ref(), distance);
-        io::copy(&mut limited, &mut io::sink())?;
-        Ok(())
-    }
-
-    /// Skips (seeks forward) to the given position.
-    ///
-    /// Reader types can make this more efficient using [`std::io::Seek::seek`]
-    /// if possible.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the given position is behind the current position.
-    fn skip_to(&mut self, pos: u64) -> io::Result<()> {
-        let distance = pos
-            .checked_sub(self.position())
-            .expect("Attempt to skip backward");
-        self.skip_distance(distance)
-    }
-}
-
-impl<R: ParserSource> ParserSource for &mut R {
-    #[inline]
-    fn position(&self) -> u64 {
-        (**self).position()
-    }
-
-    #[inline]
-    fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
-        (**self).skip_distance(distance)
-    }
-
-    #[inline]
-    fn skip_to(&mut self, pos: u64) -> io::Result<()> {
-        (**self).skip_to(pos)
-    }
-}
 
 /// Possibly specialized functions for the stream.
 #[derive(Clone, Copy)]
@@ -134,7 +64,7 @@ impl<R: io::Read> ReaderFnTable<R> {
 
 /// A wrapper type of the source reader.
 #[derive(Clone)]
-pub struct Reader<R> {
+pub(crate) struct Reader<R> {
     /// Inner stream.
     inner: R,
     /// Cached current stream position.
@@ -191,7 +121,7 @@ impl<R: io::Read> Reader<R> {
     /// the inner stream implementation.
     /// See the document for [`std::io::Seek::seek()`].
     #[inline]
-    pub(crate) fn skip_distance_(&mut self, distance: u64) -> io::Result<()> {
+    pub(crate) fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
         (self.fn_table.skip_distance)(self, distance)
     }
 
@@ -204,7 +134,7 @@ impl<R: io::Read> Reader<R> {
     ///
     /// Panics if the given position is behind the current position.
     #[inline]
-    pub(crate) fn skip_to_(&mut self, pos: u64) -> io::Result<()> {
+    pub(crate) fn skip_to(&mut self, pos: u64) -> io::Result<()> {
         let distance = pos
             .checked_sub(self.position())
             .expect("Attempt to skip backward");
@@ -237,22 +167,5 @@ impl<R: io::BufRead> io::BufRead for Reader<R> {
     fn consume(&mut self, amt: usize) {
         self.inner.consume(amt);
         self.advance(amt);
-    }
-}
-
-impl<R: io::Read> ParserSource for Reader<R> {
-    #[inline]
-    fn position(&self) -> u64 {
-        self.position() as u64
-    }
-
-    #[inline]
-    fn skip_distance(&mut self, distance: u64) -> io::Result<()> {
-        self.skip_distance_(distance)
-    }
-
-    #[inline]
-    fn skip_to(&mut self, pos: u64) -> io::Result<()> {
-        self.skip_to_(pos)
     }
 }

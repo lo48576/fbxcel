@@ -7,7 +7,7 @@ use crate::{
     pull_parser::{
         error::DataError,
         v7400::{FromReader, Parser},
-        ParserSource, Result, SyntacticPosition, Warning,
+        Result, SyntacticPosition, Warning,
     },
 };
 
@@ -35,7 +35,7 @@ pub struct Attributes<'a, R> {
     parser: &'a mut Parser<R>,
 }
 
-impl<'a, R: 'a + ParserSource> Attributes<'a, R> {
+impl<'a, R: 'a + io::Read> Attributes<'a, R> {
     /// Creates a new `Attributes`.
     #[must_use]
     pub(crate) fn from_parser(parser: &'a mut Parser<R>) -> Self {

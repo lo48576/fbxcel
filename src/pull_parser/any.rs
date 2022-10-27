@@ -1,10 +1,10 @@
 //! Types and functions for all supported versions.
 
-use std::io::{Read, Seek};
+use std::io::{self, Read, Seek};
 
 use crate::{
     low::{FbxHeader, FbxVersion},
-    pull_parser::{self, reader::Reader, ParserSource, ParserVersion},
+    pull_parser::{self, ParserVersion},
 };
 
 pub use self::error::{Error, Result};
@@ -18,7 +18,7 @@ pub enum AnyParser<R> {
     V7400(pull_parser::v7400::Parser<R>),
 }
 
-impl<R: ParserSource> AnyParser<R> {
+impl<R: io::Read> AnyParser<R> {
     /// Returns the parser version.
     #[inline]
     #[must_use]
@@ -50,7 +50,7 @@ fn parser_version(header: FbxHeader) -> Result<ParserVersion> {
 /// This works for seekable readers (which implement [`std::io::Seek`]), but
 /// [`from_seekable_reader`] should be used for them, because it is more
 /// efficent.
-pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<Reader<R>>> {
+pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<R>> {
     let header = FbxHeader::load(&mut reader)?;
     match parser_version(header)? {
         ParserVersion::V7400 => {
@@ -67,7 +67,7 @@ pub fn from_reader<R: Read>(mut reader: R) -> Result<AnyParser<Reader<R>>> {
 }
 
 /// Loads a tree from the given seekable reader.
-pub fn from_seekable_reader<R: Read + Seek>(mut reader: R) -> Result<AnyParser<Reader<R>>> {
+pub fn from_seekable_reader<R: Read + Seek>(mut reader: R) -> Result<AnyParser<R>> {
     let header = FbxHeader::load(&mut reader)?;
     match parser_version(header)? {
         ParserVersion::V7400 => {

@@ -8,7 +8,6 @@
 //!
 //! * Error types (defined in [`error`] module).
 //! * [`AnyParser`][`any::AnyParser`] feature (defined in [`any`] module).
-//! * Parser source traits and wrappers (defined in [`reader`] module).
 //!
 //! # Using pull parser
 //!
@@ -85,13 +84,12 @@
 pub use self::{
     error::{Error, Result, Warning},
     position::SyntacticPosition,
-    reader::ParserSource,
     version::ParserVersion,
 };
 
 pub mod any;
 pub mod error;
 mod position;
-pub mod reader;
+mod reader;
 pub mod v7400;
 mod version;
