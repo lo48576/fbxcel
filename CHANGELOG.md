@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+* Remove internal dependency to `byteorder` crate.
+
+### Changed (non-breaking)
+* Remove internal dependency to `byteorder` crate.
+
 ## [0.8.2]
 
 * Add more tree manipulation methods.
