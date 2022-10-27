@@ -2,7 +2,6 @@
 
 use std::{error, fmt, io};
 
-use byteorder::{LittleEndian, ReadBytesExt};
 use log::info;
 
 use crate::{low::FbxVersion, pull_parser::ParserVersion};
@@ -60,7 +59,11 @@ impl FbxHeader {
         }
 
         // Read FBX version.
-        let version = reader.read_u32::<LittleEndian>()?;
+        let version = {
+            let mut buf = [0_u8; 4];
+            reader.read_exact(&mut buf)?;
+            u32::from_le_bytes(buf)
+        };
         info!("FBX header is detected, version={}", version);
 
         Ok(FbxHeader {
