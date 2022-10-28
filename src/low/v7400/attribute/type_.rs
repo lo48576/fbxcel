@@ -59,7 +59,7 @@ impl AttributeType {
 
     /// Returns the type code.
     #[cfg(feature = "writer")]
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "writer")))]
     #[must_use]
     pub(crate) fn type_code(self) -> u8 {
         match self {

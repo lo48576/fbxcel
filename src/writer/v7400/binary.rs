@@ -303,7 +303,7 @@ impl<W: Write + Seek> Writer<W> {
 
     /// Writes the given tree.
     #[cfg(feature = "tree")]
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "tree")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "tree")))]
     pub fn write_tree(&mut self, tree: &crate::tree::v7400::Tree) -> Result<()> {
         use crate::low::v7400::AttributeValue;
 

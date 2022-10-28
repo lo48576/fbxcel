@@ -33,7 +33,7 @@ impl NodeHeader {
 
     /// Returns node end marker.
     #[cfg(feature = "writer")]
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "writer")))]
     #[inline]
     #[must_use]
     pub(crate) fn node_end() -> Self {

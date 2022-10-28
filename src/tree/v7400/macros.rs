@@ -31,7 +31,7 @@
 ///     Node3: ["hello", "world", 1.234f32, &b"BINARY"[..]] {}
 /// };
 /// ```
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "tree")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "tree")))]
 #[macro_export]
 macro_rules! tree_v7400 {
     (@__node, $tree:ident, $parent:ident,) => {};
