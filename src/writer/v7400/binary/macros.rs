@@ -35,7 +35,7 @@
 /// let _buf = writer.finalize_and_flush(&Default::default())?;
 /// # Ok::<_, Box<dyn std::error::Error>>(())
 /// ```
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "writer")))]
 #[macro_export]
 macro_rules! write_v7400_binary {
     (
