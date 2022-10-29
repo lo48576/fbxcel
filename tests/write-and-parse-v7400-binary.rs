@@ -5,10 +5,7 @@ use std::{cell::RefCell, io::Cursor, iter, rc::Rc};
 
 use fbxcel::{
     low::{v7400::AttributeValue, FbxVersion},
-    pull_parser::{
-        any::{from_seekable_reader, AnyParser},
-        v7400::attribute::loaders::DirectLoader,
-    },
+    pull_parser::{any::AnyParser, v7400::attribute::loaders::DirectLoader},
     write_v7400_binary,
     writer::v7400::binary::{FbxFooter, Writer},
 };
@@ -75,7 +72,7 @@ fn empty_write_v7400() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(dest.len() % 16, 0);
     assert_eq!(dest, expected);
 
-    let mut parser = match from_seekable_reader(Cursor::new(dest))? {
+    let mut parser = match AnyParser::from_seekable_reader(Cursor::new(dest))? {
         AnyParser::V7400(parser) => parser,
         _ => panic!("Generated data should be parsable with v7400 parser"),
     };
@@ -123,7 +120,7 @@ fn tree_write_v7500() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     writer.finalize_and_flush(&Default::default())?;
 
-    let mut parser = match from_seekable_reader(Cursor::new(dest))? {
+    let mut parser = match AnyParser::from_seekable_reader(Cursor::new(dest))? {
         AnyParser::V7400(parser) => parser,
         _ => panic!("Generated data should be parsable with v7400 parser"),
     };
@@ -198,7 +195,7 @@ fn macro_v7400_idempotence() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let bin = writer.finalize_and_flush(&Default::default())?.into_inner();
 
-    let mut parser = match from_seekable_reader(Cursor::new(bin))? {
+    let mut parser = match AnyParser::from_seekable_reader(Cursor::new(bin))? {
         AnyParser::V7400(parser) => parser,
         _ => panic!("Generated data should be parsable with v7400 parser"),
     };

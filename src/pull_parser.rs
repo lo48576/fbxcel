@@ -19,16 +19,16 @@
 //! and 7.5), you can use easy setup using [`any`] module.
 //!
 //! ```no_run
-//! use fbxcel::pull_parser::any::{from_seekable_reader, AnyParser};
+//! use fbxcel::pull_parser::any::AnyParser;
 //!
 //! let file = std::fs::File::open("sample.fbx").expect("Failed to open file");
 //! // You can also use raw `file`, but do buffering for better efficiency.
 //! let reader = std::io::BufReader::new(file);
 //!
-//! // Use `from_seekable_reader` for readers implementing `std::io::Seek`.
-//! // To use readers without `std::io::Seek` implementation, use `from_reader`
-//! // instead.
-//! match from_seekable_reader(reader).expect("Failed to setup FBX parser") {
+//! // Use `AnyParser::from_seekable_reader` for readers implementing
+//! // `std::io::Seek`. To use readers without `std::io::Seek` implementation,
+//! // use `AnyPraser::from_reader` instead.
+//! match AnyParser::from_seekable_reader(reader).expect("Failed to setup FBX parser") {
 //!     // Use v7400 parser (implemented in `v7400` module).
 //!     AnyParser::V7400(mut parser) => {
 //!         // You got a parser! Do what you want!
@@ -63,10 +63,10 @@
 //!     Some(ParserVersion::V7400) => {
 //!         // 3. Create parser with source reader.
 //!         // Pass both header and reader.
-//!         // Use `from_seekable_reader` for readers implementing `std::io::Seek`.
-//!         // To use readers without `std::io::Seek` implementation, use
-//!         // `from_reader` instead.
-//!         let mut parser = fbxcel::pull_parser::v7400::from_seekable_reader(header, reader)
+//!         // Use `Parser::from_seekable_reader` for readers implementing
+//!         // `std::io::Seek`. To use readers without `std::io::Seek`
+//!         // implementation, use `Parser::from_reader` instead.
+//!         let mut parser = fbxcel::pull_parser::v7400::Parser::from_seekable_reader(header, reader)
 //!             .expect("Failed to setup parser");
 //!         // You got a parser! Do what you want!
 //!     },
