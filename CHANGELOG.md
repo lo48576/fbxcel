@@ -4,7 +4,8 @@
 
 * Remove `pull_parser::reader` module and items inside.
     + Trait bounds `R: ParserSource` are now replaced with `R: std::io::Read`.
-* Change return type of some parser creation functions.
+* Change type parameters of `pull_parser::any::AnyParser` and `pull_parser::v7400::Parser`.
+* Remove free functions to create parsers, and add inherent methods instead.
 * Remove internal dependency to `byteorder` crate.
 
 ### Changed (breaking)
@@ -16,17 +17,19 @@
         - `pull_parser::reader::PlainSource` type
         - `pull_parser::reader::PositionCacheReader` type
         - `pull_parser::reader::SeekableSource` type
-* Change return type of some parser creation functions.
-    + The parameter type of the parser is simplified.
-    + List of affected functions:
-        - `pull_parser::any::from_reader()`: now returns `Result<AnyParser<R>>`
-          instead of `Result<AnyParser<PlainSource<R>>>`.
-        - `pull_parser::any::from_seekable_reader()`: now returns
-          `Result<AnyParser<R>>` instead of `Result<AnyParser<SeekableSource<R>>>`.
-        - `pull_parser::v7400::from_reader()`: now returns `Result<Parser<R>>`
-          instead of `Result<Parser<PlainSource<R>>>`.
-        - `pull_parser::v7400::from_seekable_reader()`: now returns
-          `Result<Parser<R>>` instead of `Result<Parser<SeekableSource<R>>>`.
+* Change type parameters of `pull_parser::any::AnyParser` and `pull_parser::v7400::Parser`.
+    + The parameter type of the parser is simplified. Previously parsers were
+      `{Any,}Parser<{Plain,Seekable}Source<R>>`, but now they are `{Any,}Parser<R>`.
+* Remove free functions to create parsers, and add inherent methods instead.
+    + List of removed functions and added alternatives:
+        - `pull_parser::any::from_reader()`: replaced with
+          `pull_parser::any::AnyParser::from_reader()`.
+        - `pull_parser::any::from_seekable_reader()`: replaced with
+          `pull_parser::any::AnyParser::from_seekable_reader()`.
+        - `pull_parser::v7400::from_reader()`: Replaced with
+        - `pull_parser::v7400::Parser::from_reader()`.
+        - `pull_parser::v7400::from_seekable_reader()`: Replaced with
+        - `pull_parser::v7400::Parser::from_seekable_reader()`.
 
 ### Changed (non-breaking)
 * Remove internal dependency to `byteorder` crate.
