@@ -3,16 +3,30 @@
 ## [Unreleased]
 
 * Remove `pull_parser::reader` module and items inside.
+    + Trait bounds `R: ParserSource` are now replaced with `R: std::io::Read`.
+* Change return type of some parser creation functions.
 * Remove internal dependency to `byteorder` crate.
 
 ### Changed (breaking)
 * Remove `pull_parser::reader` module and items inside.
     + Trait bounds `R: ParserSource` are now replaced with `R: std::io::Read`.
     + List of removed items:
+        - `pull_parser::reader` module
         - `pull_parser::reader::ParserSource` trait
         - `pull_parser::reader::PlainSource` type
         - `pull_parser::reader::PositionCacheReader` type
         - `pull_parser::reader::SeekableSource` type
+* Change return type of some parser creation functions.
+    + The parameter type of the parser is simplified.
+    + List of affected functions:
+        - `pull_parser::any::from_reader()`: now returns `Result<AnyParser<R>>`
+          instead of `Result<AnyParser<PlainSource<R>>>`.
+        - `pull_parser::any::from_seekable_reader()`: now returns
+          `Result<AnyParser<R>>` instead of `Result<AnyParser<SeekableSource<R>>>`.
+        - `pull_parser::v7400::from_reader()`: now returns `Result<Parser<R>>`
+          instead of `Result<Parser<PlainSource<R>>>`.
+        - `pull_parser::v7400::from_seekable_reader()`: now returns
+          `Result<Parser<R>>` instead of `Result<Parser<SeekableSource<R>>>`.
 
 ### Changed (non-breaking)
 * Remove internal dependency to `byteorder` crate.
