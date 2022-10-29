@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.9.0]
+
 * Remove `pull_parser::reader` module and items inside.
     + Trait bounds `R: ParserSource` are now replaced with `R: std::io::Read`.
 * Change type parameters of `pull_parser::any::AnyParser` and `pull_parser::v7400::Parser`.
@@ -371,7 +373,8 @@
 
 Totally rewritten.
 
-[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.8.2...develop>
+[Unreleased]: <https://github.com/lo48576/fbxcel/compare/v0.9.0...develop>
+[0.9.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.9.0>
 [0.8.2]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.2>
 [0.8.1]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.1>
 [0.8.0]: <https://github.com/lo48576/fbxcel/releases/tag/v0.8.0>
