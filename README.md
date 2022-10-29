@@ -20,7 +20,7 @@ If you want to interpret and render FBX data, use
     + This is optional and enabled by `writer` feature.
 * Types and functions for low-level FBX tree access
     + This is optional and enabled by `tree` feature.
-    + Provides arena-based tree type and read-only access to nodes.
+    + Provides arena-based tree type.
 
 ### FBX versions
 
