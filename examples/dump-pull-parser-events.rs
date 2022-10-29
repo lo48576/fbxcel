@@ -4,10 +4,7 @@ use std::{
     path::PathBuf,
 };
 
-use fbxcel::pull_parser::{
-    self,
-    any::{from_seekable_reader, AnyParser},
-};
+use fbxcel::pull_parser::{self, any::AnyParser};
 
 fn main() {
     env_logger::init();
@@ -22,7 +19,7 @@ fn main() {
     let file = File::open(path).expect("Failed to open file");
     let reader = BufReader::new(file);
 
-    match from_seekable_reader(reader).expect("Failed to create parser") {
+    match AnyParser::from_seekable_reader(reader).expect("Failed to create parser") {
         AnyParser::V7400(mut parser) => {
             let version = parser.fbx_version();
             println!("FBX version: {}.{}", version.major(), version.minor());
