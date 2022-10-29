@@ -1,6 +1,7 @@
 //! Parser for FBX 7.4 or later.
 
-use std::{fmt, io};
+use std::fmt;
+use std::io::{self, Read};
 
 use crate::{
     low::{
@@ -9,61 +10,55 @@ use crate::{
     },
     pull_parser::{
         error::{DataError, OperationError},
-        reader::{PlainSource, SeekableSource},
+        reader::Reader,
         v7400::{Event, FromParser, StartNode},
-        Error, ParserSource, ParserVersion, Result, SyntacticPosition, Warning,
+        Error, ParserVersion, Result, SyntacticPosition, Warning,
     },
 };
 
 /// Warning handler type.
 type WarningHandler = Box<dyn FnMut(Warning, &SyntacticPosition) -> Result<()>>;
 
-/// Creates a new [`Parser`] from the given reader.
-///
-/// Returns an error if the given FBX version in unsupported.
-#[inline]
-pub fn from_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<PlainSource<R>>>
-where
-    R: io::Read,
-{
-    Parser::create(
-        header.version(),
-        PlainSource::with_offset(reader, header.len()),
-    )
-}
-
-/// Creates a new [`Parser`] from the given seekable reader.
-///
-/// Returns an error if the given FBX version in unsupported.
-#[inline]
-pub fn from_seekable_reader<R>(header: FbxHeader, reader: R) -> Result<Parser<SeekableSource<R>>>
-where
-    R: io::Read + io::Seek,
-{
-    Parser::create(
-        header.version(),
-        SeekableSource::with_offset(reader, header.len()),
-    )
-}
-
 /// Pull parser for FBX 7.4 binary or compatible later versions.
 pub struct Parser<R> {
     /// Parser state.
     state: State,
     /// Reader.
-    reader: R,
+    reader: Reader<R>,
     /// Warning handler.
     warning_handler: Option<WarningHandler>,
 }
 
-impl<R: ParserSource> Parser<R> {
+impl<R: io::Read> Parser<R> {
     /// Parser version.
     pub const PARSER_VERSION: ParserVersion = ParserVersion::V7400;
+
+    /// Creates a new `Parser` from the given reader.
+    ///
+    /// Returns an error if the given FBX version in unsupported.
+    #[inline]
+    pub fn from_reader(header: FbxHeader, reader: R) -> Result<Self> {
+        Parser::create(header.version(), Reader::new(reader, header.len()))
+    }
+
+    /// Creates a new `Parser` from the given seekable reader.
+    ///
+    /// Returns an error if the given FBX version in unsupported.
+    #[inline]
+    pub fn from_seekable_reader(header: FbxHeader, reader: R) -> Result<Self>
+    where
+        R: io::Seek,
+    {
+        Parser::create(
+            header.version(),
+            Reader::with_seekable(reader, header.len()),
+        )
+    }
 
     /// Creates a new `Parser`.
     ///
     /// Returns an error if the given FBX version in unsupported.
-    pub(crate) fn create(fbx_version: FbxVersion, reader: R) -> Result<Self> {
+    pub(crate) fn create(fbx_version: FbxVersion, reader: Reader<R>) -> Result<Self> {
         if ParserVersion::from_fbx_version(fbx_version) != Some(Self::PARSER_VERSION) {
             return Err(
                 OperationError::UnsupportedFbxVersion(Self::PARSER_VERSION, fbx_version).into(),
@@ -93,7 +88,7 @@ impl<R: ParserSource> Parser<R> {
     /// # use fbxcel::low::FbxHeader;
     /// # let reader = std::io::empty();
     /// # let header: FbxHeader = unimplemented!();
-    /// let mut parser = fbxcel::pull_parser::v7400::from_reader(header, reader)
+    /// let mut parser = fbxcel::pull_parser::v7400::Parser::from_reader(header, reader)
     ///     .expect("Failed to create parser");
     /// parser.set_warning_handler(|warning, pos| {
     ///     // Print warning.
@@ -117,7 +112,7 @@ impl<R: ParserSource> Parser<R> {
     /// Returns a mutable reference to the inner reader.
     #[inline]
     #[must_use]
-    pub(crate) fn reader(&mut self) -> &mut R {
+    pub(crate) fn reader(&mut self) -> &mut Reader<R> {
         &mut self.reader
     }
 
@@ -428,7 +423,7 @@ impl<R: ParserSource> Parser<R> {
     /// # use fbxcel::low::FbxHeader;
     /// # let reader = std::io::empty();
     /// # let header: FbxHeader = unimplemented!();
-    /// let mut parser = fbxcel::pull_parser::v7400::from_reader(header, reader)
+    /// let mut parser = fbxcel::pull_parser::v7400::Parser::from_reader(header, reader)
     ///     .expect("Failed to create parser");
     /// // Do something here.
     /// // Something done.
@@ -443,8 +438,8 @@ impl<R: ParserSource> Parser<R> {
     /// for error handling.
     ///
     /// ```no_run
-    /// # use fbxcel::pull_parser::{v7400::{Parser, Event}, ParserSource, Result};
-    /// fn skip_current_node<R: ParserSource>(parser: &mut Parser<R>) -> Result<()> {
+    /// # use fbxcel::pull_parser::{v7400::{Parser, Event}, Result};
+    /// fn skip_current_node<R: std::io::Read>(parser: &mut Parser<R>) -> Result<()> {
     ///     loop {
     ///         match parser.next_event()? {
     ///             Event::StartNode(_) => skip_current_node(parser)?,
@@ -523,7 +518,7 @@ impl<R: ParserSource> Parser<R> {
     /// # use fbxcel::low::FbxHeader;
     /// # let reader = std::io::empty();
     /// # let header: FbxHeader = unimplemented!();
-    /// let mut parser = fbxcel::pull_parser::v7400::from_reader(header, reader)
+    /// let mut parser = fbxcel::pull_parser::v7400::Parser::from_reader(header, reader)
     ///     .expect("Failed to create parser");
     /// assert!(!parser.is_used());
     /// parser.set_warning_handler(|warning, pos| {

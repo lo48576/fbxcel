@@ -33,7 +33,7 @@ impl ArrayAttributeEncoding {
 
     /// Returns the raw value.
     #[cfg(feature = "writer")]
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "writer")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "writer")))]
     #[inline]
     #[must_use]
     pub(crate) fn to_u32(self) -> u32 {

@@ -31,7 +31,7 @@ impl AnyTree {
     /// [`from_seekable_reader`][`Self::from_seekable_reader`] should be used for them, because it is more
     /// efficent.
     pub fn from_reader(reader: impl Read) -> Result<Self> {
-        match pull_parser::any::from_reader(reader)? {
+        match AnyParser::from_reader(reader)? {
             AnyParser::V7400(mut parser) => {
                 let fbx_version = parser.fbx_version();
                 parser.set_warning_handler(|w, pos| {
@@ -47,7 +47,7 @@ impl AnyTree {
 
     /// Loads a tree from the given seekable reader.
     pub fn from_seekable_reader(reader: impl Read + Seek) -> Result<Self> {
-        match pull_parser::any::from_seekable_reader(reader)? {
+        match AnyParser::from_seekable_reader(reader)? {
             AnyParser::V7400(mut parser) => {
                 let fbx_version = parser.fbx_version();
                 parser.set_warning_handler(|w, pos| {

@@ -4,10 +4,7 @@
 use std::{cell::RefCell, io::Cursor, rc::Rc};
 
 use fbxcel::{
-    low::FbxVersion,
-    pull_parser::any::{from_seekable_reader, AnyParser},
-    tree::v7400::Loader as TreeLoader,
-    tree_v7400,
+    low::FbxVersion, pull_parser::any::AnyParser, tree::v7400::Loader as TreeLoader, tree_v7400,
     writer::v7400::binary::Writer,
 };
 
@@ -31,7 +28,7 @@ fn tree_write_parse_idempotence_v7500() -> Result<(), Box<dyn std::error::Error>
     writer.write_tree(&tree1)?;
     let bin = writer.finalize_and_flush(&Default::default())?.into_inner();
 
-    let mut parser = match from_seekable_reader(Cursor::new(bin))? {
+    let mut parser = match AnyParser::from_seekable_reader(Cursor::new(bin))? {
         AnyParser::V7400(parser) => parser,
         _ => panic!("Generated data should be parsable with v7400 parser"),
     };

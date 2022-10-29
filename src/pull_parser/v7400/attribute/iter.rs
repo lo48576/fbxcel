@@ -5,7 +5,7 @@ use std::iter;
 
 use crate::pull_parser::{
     v7400::attribute::{loader::LoadAttribute, Attributes},
-    ParserSource, Result,
+    Result,
 };
 
 /// Creates size hint from the given attributes and loaders.
@@ -15,7 +15,7 @@ fn make_size_hint_for_attrs<R, V>(
     loaders: &impl Iterator<Item = V>,
 ) -> (usize, Option<usize>)
 where
-    R: ParserSource,
+    R: io::Read,
     V: LoadAttribute,
 {
     let (loaders_min, loaders_max) = loaders.size_hint();
@@ -33,7 +33,7 @@ fn load_next<R, V>(
     loaders: &mut impl Iterator<Item = V>,
 ) -> Option<Result<V::Output>>
 where
-    R: ParserSource,
+    R: io::Read,
     V: LoadAttribute,
 {
     let loader = loaders.next()?;
@@ -47,7 +47,7 @@ fn load_next_buffered<R, V>(
     loaders: &mut impl Iterator<Item = V>,
 ) -> Option<Result<V::Output>>
 where
-    R: ParserSource + io::BufRead,
+    R: io::BufRead,
     V: LoadAttribute,
 {
     let loader = loaders.next()?;
@@ -65,7 +65,7 @@ pub struct BorrowedIter<'a, 'r, R, I> {
 
 impl<'a, 'r, R, I, V> BorrowedIter<'a, 'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -82,7 +82,7 @@ where
 
 impl<'a, 'r, R, I, V> Iterator for BorrowedIter<'a, 'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -101,7 +101,7 @@ where
 
 impl<'a, 'r, R, I, V> iter::FusedIterator for BorrowedIter<'a, 'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -118,7 +118,7 @@ pub struct BorrowedIterBuffered<'a, 'r, R, I> {
 
 impl<'a, 'r, R, I, V> BorrowedIterBuffered<'a, 'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -135,7 +135,7 @@ where
 
 impl<'a, 'r, R, I, V> Iterator for BorrowedIterBuffered<'a, 'r, R, I>
 where
-    R: ParserSource + io::BufRead,
+    R: io::BufRead,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -154,7 +154,7 @@ where
 
 impl<'a, 'r, R, I, V> iter::FusedIterator for BorrowedIterBuffered<'a, 'r, R, I>
 where
-    R: ParserSource + io::BufRead,
+    R: io::BufRead,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -171,7 +171,7 @@ pub struct OwnedIter<'r, R, I> {
 
 impl<'r, R, I, V> OwnedIter<'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -188,7 +188,7 @@ where
 
 impl<'r, R, I, V> Iterator for OwnedIter<'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -207,7 +207,7 @@ where
 
 impl<'r, R, I, V> iter::FusedIterator for OwnedIter<'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -224,7 +224,7 @@ pub struct OwnedIterBuffered<'r, R, I> {
 
 impl<'r, R, I, V> OwnedIterBuffered<'r, R, I>
 where
-    R: ParserSource,
+    R: io::Read,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -241,7 +241,7 @@ where
 
 impl<'r, R, I, V> Iterator for OwnedIterBuffered<'r, R, I>
 where
-    R: ParserSource + io::BufRead,
+    R: io::BufRead,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {
@@ -260,7 +260,7 @@ where
 
 impl<'r, R, I, V> iter::FusedIterator for OwnedIterBuffered<'r, R, I>
 where
-    R: ParserSource + io::BufRead,
+    R: io::BufRead,
     I: Iterator<Item = V>,
     V: LoadAttribute,
 {

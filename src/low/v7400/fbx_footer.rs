@@ -1,6 +1,7 @@
 //! FBX 7.4 footer.
 
-use byteorder::{ByteOrder, LittleEndian};
+use std::io::{self, Read};
+
 use log::debug;
 
 use crate::{
@@ -8,7 +9,7 @@ use crate::{
     pull_parser::{
         error::DataError,
         v7400::{FromParser, Parser},
-        Error as ParserError, ParserSource, SyntacticPosition, Warning,
+        Error as ParserError, SyntacticPosition, Warning,
     },
 };
 
@@ -51,7 +52,7 @@ pub struct FbxFooter {
 impl FromParser for FbxFooter {
     fn read_from_parser<R>(parser: &mut Parser<R>) -> Result<Self, ParserError>
     where
-        R: ParserSource,
+        R: io::Read,
     {
         let start_pos = parser.reader().position();
 
@@ -118,7 +119,11 @@ impl FromParser for FbxFooter {
             let padding = &buf[..padding_len];
             let mut unknown2 = [0u8; 4];
             unknown2.copy_from_slice(&buf[padding_len..(padding_len + 4)]);
-            let version_buf = &buf[(padding_len + 4)..(padding_len + 8)];
+            let version = u32::from_le_bytes(
+                buf[(padding_len + 4)..(padding_len + 8)]
+                    .try_into()
+                    .expect("the slice must be 4 bytes"),
+            );
             let zeroes_120 = &buf[(padding_len + 8)..(padding_len + 128)];
             let unknown3_part = &buf[(padding_len + 128)..];
 
@@ -133,7 +138,7 @@ impl FromParser for FbxFooter {
             }
 
             // Check that the FBX version is same as the FBX header.
-            let version = FbxVersion::new(LittleEndian::read_u32(version_buf));
+            let version = FbxVersion::new(version);
             if version != parser.fbx_version() {
                 // Version mismatch.
                 return Err(DataError::BrokenFbxFooter.into());

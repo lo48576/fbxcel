@@ -1,10 +1,12 @@
 //! Parser event.
 
+use std::io;
+
 use crate::{
     low::v7400::FbxFooter,
     pull_parser::{
         v7400::{Attributes, Parser},
-        ParserSource, Result,
+        Result,
     },
 };
 
@@ -29,7 +31,7 @@ pub struct StartNode<'a, R> {
     parser: &'a mut Parser<R>,
 }
 
-impl<'a, R: 'a + ParserSource> StartNode<'a, R> {
+impl<'a, R: 'a + io::Read> StartNode<'a, R> {
     /// Creates a new `StartNode`.
     #[inline]
     #[must_use]

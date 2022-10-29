@@ -5,10 +5,7 @@ use std::{cell::RefCell, io::Cursor, iter, rc::Rc};
 
 use fbxcel::{
     low::FbxVersion,
-    pull_parser::{
-        any::{from_seekable_reader, AnyParser},
-        error::Warning,
-    },
+    pull_parser::{any::AnyParser, error::Warning},
 };
 
 use self::v7400::writer::{
@@ -99,7 +96,7 @@ fn missing_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
 
     assert_eq!(data.len() % 16, 0);
 
-    let mut parser = match from_seekable_reader(Cursor::new(data))? {
+    let mut parser = match AnyParser::from_seekable_reader(Cursor::new(data))? {
         AnyParser::V7400(parser) => parser,
         _ => panic!("Generated data should be parsable with v7400 parser"),
     };
@@ -220,7 +217,7 @@ fn extra_node_end_marker() -> Result<(), Box<dyn std::error::Error>> {
 
     assert_eq!(data.len() % 16, 0);
 
-    let mut parser = match from_seekable_reader(Cursor::new(data))? {
+    let mut parser = match AnyParser::from_seekable_reader(Cursor::new(data))? {
         AnyParser::V7400(parser) => parser,
         _ => panic!("Generated data should be parsable with v7400 parser"),
     };

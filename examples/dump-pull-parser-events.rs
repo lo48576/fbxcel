@@ -1,9 +1,10 @@
-use std::{fs::File, io::BufReader, path::PathBuf};
-
-use fbxcel::pull_parser::{
-    self,
-    any::{from_seekable_reader, AnyParser},
+use std::{
+    fs::File,
+    io::{self, BufReader},
+    path::PathBuf,
 };
+
+use fbxcel::pull_parser::{self, any::AnyParser};
 
 fn main() {
     env_logger::init();
@@ -18,7 +19,7 @@ fn main() {
     let file = File::open(path).expect("Failed to open file");
     let reader = BufReader::new(file);
 
-    match from_seekable_reader(reader).expect("Failed to create parser") {
+    match AnyParser::from_seekable_reader(reader).expect("Failed to create parser") {
         AnyParser::V7400(mut parser) => {
             let version = parser.fbx_version();
             println!("FBX version: {}.{}", version.major(), version.minor());
@@ -39,7 +40,7 @@ fn indent(depth: usize) {
     print!("{:depth$}", "", depth = depth * 4);
 }
 
-fn dump_fbx_7400<R: pull_parser::ParserSource>(
+fn dump_fbx_7400<R: io::Read>(
     mut parser: pull_parser::v7400::Parser<R>,
 ) -> pull_parser::Result<()> {
     let mut depth = 0;
@@ -102,7 +103,7 @@ fn dump_v7400_attributes_length<R>(
     mut attrs: pull_parser::v7400::Attributes<'_, R>,
 ) -> pull_parser::Result<()>
 where
-    R: pull_parser::ParserSource,
+    R: io::Read,
 {
     use fbxcel::{
         low::v7400::AttributeValue, pull_parser::v7400::attribute::loaders::DirectLoader,
@@ -136,7 +137,7 @@ fn dump_v7400_attributes_type<R>(
     mut attrs: pull_parser::v7400::Attributes<'_, R>,
 ) -> pull_parser::Result<()>
 where
-    R: pull_parser::ParserSource,
+    R: io::Read,
 {
     use self::pull_parser::v7400::attribute::loaders::TypeLoader;
 
@@ -153,7 +154,7 @@ fn dump_v7400_attributes_full<R>(
     mut attrs: pull_parser::v7400::Attributes<'_, R>,
 ) -> pull_parser::Result<()>
 where
-    R: pull_parser::ParserSource,
+    R: io::Read,
 {
     use fbxcel::{
         low::v7400::AttributeValue, pull_parser::v7400::attribute::loaders::DirectLoader,
