@@ -160,8 +160,8 @@ mod tests {
                 Node2: [true, 42i16, 42i32, 42i64, 1.414f32, 1.234f64] {
                     Node2_0: (vec![vec![true, false].into(), vec![0i32, 42i32].into()]) {},
                     Node2_1: [
-                        vec![std::f32::NAN, std::f32::INFINITY],
-                        vec![std::f64::NAN, std::f64::INFINITY]
+                        vec![f32::NAN, f32::INFINITY],
+                        vec![f64::NAN, f64::INFINITY]
                     ] {},
                 },
             }

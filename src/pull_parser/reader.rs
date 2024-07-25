@@ -53,7 +53,7 @@ impl<R: io::Read> ReaderFnTable<R> {
         R: io::Seek,
     {
         while distance > 0 {
-            let part = std::cmp::min(distance, std::i64::MAX as u64);
+            let part = std::cmp::min(distance, i64::MAX as u64);
             reader.inner.seek(SeekFrom::Current(part as i64))?;
             reader.advance(part as usize);
             distance -= part;
