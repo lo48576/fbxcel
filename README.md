@@ -8,8 +8,9 @@
 `fbxcel` is an FBX library for Rust programming language.
 
 `fbxcel` is relatively low-level library.
-If you want to interpret and render FBX data, use
-[`fbxcel-dom`](https://github.com/lo48576/fbxcel-dom) crate.
+If you want to interpret and render FBX data, you need another library or need to do it yourself.
+([`fbxcel-dom`](https://github.com/lo48576/fbxcel-dom) is incomplete and currently unmaintained,
+but it can help you know what kind of tasks are needed to interpret FBX data.)
 
 ## Features
 
