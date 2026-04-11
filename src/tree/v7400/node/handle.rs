@@ -80,7 +80,7 @@ impl<'a> NodeHandle<'a> {
         self.node().get().attributes()
     }
 
-    /// Returns an iterator of children with the given name.
+    /// Returns an iterator of children.
     #[inline]
     #[must_use]
     pub fn children(&self) -> Children<'a> {
