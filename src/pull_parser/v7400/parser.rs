@@ -358,11 +358,17 @@ impl<R: io::Read> Parser<R> {
             String::from_utf8(vec).map_err(DataError::InvalidNodeNameEncoding)?
         };
         let current_offset = self.reader().position();
+        // A malformed header can declare a `bytelen_attributes` large enough to
+        // overflow when added to the current offset. Reject it instead of
+        // panicking (or silently wrapping) on untrusted input.
+        let attributes_end_offset = current_offset
+            .checked_add(node_header.bytelen_attributes)
+            .ok_or(DataError::NodeLengthMismatch(node_header.end_offset, None))?;
         let starting = StartedNode {
             node_start_offset: event_start_offset,
             node_end_offset: node_header.end_offset,
             attributes_count: node_header.num_attributes,
-            attributes_end_offset: current_offset + node_header.bytelen_attributes,
+            attributes_end_offset,
             name,
             known_children_count: 0,
         };
