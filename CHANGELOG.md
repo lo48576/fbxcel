@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Fixed
+* Fixed an arithmetic-overflow panic in the v7400 pull parser on a malformed
+  node header.
+    + A node header declaring a `bytelen_attributes` large enough to overflow
+      `u64` when added to the current offset is now rejected with a `DataError`
+      instead of panicking (or wrapping the offset in release builds).
+
 ## [0.9.0]
 
 * Remove `pull_parser::reader` module and items inside.
